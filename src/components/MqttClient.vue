@@ -1,5 +1,6 @@
 <template>
-  <div style="position: absolute; bottom: 0; right: 0; top: 0; left: 0;">
+  <div v-touch-swipe.horizontal="swipeHandler" style="position: absolute; bottom: 0; right: 0; top: 0; left: 0;">
+    <flespi-topic ref="felspiModal" @topic="(topic) => { addSubscriber(); subscribers[subscribers.length - 1].topic = topic }"/>
     <q-modal @show="showSettingsModalHandler" v-model='settingsModalModel'>
       <q-modal-layout>
          <q-toolbar slot="header" color='dark'>
@@ -8,7 +9,7 @@
             Connection settings
           </q-toolbar-title>
         </q-toolbar>
-        <div style="margin: 20px; height: 50vh; width: 50vw">
+        <div style="margin: 20px;" :style="{ height: $q.platform.is.mobile ? 'calc(100% - 100px)' : '50vh', width: $q.platform.is.mobile ? 'calc(100% - 40px)' : '50vw'}">
           <q-input color="dark"  v-model="currentSettings.clientId" float-label="Client ID" :error="!currentSettings.clientId" :after="[{icon: 'mdi-refresh', handler () { currentSettings.clientId = `mqtt-client-${Math.random().toString(16).substr(2, 8)}` }}]"/>
           <q-input color="dark"  v-model="currentSettings.host" float-label="Host" :error="!currentSettings.host"/>
           <q-input color="dark"  v-model="currentSettings.keepalive" type="number" float-label="Keep alive"/>
@@ -83,189 +84,81 @@
     </q-modal>
     <q-toolbar color="dark">
       <q-btn v-if="activeClient" flat dense icon="keyboard_arrow_left" @click="clearActiveClient"/>
-      <q-toolbar-title>{{activeClient ? `MQTT Client: ${activeClient.config.clientId}` : 'MQTT Clients'}}</q-toolbar-title>
+      <q-toolbar-title>{{activeClient ? `${activeClient.config.clientId}` : 'MQTT Clients'}}</q-toolbar-title>
       <q-btn v-if="!activeClient" @click.native="addClientHandler" icon="mdi-plus">
-        <q-tooltip>Add new client</q-tooltip>
+        Client
       </q-btn>
-      <q-btn v-if="activeClient" @click.native="addPublisher" icon="mdi-plus">
-        Publisher
+      <q-btn v-if="activeClient" @click.native="addPublisher" icon="mdi-publish">
+        <span v-if="$q.platform.is.desktop">Publisher</span>
         <q-tooltip>Add new publisher</q-tooltip>
       </q-btn>
-      <q-btn v-if="activeClient" @click.native="addSubscriber" icon="mdi-plus">
-        Subscriber
+      <q-btn v-if="activeClient" @click.native="addSubscriber" icon="mdi-arrow-down-bold">
+        <span v-if="$q.platform.is.desktop">Subscriber</span>
         <q-tooltip>Add new subscriber</q-tooltip>
+      </q-btn>
+      <q-btn v-if="activeClient && activeClient.config.host.indexOf('flespi') !== -1" @click.native="$refs.felspiModal.open()" icon="mdi-star-outline">
+        <span v-if="$q.platform.is.desktop">Flespi subscriber</span>
+        <q-tooltip>Add new flespi subscriber</q-tooltip>
       </q-btn>
     </q-toolbar>
     <div v-if="!activeClient">
-      <div v-if="clients.length" class="mqtt-clients" style="display: flex; padding: 20px 20px;">
-        <q-card inline class="q-mr-md q-mb-md cursor-pointer" style="width: 300px;" v-for="(client, index) in clients" @click.native="setActiveClient(index)" :key="index" :class="{'bg-red-2': !statuses[index], 'bg-green-2': statuses[index]}">
-          <q-card-title>
-            {{client.config.clientId.length > 29 ? `${client.config.clientId.slice(0, 29)}...` : client.config.clientId}}
-            <q-tooltip>{{client.config.clientId}}</q-tooltip>
-          </q-card-title>
-          <q-card-main class="ellipsis">
-            <span>
-              {{client.config.host}}
-              <q-tooltip>{{client.config.host}}</q-tooltip>
-            </span>
-            </q-card-main>
-          <q-card-separator />
-          <q-card-actions align="end">
-            <q-btn icon="mdi-settings" @click.stop="editClientHandler(index)"/>
-            <q-btn icon="mdi-delete" @click.stop="deleteClientHandler(index)"/>
-          </q-card-actions>
-        </q-card>
+      <div v-if="clients.length" class="mqtt-clients row">
+        <div class="q-pt-md q-px-md cursor-pointer col-xl-3 col-md-4 col-sm-6 col-xs-12" v-for="(client, index) in clients" :key="index">
+          <q-card :class="{'bg-red-2': !statuses[index], 'bg-green-2': statuses[index]}" @click.native="setActiveClient(index)">
+            <q-card-title>
+              <div class="ellipsis">{{client.config.clientId}}</div>
+              <q-tooltip>{{client.config.clientId}}</q-tooltip>
+            </q-card-title>
+            <q-card-main class="ellipsis">
+              <span>
+                {{client.config.host}}
+                <q-tooltip>{{client.config.host}}</q-tooltip>
+              </span>
+              </q-card-main>
+            <q-card-separator />
+            <q-card-actions align="end">
+              <q-btn icon="mdi-settings" @click.stop="editClientHandler(index)"/>
+              <q-btn icon="mdi-delete" @click.stop="deleteClientHandler(index)"/>
+            </q-card-actions>
+          </q-card>
+        </div>
       </div>
       <div v-else class="text-center q-mt-lg text-dark text-weight-bold" style="font-size: 2.5rem;">No clients</div>
     </div>
-    <div class="no-wrap row" style="height: calc(100% - 50px); width: 100%; overflow: auto;" v-else>
-      <div class="mqtt-client__publisher col-xl-3 col-md-6 col-sm-12 col-xs-12" v-for="(publisher, index) in publishers" :key="`publ${index}`">
-        <q-card class="q-ma-sm" style="border: 2px solid indigo;">
-          <q-card-main class="q-pb-none" style="position: relative;">
-            <q-icon class="cursor-pointer" size="1rem" name="mdi-close" @click.native="removePublisher(index)" style="position: absolute; top: 5px; right: 5px;"/>
-            <div>
-              <q-input color="dark" v-model="publisher.topic" float-label="Topic" :error="!publisher.topic"/>
-              <q-input color="dark" type="textarea" :max-height="300" v-model="publisher.payload" float-label="Message" :error="!publisher.payload"/>
-              <q-collapsible class="q-mt-sm q-mb-sm bg-grey-2" label="Options">
-                <div>
-                  <div class="q-mb-sm">QoS</div>
-                  <div>
-                    <q-radio class="q-mr-sm" color="dark" v-model="publisher.options.qos" :val="0" left-label label="0" />
-                    <q-radio class="q-mr-sm" color="dark" v-model="publisher.options.qos" :val="1" left-label label="1" />
-                    <q-radio class="q-mr-sm" color="dark" v-model="publisher.options.qos" :val="2" left-label label="2" />
-                  </div>
-                </div>
-                <q-checkbox style="display: flex;" color="dark" class="q-mt-sm q-mb-sm" v-model="publisher.options.retain" label="Retain"/>
-                <q-checkbox style="display: flex;" color="dark" class="q-mt-sm q-mb-sm" v-model="publisher.options.dup" label="Duplicate flag"/>
-                <q-collapsible v-if="activeClient.config.protocolVersion === 5" class="q-mt-sm q-mb-sm bg-grey-4" label="Properties">
-                  <q-checkbox color="dark" class="q-mt-sm q-mb-sm" v-model="publisher.options.properties.payloadFormatIndicator" label="Payload format indicator"/>
-                  <q-input color="dark" type="number" v-model="publisher.options.properties.messageExpiryInterval" float-label="Message expiry interval"/>
-                  <q-input color="dark" type="number" v-model="publisher.options.properties.topicAlias" float-label="Topic alias"/>
-                  <q-input color="dark" v-model="publisher.options.properties.responseTopic" float-label="Response topic"/>
-                  <q-input color="dark" type="textarea" :max-height="50" v-model="publisher.options.properties.correlationData" float-label="Correlation data"/>
-                  <div>
-                    <div class="q-mt-md">User Properties</div>
-                    <div>
-                      <q-list v-if="publisher.options.properties.userProperties">
-                        <q-item v-for="(value, name) in publisher.options.properties.userProperties" :key="`${name}: ${value}`">
-                          <q-icon class="q-mr-sm cursor-pointer" size='1rem' @click.native="removePublishUserProperty(index, name)" name="mdi-close-circle"/>
-                          <span>{{`${name}: ${value}`}}</span>
-                        </q-item>
-                      </q-list>
-                      <q-input color="dark" v-model="publishUserProperty.name" float-label="User property name"/>
-                      <q-input color="dark" v-model="publishUserProperty.value" float-label="User property value"/>
-                      <q-btn style="width: 100%" class="q-mt-sm" color="dark" @click="addPublishUserProperty(index)">Add</q-btn>
-                    </div>
-                  </div>
-                  <q-input color="dark" type="number" v-model="publisher.options.properties.subscriptionIdentifier" float-label="Subscription identifier"/>
-                  <q-input color="dark" v-model="publisher.options.properties.contentType" float-label="Content type"/>
-                </q-collapsible>
-              </q-collapsible>
-            </div>
-          </q-card-main>
-          <q-card-actions>
-            <q-item style="width: 100%;" dense class="q-card cursor-pointer" highlight @click.native="publishMessageHandler(publisher)">
-              <q-item-main>
-                <q-item-tile style="font-size: 0.9rem;" class="uppercase text-bold" label>Publish message</q-item-tile>
-                <q-item-tile style="margin-top: 0; font-size: 0.75rem" class="ellipsis" sublabel>{{publisher.topic}}</q-item-tile>
-              </q-item-main>
-              <q-item-side right icon="mdi-send"/>
-            </q-item>
-          </q-card-actions>
-        </q-card>
-      </div>
-      <div class="mqtt-client__subscriber col-xl-3 col-md-6 col-sm-12 col-xs-12" v-for="(subscriber, index) in subscribers"  :key="`subs${index}`">
-        <q-card class="q-ma-sm" v-if="!subscribersStatuses[index]" style="border: 2px solid orange;">
-          <q-card-main style="position: relative;" class="q-pb-none">
-            <q-icon class="cursor-pointer" size="1rem" name="mdi-close" @click.native="removeSubscriber(index)" style="position: absolute; top: 5px; right: 5px;"/>
-            <div>
-              <q-input :disable="subscribersStatuses[index]" color="dark" v-model="subscriber.topic" float-label="Topic" :error="!subscriber.topic"/>
-              <div v-if="subscriber.topic.indexOf('$share') === 0" style="color: red; font-size: 0.6rem; margin-top: 2px;">You may not receive messages by this topic</div>
-              <q-collapsible class="q-mt-sm q-mb-sm bg-grey-2" label="Options">
-                <q-input :disable="subscribersStatuses[index]" type="number" color="dark" :min="0" :max="2" :step="1" v-model="subscriber.options.qos" float-label="QoS" :error="typeof subscriber.options.qos === 'number' && (subscriber.options.qos < 0 || subscriber.options.qos > 2)"/>
-                <q-checkbox :disable="subscribersStatuses[index]" v-if="activeClient.config.protocolVersion === 5" style="display: flex;" color="dark" class="q-mt-sm q-mb-sm" v-model="subscriber.options.nl" label="No local"/>
-                <q-checkbox :disable="subscribersStatuses[index]" v-if="activeClient.config.protocolVersion === 5" style="display: flex;" color="dark" class="q-mt-sm q-mb-sm" v-model="subscriber.options.rap" label="Retain as Published"/>
-                <div v-if="activeClient.config.protocolVersion === 5">
-                  <div class="q-mb-sm">Retain handling</div>
-                  <div>
-                    <q-radio :disable="subscribersStatuses[index]" class="q-mr-sm" color="dark" v-model="subscriber.options.rh" :val="0" left-label label="0" />
-                    <q-radio :disable="subscribersStatuses[index]" class="q-mr-sm" color="dark" v-model="subscriber.options.rh" :val="1" left-label label="1" />
-                    <q-radio :disable="subscribersStatuses[index]" class="q-mr-sm" color="dark" v-model="subscriber.options.rh" :val="2" left-label label="2" />
-                  </div>
-                </div>
-                <q-collapsible v-if="activeClient.config.protocolVersion === 5" class="q-mt-sm q-mb-sm bg-grey-4" label="Properties">
-                  <q-input :disable="subscribersStatuses[index]" color="dark" type="number" v-model="subscriber.options.properties.subscriptionIdentifier" float-label="Subscription identifier"/>
-                  <div v-if="!subscribersStatuses[index] || subscriber.options.properties.userProperties">
-                    <div class="q-mt-md">User Properties</div>
-                    <div>
-                      <q-list v-if="subscriber.options.properties.userProperties">
-                        <q-item v-for="(value, name) in subscriber.options.properties.userProperties" :key="`${name}: ${value}`">
-                          <q-icon v-if="!subscribersStatuses[index]" class="q-mr-sm cursor-pointer" size='1rem' @click.native="removeSubscriberUserProperty(index, name)" name="mdi-close-circle"/>
-                          <span>{{`${name}: ${value}`}}</span>
-                        </q-item>
-                      </q-list>
-                      <q-input v-if="!subscribersStatuses[index]" color="dark" v-model="subscriberUserProperty.name" float-label="User property name"/>
-                      <q-input v-if="!subscribersStatuses[index]" color="dark" v-model="subscriberUserProperty.value" float-label="User property value"/>
-                      <q-btn v-if="!subscribersStatuses[index]" style="width: 100%" class="q-mt-sm" color="dark" @click="addSubscriberhUserProperty(index)">Add</q-btn>
-                    </div>
-                  </div>
-                </q-collapsible>
-              </q-collapsible>
-            </div>
-          </q-card-main>
-          <q-card-actions>
-            <q-item style="width: 100%;" dense class="q-card cursor-pointer" highlight @click.native="subscribeMessageHandler(index, subscriber)">
-              <q-item-side icon="mdi-play"/>
-              <q-item-main>
-                <q-item-tile style="font-size: 0.9rem;" class="uppercase text-bold" label>Subscribe</q-item-tile>
-                <q-item-tile style="margin-top: 0; font-size: 0.75rem" class="ellipsis" sublabel>{{subscriber.topic}}</q-item-tile>
-              </q-item-main>
-            </q-item>
-          </q-card-actions>
-        </q-card>
-        <div v-else class="q-ma-sm q-card" style="padding-right: 5px; position: relative; border: 2px solid orange; height: calc(100% - 32px);">
-          <q-icon class="cursor-pointer" size="1rem" name="mdi-close" @click.native="removeSubscriber(index)" style="position: absolute; top: 5px; right: 5px;"/>
-          <q-item style="width: calc(100% - 30px);" dense class="q-card cursor-pointer q-mt-sm q-ml-sm q-mb-sm q-mr-lg" highlight @click.native="unsubscribeMessageHandler(index, subscriber)">
-            <q-tooltip>Unsubscribe from {{subscriber.topic}}</q-tooltip>
-            <q-item-side icon="mdi-stop"/>
-            <q-item-main>
-              <q-item-tile style="font-size: 0.9rem;" class="uppercase text-bold" label>Unsubscribe</q-item-tile>
-              <q-item-tile style="margin-top: 0; font-size: 0.75rem" class="ellipsis" sublabel>{{subscriber.topic}}</q-item-tile>
-            </q-item-main>
-          </q-item>
-          <virtual-list v-if="subscribersMessages[index].length" :size="110" :remain="15" style="position: absolute; top: 52px; bottom: 0; right: 0; left: 0; height: auto;">
-            <q-card v-for="(message, msgIndex) in subscribersMessages[index]" :key="`subMsg${index}${msgIndex}`">
-              <div class="message__title q-pt-sm q-pl-sm q-pr-sm" style="height: 50px; position: relative;">
-                <div :title="message.topic" class="message__topic ellipsis" style="font-size: 0.8rem; font-weight: bold;">
-                  {{message.topic}}
-                </div>
-                <div class="message__sys text-grey-7" style="font-size: 0.8rem;">
-                  {{`qos: ${message.qos}, dup: ${message.dup ? '+' : '-'}`}}
-                </div>
-              </div>
-              <div class="q-pa-sm q-mr-xs q-ml-xs bg-grey-2" style="height: calc(100% - 20px); word-break: break-all; font-size: 0.85rem;">{{message.payload.toString()}}</div>
-              <div class="q-pa-sm text-grey-7" style="word-break: break-all; font-size: 0.7rem;">{{JSON.stringify(message.properties)}}</div>
-            </q-card>
-          </virtual-list>
-          <div v-else style="text-align: center; margin-top: 10px; font-size: 1.3rem; color: #333;">No messages</div>
-        </div>
-      </div>
+    <div ref="wrapper" class="no-wrap row" style="height: calc(100% - 50px); width: 100%; overflow: auto;" v-else>
+      <template v-for="(entity, index) in entities">
+        <publisher
+          v-if="entity.type === 'publisher'"
+          :key="`publ${index}`"
+          :value="publishers[entity.index]"
+          @input="(val) => { inputPublisher(entity.index, val) }"
+          :version="activeClient.config.protocolVersion"
+          @remove="removePublisher(entity.index)"
+          @publish="publishMessageHandler(publishers[entity.index])"
+        />
+        <subscriber
+          v-else-if="entity.type === 'subscriber'"
+          :key="`subs${index}`"
+          :value="subscribers[entity.index]"
+          @input="(val) => { inputSubscriber(entity.index, val) }"
+          :status="subscribersStatuses[entity.index]"
+          :messages="subscribersMessages[entity.index]"
+          :version="activeClient.config.protocolVersion"
+          @remove="removeSubscriber(entity.index)"
+          @subscribe="subscribeMessageHandler(entity.index, subscribers[entity.index])"
+          @unsubscribe="unsubscribeMessageHandler(entity.index, subscribers[entity.index])"
+        />
+        <unresolved
+          v-else-if="notResolvedMessages.length && entity.type === 'unresolved'"
+          :key="`unresolved${index}`"
+          :messages="notResolvedMessages"
+        />
+      </template>
     </div>
   </div>
 </template>
 
 <style lang="stylus">
-  .f-btn
-    min-height 36px
-    padding 8px 16px 4px
-    font-size 0.9rem
-    font-weight 500
-    width 384px
-    text-align center
-    text-transform uppercase
-    display block
-    line-height 24px
-
 </style>
 
 <script>
@@ -273,7 +166,13 @@ import mqtt from '../plugins/async-mqtt.js'
 import VirtualList from 'vue-virtual-scroll-list'
 import merge from 'lodash/merge'
 import cloneDeep from 'lodash/cloneDeep'
+import debounce from 'lodash/debounce'
+import { animate, LocalStorage } from 'quasar'
 import Vue from 'vue'
+import FlespiTopic from './FlespiTopicConfigurator'
+import Subscriber from './Subscriber'
+import Publisher from './Publisher'
+import Unresolved from './Unresolved'
 
 const
   defaultSettings = {
@@ -313,6 +212,7 @@ const
   },
   defaultSubscriber = {
     topic: '#',
+    mode: 0,
     options: {
       qos: 0,
       nl: null,
@@ -358,26 +258,17 @@ export default {
       clients: [],
       statuses: [],
       activeClient: null,
+      entities: [],
       publishers: [],
       subscribers: [],
       subscribersStatuses: [false],
-      subscribersTopics: [],
       subscribersMessages: [[]],
       subscribersMessagesBuffer: [[]],
-      subscribeLoadingButton: [false],
       connectUserProperty: {
         value: '',
         name: ''
       },
       willConnectUserProperty: {
-        value: '',
-        name: ''
-      },
-      publishUserProperty: {
-        value: '',
-        name: ''
-      },
-      subscriberUserProperty: {
         value: '',
         name: ''
       },
@@ -463,7 +354,28 @@ export default {
         return result
       }, {})
     },
+    resolveSubscription (packet, subscription) {
+      /* check topic */
+      if (this.resolveTopics(packet.topic, subscription.topic)) {
+        /* check to subscription id */
+        if (
+          packet.properties && packet.properties.subscriptionIdentifier &&
+          subscription.options && subscription.options.properties && subscription.options.properties.subscriptionIdentifier &&
+          packet.properties.subscriptionIdentifier !== subscription.options.properties.subscriptionIdentifier
+        ) {
+          return false
+        }
+        return true
+      }
+      return false
+    },
+    getSharedTopicFilter (topic) {
+      return topic.replace(/^\$share\/[^/]+\//, '')
+    },
     resolveTopics (topic, subTopic) {
+      if (subTopic.indexOf('$share') === 0) {
+        subTopic = this.getSharedTopicFilter(subTopic)
+      }
       let subTopicPath = subTopic.split('/'),
         topicPath = topic.split('/')
 
@@ -478,7 +390,22 @@ export default {
         return false
       }
     },
-    errorHandler (e) { console.log(e) },
+    errorHandler (e) {
+      this.$q.notify({
+        message: e.message,
+        color: 'negative',
+        icon: 'mdi-alert-outline',
+        timeout: 2000
+      })
+    },
+    saveClientsToLocalStorage: debounce((clients) => {
+      LocalStorage.set('clients', clients.map(client => ({
+        config: client.config,
+        publishers: client.publishers,
+        subscribers: client.subscribers,
+        entities: client.entities
+      })))
+    }, 500, { trailing: true }),
     async createClient (index) {
       let config = this.currentSettings,
         key = typeof index === 'number' ? index : this.clients.length,
@@ -496,27 +423,31 @@ export default {
       }
       Vue.set(this.clients[key], 'config', config)
       this.clients[key].subscribers = [cloneDeep(defaultSubscriber)]
+      this.entities.push({type: 'subscriber', index: 0})
       this.clients[key].publishers = [cloneDeep(defaultPublisher)]
+      this.entities.push({type: 'publisher', index: 0})
+      this.clients[key].entities = this.entities
+      this.saveClientsToLocalStorage(this.clients)
       let client = mqtt.connect(config.host, this.clearObject(config))
       client.on('connect', () => {
         Vue.set(this.statuses, key, true)
         client.on('message', (topic, message, packet) => {
           let resolveFlag = false
-          this.subscribersTopics.forEach((subTopic, index, topics) => {
-            let isResolved = this.resolveTopics(topic, subTopic)
+          this.subscribers.forEach((sub, index, subs) => {
+            let isResolved = this.resolveSubscription(packet, sub)
             resolveFlag = resolveFlag || isResolved
-            if (topics.length - 1 === index) {
-              console.log(`finite resolve ${resolveFlag}`)
-              console.log(JSON.stringify(packet))
-            }
             if (isResolved) {
               if (!this.subscribersMessagesBuffer[index]) {
                 this.subscribersMessagesBuffer[index] = []
               }
               this.subscribersMessagesBuffer[index].push(packet)
             }
-            if (topics.length - 1 === index && !resolveFlag) {
+            if (subs.length - 1 === index && !resolveFlag) {
               this.notResolvedMessages.push(packet)
+              if (this.notResolvedMessages.length === 1) {
+                this.entities.push({type: 'unresolved'})
+                this.saveClientsToLocalStorage(this.clients)
+              }
             }
           })
         })
@@ -549,6 +480,7 @@ export default {
           this.statuses[key] = false
         }
         this.clients.splice(key, 1)
+        this.saveClientsToLocalStorage(this.clients)
       })
         .catch(() => {})
     },
@@ -558,6 +490,7 @@ export default {
         this.errorHandler(new Error('Client not connected'))
         return false
       }
+      this.entities = client.entities
       this.subscribers = client.subscribers
       this.publishers = client.publishers
       this.activeClient = client
@@ -570,22 +503,38 @@ export default {
         }
       })
       this.activeClient = null
+      this.entities = []
       this.subscribers = []
       this.publishers = []
     },
     /* client logic end */
     /* pub/sub logic start */
+    findEntity (obj) {
+      return this.entities.findIndex((entity) => {
+        return obj.type === entity.type && obj.index === entity.index
+      })
+    },
     addPublisher () {
       this.publishers.push(cloneDeep(defaultPublisher))
+      this.entities.push({type: 'publisher', index: this.publishers.length - 1})
+      this.saveClientsToLocalStorage(this.clients)
     },
     addSubscriber () {
       this.subscribers.push(cloneDeep(defaultSubscriber))
       this.subscribersMessages.push([])
       this.subscribersStatuses.push(false)
-      this.subscribeLoadingButton.push(false)
+      this.entities.push({type: 'subscriber', index: this.subscribers.length - 1})
+      this.saveClientsToLocalStorage(this.clients)
     },
     removePublisher (key) {
       this.publishers.splice(key, 1)
+      this.entities.splice(this.findEntity({type: 'publisher', index: key}), 1)
+      this.entities.forEach(entity => {
+        if (entity.type === 'publisher' && entity.index > key) {
+          entity.index--
+        }
+      })
+      this.saveClientsToLocalStorage(this.clients)
     },
     async removeSubscriber (key) {
       let subscriber = this.subscribers[key],
@@ -596,43 +545,24 @@ export default {
       this.subscribers.splice(key, 1)
       this.subscribersStatuses.splice(key, 1)
       this.subscribersMessages.splice(key, 1)
-      this.subscribeLoadingButton.splice(key, 1)
-      this.subscribersTopics = this.subscribers.map(sub => sub.topic)
-      if (!this.subscribersTopics) {
+      if (!this.subscribers) {
         clearInterval(this.renderInterval)
       }
+      this.entities.splice(this.findEntity({type: 'subscriber', index: key}), 1)
+      this.entities.forEach(entity => {
+        if (entity.type === 'subscriber' && entity.index > key) {
+          entity.index--
+        }
+      })
+      this.saveClientsToLocalStorage(this.clients)
     },
-    addPublishUserProperty (index) {
-      if (!this.publishers[index].options.properties.userProperties) {
-        this.publishers[index].options.properties.userProperties = {}
-      }
-      this.publishers[index].options.properties.userProperties[this.publishUserProperty.name] = this.publishUserProperty.value
-      this.publishUserProperty = {
-        value: '',
-        name: ''
-      }
+    inputSubscriber (index, val) {
+      this.subscribers[index] = val
+      this.saveClientsToLocalStorage(this.clients)
     },
-    removePublishUserProperty (index, name) {
-      Vue.delete(this.publishers[index].options.properties.userProperties, name)
-      if (!Object.keys(this.publishers[index].options.properties.userProperties).length) {
-        this.publishers[index].options.properties.userProperties = null
-      }
-    },
-    addSubscriberUserProperty (index) {
-      if (!this.subscribers[index].options.properties.userProperties) {
-        this.subscribers[index].options.properties.userProperties = {}
-      }
-      this.subscribers[index].options.properties.userProperties[this.subscriberUserProperty.name] = this.subscriberUserProperty.value
-      this.subscriberUserProperty = {
-        value: '',
-        name: ''
-      }
-    },
-    removeSubscriberUserProperty (index, name) {
-      Vue.delete(this.subscribers[index].options.properties.userProperties, name)
-      if (!Object.keys(this.subscribers[index].options.properties.userProperties).length) {
-        this.subscribers[index].options.properties.userProperties = null
-      }
+    inputPublisher (index, val) {
+      this.publishers[index] = val
+      this.saveClientsToLocalStorage(this.clients)
     },
     async publishMessageHandler (settings) {
       settings = this.clearObject(settings)
@@ -641,27 +571,41 @@ export default {
       } catch (e) { this.errorHandler(e) }
     },
     async subscribeMessageHandler (key, settings) {
+      if (
+        this.subscribers.reduce((res, sub, index) => {
+          if (this.subscribersStatuses[index]) {
+            res.push(sub.topic)
+          }
+          return res
+        }, [])
+          .filter(topic => topic === settings.topic || settings.topic === this.getSharedTopicFilter(topic) || topic === this.getSharedTopicFilter(settings.topic)).length
+      ) {
+        this.errorHandler(new Error('You have another subscription with same topic'))
+        return false
+      }
+      if (this.subscribersMessages && this.subscribersMessages.length) {
+        Vue.set(this.subscribersMessages, key, [])
+      }
       if (!this.renderInterval) {
         this.renderInterval = setInterval(() => {
           this.subscribersMessagesBuffer.forEach((messages, index) => {
-            if (this.limitingEnabled) {
-              this.subscribersMessages[index].splice(0, messages.length)
+            let savedMessages = this.subscribersMessages[index]
+            if (savedMessages) {
+              if (this.limitingEnabled) {
+                savedMessages.splice(0, messages.length)
+              }
+              savedMessages.splice(savedMessages.length, 0, ...messages)
             }
-            this.subscribersMessages[index].splice(this.subscribersMessages[index].length, 0, ...messages)
           })
           this.subscribersMessagesBuffer = []
         }, 500)
       }
       settings = this.clearObject(settings)
       try {
-        this.subscribeLoadingButton[key] = true
         Vue.set(this.subscribersStatuses, key, true)
-        this.subscribersTopics = this.subscribers.map(sub => sub.topic)
         await this.activeClient.client.subscribe(settings.topic, settings.options)
-        this.subscribeLoadingButton[key] = false
       } catch (e) {
         Vue.set(this.subscribersStatuses, key, false)
-        this.subscribersTopics = this.subscribers.map(sub => sub.topic)
         this.errorHandler(e)
       }
     },
@@ -669,13 +613,45 @@ export default {
       try {
         await this.activeClient.client.unsubscribe(settings.topic)
         Vue.set(this.subscribersStatuses, key, false)
-        Vue.set(this.subscribersMessages, key, [])
       } catch (e) { this.errorHandler(e) }
-    }
+    },
     /* pub/sub logic end */
+    swipeHandler (data) {
+      let el = this.$refs.wrapper,
+        elementOffsetWidth = el.offsetWidth,
+        { direction } = data
+      if (direction === 'left') {
+        animate.start({
+          from: el.scrollLeft,
+          to: el.scrollLeft + elementOffsetWidth,
+          duration: 200,
+          apply (pos) { el.scrollLeft = pos }
+        })
+      } else if (direction === 'right') {
+        animate.start({
+          from: el.scrollLeft,
+          to: el.scrollLeft - elementOffsetWidth,
+          duration: 200,
+          apply (pos) { el.scrollLeft = pos }
+        })
+      }
+    }
+  },
+  created () {
+    let savedClients = LocalStorage.get.item('clients')
+    if (savedClients) {
+      savedClients.forEach(client => {
+        this.currentSettings = client.config
+        this.createClient()
+        let currentClient = this.clients[this.clients.length - 1]
+        currentClient.publishers = client.publishers
+        currentClient.subscribers = client.subscribers
+        currentClient.entities = client.entities
+      })
+    }
   },
   components: {
-    VirtualList
+    VirtualList, FlespiTopic, Subscriber, Publisher, Unresolved
   }
 }
 </script>

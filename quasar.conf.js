@@ -68,17 +68,19 @@ module.exports = function (ctx) {
         'QCardActions',
         'QCollapsible',
         'QTooltip',
-        'QRadio'
+        'QBtnToggle'
       ],
       directives: [
         'Ripple',
 
-        'CloseOverlay'
+        'CloseOverlay',
+        'TouchSwipe'
       ],
       // Quasar plugins
       plugins: [
         'Notify',
-        'Dialog'
+        'Dialog',
+        'LocalStorage'
       ]
       // iconSet: ctx.theme.mat ? 'material-icons' : 'ionicons'
       // i18n: 'de' // Quasar language
@@ -101,8 +103,18 @@ module.exports = function (ctx) {
         theme_color: '#027be3',
         icons: [
           {
-            'src': 'statics/icons/icon-128x128.png',
-            'sizes': '128x128',
+            'src': 'statics/icons/apple-icon-120x120.png',
+            'sizes': '120x120',
+            'type': 'image/png'
+          },
+          {
+            'src': 'statics/icons/ms-icon-144x144.png',
+            'sizes': '144x144',
+            'type': 'image/png'
+          },
+          {
+            'src': 'statics/icons/apple-icon-152x152.png',
+            'sizes': '152x152',
             'type': 'image/png'
           },
           {
@@ -111,18 +123,8 @@ module.exports = function (ctx) {
             'type': 'image/png'
           },
           {
-            'src': 'statics/icons/icon-256x256.png',
-            'sizes': '256x256',
-            'type': 'image/png'
-          },
-          {
-            'src': 'statics/icons/icon-384x384.png',
-            'sizes': '384x384',
-            'type': 'image/png'
-          },
-          {
-            'src': 'statics/icons/icon-512x512.png',
-            'sizes': '512x512',
+            'src': 'statics/icons/ms-icon-310x310.png',
+            'sizes': '310x310',
             'type': 'image/png'
           }
         ]
