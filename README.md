@@ -1,5 +1,5 @@
 # MQTT Board
-
+![Logo](/misc/logo.png?raw=true "MQTT Board logo")
 > A simple application built with [Quasar](http://quasar-framework.org). Allows playing with your MQTT connections - subscribing to topics and publishing messages to a broker.
 
 ![Screenshot](/misc/screenshot.png?raw=true "MQTT Board")

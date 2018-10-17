@@ -1,6 +1,6 @@
 {
   "name": "mqtt-board",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Client based on MQTT.js and Vue.js",
   "productName": "MQTT Board",
   "author": "Sergei Buntsevich <scarry92@yandex.ru>",
@@ -8,7 +8,7 @@
   "license": "MIT",
   "scripts": {
     "lint": "eslint --ext .js,.vue src",
-    "deploy": "rm -rf dist && quasar build && rm -rf deploy && mkdir deploy && cp -R dist/spa-mat/* misc LICENSE package.json README.md deploy && node_modules/git-directory-deploy/bin/git-directory-deploy.sh -ddeploy -bgh-pages -rhttps://git.gurtam.net/flespi/frontend/mqtt-board.git && rm -rf deploy && git push github gh-pages"
+    "deploy": "rm -rf dist && quasar build -m pwa && rm -rf deploy && mkdir deploy && cp -R dist/pwa-mat/* misc LICENSE package.json README.md deploy && node_modules/git-directory-deploy/bin/git-directory-deploy.sh -ddeploy -bgh-pages -rhttps://git.gurtam.net/flespi/frontend/mqtt-board.git && rm -rf deploy && git push github gh-pages"
   },
   "dependencies": {
     "lodash": "^4.17.11",
