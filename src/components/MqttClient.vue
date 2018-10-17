@@ -1,5 +1,5 @@
 <template>
-  <div v-touch-swipe.horizontal="swipeHandler" style="position: absolute; bottom: 0; right: 0; top: 0; left: 0;">
+  <div ref="wrapper" v-touch-swipe.horizontal="swipeHandler" style="position: absolute; bottom: 0; right: 0; top: 0; left: 0;">
     <flespi-topic ref="felspiModal" @topic="(topic) => { addSubscriber(); subscribers[subscribers.length - 1].topic = topic }"/>
     <q-modal @show="showSettingsModalHandler" v-model='settingsModalModel'>
       <q-modal-layout>
@@ -84,7 +84,11 @@
     </q-modal>
     <q-toolbar color="dark">
       <q-btn v-if="activeClient" flat dense icon="keyboard_arrow_left" @click="clearActiveClient"/>
-      <q-toolbar-title>{{activeClient ? `${activeClient.config.clientId}` : 'MQTT Clients'}}</q-toolbar-title>
+      <q-toolbar-title>
+        <img class="gt-sm" src="statics/mqttboard.png" alt="MQTT Board" style="height: 30px">
+        {{activeClient ? `${activeClient.config.clientId}` : 'MQTT Clients'}}
+        <sup style="position: relative; font-size: .9rem; padding-left: 4px">{{version}}</sup>
+      </q-toolbar-title>
       <q-btn v-if="!activeClient" @click.native="addClientHandler" icon="mdi-plus">
         Client
       </q-btn>
@@ -117,13 +121,18 @@
               </q-card-main>
             <q-card-separator />
             <q-card-actions align="end">
+              <q-btn v-if="statuses[index]" icon="mdi-stop" @click.stop="disconnectClientHandler(index)"/>
+              <q-btn v-else icon="mdi-play" @click.stop="connectClientHandler(index)"/>
               <q-btn icon="mdi-settings" @click.stop="editClientHandler(index)"/>
               <q-btn icon="mdi-delete" @click.stop="deleteClientHandler(index)"/>
             </q-card-actions>
           </q-card>
         </div>
       </div>
-      <div v-else class="text-center q-mt-lg text-dark text-weight-bold" style="font-size: 2.5rem;">No clients</div>
+      <div v-else class="text-center q-mt-lg text-dark text-weight-bold" style="font-size: 2.5rem;">
+        <div>No clients</div>
+        <q-btn v-if="!activeClient" @click.native="addClientHandler">Create client</q-btn>
+      </div>
     </div>
     <div ref="wrapper" class="no-wrap row" style="height: calc(100% - 50px); width: 100%; overflow: auto;" v-else>
       <template v-for="(entity, index) in entities">
@@ -173,6 +182,7 @@ import FlespiTopic from './FlespiTopicConfigurator'
 import Subscriber from './Subscriber'
 import Publisher from './Publisher'
 import Unresolved from './Unresolved'
+import { version } from '../../package.json'
 
 const
   defaultSettings = {
@@ -253,6 +263,7 @@ export default {
   },
   data () {
     return {
+      version: version,
       currentSettings: cloneDeep(merge(defaultSettings, this.initSettings)),
       prevSettings: null,
       clients: [],
@@ -276,7 +287,8 @@ export default {
       activeClientSettings: null,
       renderInterval: 0,
       messagesLimitCount: 1000,
-      notResolvedMessages: []
+      notResolvedMessages: [],
+      isNeedScroll: false
     }
   },
   computed: {
@@ -391,6 +403,7 @@ export default {
       }
     },
     errorHandler (e) {
+      console.trace()
       this.$q.notify({
         message: e.message,
         color: 'negative',
@@ -406,41 +419,50 @@ export default {
         entities: client.entities
       })))
     }, 500, { trailing: true }),
-    async createClient (index) {
-      let config = this.currentSettings,
-        key = typeof index === 'number' ? index : this.clients.length,
-        endHandler = () => { Vue.set(this.statuses, key, false) },
+    initClient (key, config) {
+      let // endHandler = () => { Vue.set(this.statuses, key, false) },
         errorHandler = this.errorHandler
-      if (!this.clients[key]) {
-        this.clients[key] = {}
-        this.statuses[key] = false
-      } else {
-        let clientObj = this.clients[key]
-        if (clientObj.client) {
-          await clientObj.client.end(true)
-          this.statuses[key] = false
-        }
-      }
-      Vue.set(this.clients[key], 'config', config)
-      this.clients[key].subscribers = [cloneDeep(defaultSubscriber)]
-      this.entities.push({type: 'subscriber', index: 0})
-      this.clients[key].publishers = [cloneDeep(defaultPublisher)]
-      this.entities.push({type: 'publisher', index: 0})
-      this.clients[key].entities = this.entities
-      this.saveClientsToLocalStorage(this.clients)
+
       let client = mqtt.connect(config.host, this.clearObject(config))
+      /* resubscribe to exists topics */
+      client.once('connect', () => {
+        let currentStatuses = this.clients[key].subscribersStatuses
+        if (currentStatuses.includes(true)) {
+          currentStatuses.forEach((status, index) => {
+            if (status) {
+              let messages = this.clients[key].messages
+              messages.forEach((arr, index) => {
+                messages[index].splice(0, messages[index].length)
+              })
+              this.subscribe(client, index, this.clients[key].subscribers[index])
+            }
+          })
+        }
+      })
       client.on('connect', () => {
         Vue.set(this.statuses, key, true)
         client.on('message', (topic, message, packet) => {
-          let resolveFlag = false
-          this.subscribers.forEach((sub, index, subs) => {
+          let resolveFlag = false,
+            clientObj = this.clients[key]
+          clientObj.subscribers.forEach((sub, index, subs) => {
             let isResolved = this.resolveSubscription(packet, sub)
             resolveFlag = resolveFlag || isResolved
             if (isResolved) {
-              if (!this.subscribersMessagesBuffer[index]) {
-                this.subscribersMessagesBuffer[index] = []
+              if (this.activeClient && this.activeClient.id === clientObj.id) {
+                if (!this.subscribersMessagesBuffer[index]) {
+                  this.subscribersMessagesBuffer[index] = []
+                }
+                this.subscribersMessagesBuffer[index].push(packet)
+              } else {
+                if (!clientObj.messages[index]) {
+                  clientObj.messages[index] = []
+                }
+                let count = clientObj.messages.reduce((count, arr) => { return count + arr.length }, 0)
+                if (count > this.messagesLimitCount) {
+                  clientObj.messages[index].splice(0, 1)
+                }
+                clientObj.messages[index].push(packet)
               }
-              this.subscribersMessagesBuffer[index].push(packet)
             }
             if (subs.length - 1 === index && !resolveFlag) {
               this.notResolvedMessages.push(packet)
@@ -453,10 +475,35 @@ export default {
         })
       })
       client.on('error', errorHandler)
-      client.on('close', endHandler)
-      client.on('offline', endHandler)
-      client.on('end', endHandler)
+      client.on('close', () => { console.log('close'); Vue.set(this.statuses, key, false) })
+      client.on('offline', () => { console.log('offline'); Vue.set(this.statuses, key, false) })
+      client.on('end', () => { console.log('end'); Vue.set(this.statuses, key, false) })
       Vue.set(this.clients[key], 'client', client)
+      Vue.set(this.clients[key], 'config', config)
+    },
+    async createClient (index) {
+      let config = this.currentSettings,
+        key = typeof index === 'number' ? index : this.clients.length
+      /* init new client */
+      if (!this.clients[key]) {
+        let client = {}
+        client.id = key
+        client.status = false
+        client.subscribers = [cloneDeep(defaultSubscriber)]
+        client.publishers = [cloneDeep(defaultPublisher)]
+        client.entities = [{type: 'subscriber', index: 0}, {type: 'publisher', index: 0}]
+        client.messages = [[]]
+        client.subscribersStatuses = [false]
+        this.clients[key] = client
+      } else {
+        let clientObj = this.clients[key]
+        if (clientObj.client && this.statuses[key]) {
+          await clientObj.client.end(true)
+          this.statuses[key] = false
+        }
+      }
+      this.saveClientsToLocalStorage(this.clients)
+      this.initClient(key, config)
       this.clearCurrentSettings()
     },
     addClientHandler () {
@@ -466,6 +513,22 @@ export default {
       this.currentSettings = cloneDeep(this.clients[key].config)
       this.activeClientSettings = key
       this.settingsModalModel = true
+    },
+    connectClientHandler (key) {
+      let clientObj = this.clients[key]
+      this.initClient(key, clientObj.config)
+    },
+    async disconnectClientHandler (key) {
+      let clientObj = this.clients[key]
+      clientObj.subscribers.forEach((subscriber, index) => {
+        let status = clientObj.subscribersStatuses[index]
+        if (status) {
+          this.unsubscribeMessageHandler(index, subscriber)
+        }
+      })
+      await clientObj.client.end(true)
+      clientObj.client = null
+      this.statuses[key] = false
     },
     deleteClientHandler (key) {
       let clientObj = this.clients[key]
@@ -478,6 +541,7 @@ export default {
         if (clientObj.client) {
           await clientObj.client.end(true)
           this.statuses[key] = false
+          this.statuses.splice(key, 1)
         }
         this.clients.splice(key, 1)
         this.saveClientsToLocalStorage(this.clients)
@@ -493,19 +557,19 @@ export default {
       this.entities = client.entities
       this.subscribers = client.subscribers
       this.publishers = client.publishers
+      this.subscribersMessages = client.messages
+      this.notResolvedMessages = client.notResolvedMessages
+      this.subscribersStatuses = client.subscribersStatuses
       this.activeClient = client
     },
     clearActiveClient () {
-      this.subscribers.forEach((subscriber, index) => {
-        let status = this.subscribersStatuses[index]
-        if (status) {
-          this.unsubscribeMessageHandler(index, subscriber)
-        }
-      })
       this.activeClient = null
       this.entities = []
       this.subscribers = []
       this.publishers = []
+      this.subscribersMessagesBuffer = []
+      this.notResolvedMessages = []
+      this.subscribersStatuses = []
     },
     /* client logic end */
     /* pub/sub logic start */
@@ -518,6 +582,7 @@ export default {
       this.publishers.push(cloneDeep(defaultPublisher))
       this.entities.push({type: 'publisher', index: this.publishers.length - 1})
       this.saveClientsToLocalStorage(this.clients)
+      this.isNeedScroll = true
     },
     addSubscriber () {
       this.subscribers.push(cloneDeep(defaultSubscriber))
@@ -525,6 +590,7 @@ export default {
       this.subscribersStatuses.push(false)
       this.entities.push({type: 'subscriber', index: this.subscribers.length - 1})
       this.saveClientsToLocalStorage(this.clients)
+      this.isNeedScroll = true
     },
     removePublisher (key) {
       this.publishers.splice(key, 1)
@@ -568,6 +634,12 @@ export default {
       settings = this.clearObject(settings)
       try {
         await this.activeClient.client.publish(settings.topic, settings.payload, settings.options)
+        this.$q.notify({
+          message: `Published successfuly in topic ${settings.topic}`,
+          type: 'positive',
+          color: 'positive',
+          timeout: 700
+        })
       } catch (e) { this.errorHandler(e) }
     },
     async subscribeMessageHandler (key, settings) {
@@ -600,10 +672,13 @@ export default {
           this.subscribersMessagesBuffer = []
         }, 500)
       }
+      await this.subscribe(this.activeClient.client, key, settings)
+    },
+    async subscribe (client, key, settings) {
       settings = this.clearObject(settings)
       try {
         Vue.set(this.subscribersStatuses, key, true)
-        await this.activeClient.client.subscribe(settings.topic, settings.options)
+        await client.subscribe(settings.topic, settings.options)
       } catch (e) {
         Vue.set(this.subscribersStatuses, key, false)
         this.errorHandler(e)
@@ -647,11 +722,39 @@ export default {
         currentClient.publishers = client.publishers
         currentClient.subscribers = client.subscribers
         currentClient.entities = client.entities
+        currentClient.messages = new Array(client.subscribers.length)
+        currentClient.messages.fill([])
+        currentClient.subscribersStatuses = new Array(client.subscribers.length)
+        currentClient.subscribersStatuses.fill(false)
+      })
+    }
+    if (window) {
+      window.addEventListener('beforeunload', () => {
+        this.clients.forEach(async (clientObj) => {
+          await clientObj.client.end(true)
+        })
       })
     }
   },
+  destroyed () {
+    this.clients.forEach(async (clientObj) => {
+      await clientObj.client.end(true)
+    })
+  },
   components: {
     VirtualList, FlespiTopic, Subscriber, Publisher, Unresolved
+  },
+  updated () {
+    if (this.isNeedScroll) {
+      let el = this.$refs.wrapper
+      animate.start({
+        from: el.scrollLeft,
+        to: el.scrollWidth,
+        duration: 300,
+        apply (pos) { el.scrollLeft = pos }
+      })
+      this.isNeedScroll = false
+    }
   }
 }
 </script>

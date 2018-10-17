@@ -123,7 +123,7 @@ export default {
         }
       ],
       needAutoScroll: true,
-      isPlayed: null
+      isPlayed: this.status || null
     }
   },
   computed: {
@@ -153,7 +153,6 @@ export default {
       this.isPlayed = !this.isPlayed
     },
     subscribeMessageHandler () {
-      this.isPlayed = true
       this.loadingStatus = true
       this.$emit('subscribe')
     },
@@ -216,6 +215,7 @@ export default {
     status (val) {
       if (val && this.loadingStatus) {
         this.loadingStatus = false
+        this.isPlayed = true
       }
     }
   },

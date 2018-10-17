@@ -1,4 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
-### [0.0.2] - 2018-10-16
+### [1.0.1] - 2018-10-17
+[feature] active multiconnections
+[feature] dissconnect client from clients page
+[feature] status of publish
+[feature] pwa mode added
+[fix] clients statuses
+[fix] disxonnects after reload page
+[fix] init entities in client
+[fix] modify entities in clients
+[fix] make clients in empty clients page
+### [1.0.0] - 2018-10-16
 initial commits

@@ -92,15 +92,17 @@ module.exports = function (ctx) {
     },
     pwa: {
       // workboxPluginMode: 'InjectManifest',
-      // workboxOptions: {},
+      workboxOptions: {
+        skipWaiting: true,
+        clientsClaim: true
+      },
       manifest: {
-        // name: 'Quasar App',
-        // short_name: 'Quasar-PWA',
-        // description: 'Best PWA App in town!',
+        name: 'MQTT Board',
+        short_name: 'MQTT Board',
         display: 'standalone',
-        orientation: 'portrait',
-        background_color: '#ffffff',
-        theme_color: '#027be3',
+        orientation: 'any',
+        background_color: '#333333',
+        theme_color: '#333333',
         icons: [
           {
             'src': 'statics/icons/apple-icon-120x120.png',
