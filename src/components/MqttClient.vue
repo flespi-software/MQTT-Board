@@ -11,7 +11,7 @@
         </q-toolbar>
         <div style="margin: 20px;" :style="{ height: $q.platform.is.mobile ? 'calc(100% - 100px)' : '50vh', width: $q.platform.is.mobile ? 'calc(100% - 40px)' : '50vw'}">
           <q-input color="dark"  v-model="currentSettings.clientId" float-label="Client ID" :error="!currentSettings.clientId" :after="[{icon: 'mdi-refresh', handler () { currentSettings.clientId = `mqtt-client-${Math.random().toString(16).substr(2, 8)}` }}]"/>
-          <q-input color="dark"  v-model="currentSettings.host" float-label="Host" :error="!currentSettings.host"/>
+          <q-input color="dark"  v-model="currentSettings.host" float-label="Host" :error="!currentSettings.host || currentSettings.host.indexOf('ws:') === 0" :after="[{icon: 'mdi-alert-outline', handler: hostErrorHandler, error: true}]"/>
           <q-input color="dark"  v-model="currentSettings.keepalive" type="number" float-label="Keep alive"/>
           <q-select color="dark" v-model="currentSettings.protocolVersion" :options="[{label: '3.1.1', value: 4}, {label: '5.0', value: 5}]" float-label="Version of MQTT"/>
           <q-checkbox color="dark" class="q-mt-sm q-mb-sm" v-model="currentSettings.clean" :label="currentSettings.protocolVersion === 5 ? 'Clean start' : 'Clean session'"/>
@@ -47,7 +47,10 @@
             <div>
               <q-input color="dark" v-model="currentSettings.will.topic" float-label="Will topic"/>
               <q-input color="dark" v-model="currentSettings.will.payload" type="textarea" float-label="Will payload"/>
-              <q-input color="dark" v-model="currentSettings.will.qos" :min="0" :max="2" :step="1" :error="typeof currentSettings.will.qos === 'number' && (currentSettings.will.qos < 0 || currentSettings.will.qos > 2)" type="number" float-label="Will qos"/>
+              <div class="q-my-sm">
+                QoS
+                <q-btn-toggle toggle-color="dark" class="q-ml-sm" size="sm" v-model="currentSettings.will.qos" :options="[{label: '0', value: 0},{label: '1', value: 1},{label: '2', value: 2}]"/>
+              </div>
               <q-checkbox color="dark" class="q-mt-sm q-mb-sm" v-model="currentSettings.will.retain" label="Will retain"/>
               <q-collapsible class="bg-grey-4" label="Will properties" v-if="currentSettings.protocolVersion === 5">
                 <q-input color="dark" v-model="currentSettings.will.properties.willDelayInterval" type="number" float-label="Will delay interval"/>
@@ -78,7 +81,7 @@
           <q-toolbar-title>
           </q-toolbar-title>
           <q-btn flat dense v-close-overlay class="q-mr-sm" @click="revertSettings">Close</q-btn>
-          <q-btn flat dense v-close-overlay @click="saveSettingsHandler">Save</q-btn>
+          <q-btn flat dense v-close-overlay :disable="!validateCurrentSettings" @click="saveSettingsHandler">Save</q-btn>
         </q-toolbar>
       </q-modal-layout>
     </q-modal>
@@ -297,6 +300,10 @@ export default {
         result += messages.length
         return result
       }, 0) > this.messagesLimitCount
+    },
+    validateCurrentSettings () {
+      return !!this.currentSettings.clientId &&
+        (!!this.currentSettings.host && !(this.currentSettings.host.indexOf('ws:') === 0))
     }
   },
   methods: {
@@ -348,6 +355,11 @@ export default {
       if (!Object.keys(this.currentSettings.will.properties.userProperties).length) {
         this.currentSettings.will.properties.userProperties = null
       }
+    },
+    hostErrorHandler () {
+      this.$q.notify({
+        message: 'Host must be not empty and only over secured sockets'
+      })
     },
     /* settings modal handlers end */
     /* client logic start */
