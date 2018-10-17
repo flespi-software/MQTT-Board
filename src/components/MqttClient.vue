@@ -403,7 +403,6 @@ export default {
       }
     },
     errorHandler (e) {
-      console.trace()
       this.$q.notify({
         message: e.message,
         color: 'negative',
@@ -420,7 +419,7 @@ export default {
       })))
     }, 500, { trailing: true }),
     initClient (key, config) {
-      let // endHandler = () => { Vue.set(this.statuses, key, false) },
+      let endHandler = () => { Vue.set(this.statuses, key, false) },
         errorHandler = this.errorHandler
 
       let client = mqtt.connect(config.host, this.clearObject(config))
@@ -475,9 +474,9 @@ export default {
         })
       })
       client.on('error', errorHandler)
-      client.on('close', () => { console.log('close'); Vue.set(this.statuses, key, false) })
-      client.on('offline', () => { console.log('offline'); Vue.set(this.statuses, key, false) })
-      client.on('end', () => { console.log('end'); Vue.set(this.statuses, key, false) })
+      client.on('close', endHandler)
+      client.on('offline', endHandler)
+      client.on('end', endHandler)
       Vue.set(this.clients[key], 'client', client)
       Vue.set(this.clients[key], 'config', config)
     },
@@ -497,7 +496,7 @@ export default {
         this.clients[key] = client
       } else {
         let clientObj = this.clients[key]
-        if (clientObj.client && this.statuses[key]) {
+        if (clientObj.client) {
           await clientObj.client.end(true)
           this.statuses[key] = false
         }
