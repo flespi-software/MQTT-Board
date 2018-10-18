@@ -531,6 +531,10 @@ export default {
     },
     connectClientHandler (key) {
       let clientObj = this.clients[key]
+      if (clientObj.client) {
+        clientObj.client.end(true)
+        this.statuses[key] = false
+      }
       this.initClient(key, clientObj.config)
     },
     async disconnectClientHandler (key) {
