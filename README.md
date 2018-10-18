@@ -91,7 +91,7 @@ export default {
 }
 ```
 ```html
-<mqtt-client :initSettings="settings"/>
+<mqtt-client :initSettings="settings" whiteLabel="My MQTT"/>
 ```
 settings structure:
 ```js

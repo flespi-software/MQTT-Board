@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.0.5] - 2018-10-18
+[feature] white label
 ### [1.0.4] - 2018-10-18
 [fix] logo and title
 ### [1.0.3] - 2018-10-17

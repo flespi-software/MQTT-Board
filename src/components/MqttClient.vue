@@ -88,9 +88,9 @@
     <q-toolbar color="dark">
       <q-btn v-if="activeClient" flat dense icon="keyboard_arrow_left" @click="clearActiveClient"/>
       <q-toolbar-title>
-        <img src="statics/mqttboard.png" alt="MQTT Board" style="height: 30px">
-        {{activeClient ? `${activeClient.config.clientId}` : 'MQTT Board'}}
-        <sup style="position: relative; font-size: .9rem; padding-left: 4px">{{version}}</sup>
+        <img v-if="whiteLabel === ''" src="statics/mqttboard.png" alt="MQTT Board" style="height: 30px">
+        {{activeClient ? `${activeClient.config.clientId}` : (whiteLabel || 'MQTT Board')}}
+        <sup v-if="whiteLabel === ''" style="position: relative; font-size: .9rem; padding-left: 4px">{{version}}</sup>
       </q-toolbar-title>
       <q-btn v-if="!activeClient" @click.native="addClientHandler" icon="mdi-plus">
         Client
@@ -262,6 +262,10 @@ export default {
   props: {
     initSettings: {
       type: Object
+    },
+    whiteLabel: {
+      type: String,
+      default: ''
     }
   },
   data () {
