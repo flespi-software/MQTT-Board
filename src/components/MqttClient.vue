@@ -88,8 +88,8 @@
     <q-toolbar color="dark">
       <q-btn v-if="activeClient" flat dense icon="keyboard_arrow_left" @click="clearActiveClient"/>
       <q-toolbar-title>
-        <img class="gt-sm" src="statics/mqttboard.png" alt="MQTT Board" style="height: 30px">
-        {{activeClient ? `${activeClient.config.clientId}` : 'MQTT Clients'}}
+        <img src="statics/mqttboard.png" alt="MQTT Board" style="height: 30px">
+        {{activeClient ? `${activeClient.config.clientId}` : 'MQTT Board'}}
         <sup style="position: relative; font-size: .9rem; padding-left: 4px">{{version}}</sup>
       </q-toolbar-title>
       <q-btn v-if="!activeClient" @click.native="addClientHandler" icon="mdi-plus">
