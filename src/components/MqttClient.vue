@@ -542,7 +542,9 @@ export default {
       clientObj.subscribers.forEach((subscriber, index) => {
         let status = clientObj.subscribersStatuses[index]
         if (status) {
-          this.unsubscribeMessageHandler(index, subscriber)
+          try {
+            clientObj.client.unsubscribe(subscriber.topic)
+          } catch (e) { this.errorHandler(e) }
         }
       })
       await clientObj.client.end(true)
@@ -569,7 +571,7 @@ export default {
     },
     setActiveClient (key) {
       let client = this.clients[key]
-      if (!client.client._client.connected) {
+      if (!client.client || !client.client._client.connected) {
         this.errorHandler(new Error('Client not connected'))
         return false
       }
