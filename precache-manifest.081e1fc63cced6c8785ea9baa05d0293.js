@@ -16,16 +16,16 @@ self.__precacheManifest = [
     "url": "statics/mqttboard.png"
   },
   {
-    "revision": "4f9f389fd9c4b574152e",
-    "url": "js/92367fdc.b69cb014.js"
+    "revision": "c499d4a8e8a53fb45418",
+    "url": "js/92367fdc.9c4d9f22.js"
   },
   {
     "revision": "81463c75bc15a1879fcd66065271a2f4",
     "url": "statics/icons/ms-icon-310x310.png"
   },
   {
-    "revision": "5a86cd690a0e82a3f010",
-    "url": "js/app.2ccb5da9.js"
+    "revision": "7ac49a5dbbc9a7b1b2ab",
+    "url": "js/app.bbcb7a61.js"
   },
   {
     "revision": "0e1ec93cb13fb419d792",
@@ -60,7 +60,7 @@ self.__precacheManifest = [
     "url": "fonts/KFOlCnqEu92Fr1MmSU5fBBc-.a1471d1d.woff"
   },
   {
-    "revision": "2c1c8f20803e50da260538b18b5f1eea",
+    "revision": "b7a70b78f09e5f9b548c28625ed3518d",
     "url": "index.html"
   },
   {
@@ -96,11 +96,11 @@ self.__precacheManifest = [
     "url": "fonts/KFOlCnqEu92Fr1MmWUlfBBc-.cf6613d1.woff"
   },
   {
-    "revision": "5a86cd690a0e82a3f010",
+    "revision": "7ac49a5dbbc9a7b1b2ab",
     "url": "css/app.99127b2f.css"
   },
   {
-    "revision": "4f9f389fd9c4b574152e",
+    "revision": "c499d4a8e8a53fb45418",
     "url": "css/92367fdc.7ac28700.css"
   },
   {
