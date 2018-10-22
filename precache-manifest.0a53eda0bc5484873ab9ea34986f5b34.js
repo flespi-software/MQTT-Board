@@ -1,7 +1,7 @@
 self.__precacheManifest = [
   {
-    "revision": "de8b7431b74642e830af4d4f4b513ec9",
-    "url": "fonts/KFOlCnqEu92Fr1MmEU9fBBc-.de8b7431.woff"
+    "revision": "e9dbbe8a693dd275c16d32feb101f1c1",
+    "url": "fonts/KFOkCnqEu92Fr1MmgVxIIzQ.e9dbbe8a.woff"
   },
   {
     "revision": "a9ff913a3c17b881b663",
@@ -16,16 +16,16 @@ self.__precacheManifest = [
     "url": "statics/mqttboard.png"
   },
   {
-    "revision": "c499d4a8e8a53fb45418",
-    "url": "js/92367fdc.9c4d9f22.js"
+    "revision": "e93e217c87f940928dfb",
+    "url": "js/92367fdc.8b505302.js"
   },
   {
     "revision": "81463c75bc15a1879fcd66065271a2f4",
     "url": "statics/icons/ms-icon-310x310.png"
   },
   {
-    "revision": "7ac49a5dbbc9a7b1b2ab",
-    "url": "js/app.bbcb7a61.js"
+    "revision": "b1654a9eb43bc12587e6",
+    "url": "js/app.c4e7664e.js"
   },
   {
     "revision": "0e1ec93cb13fb419d792",
@@ -60,12 +60,12 @@ self.__precacheManifest = [
     "url": "fonts/KFOlCnqEu92Fr1MmSU5fBBc-.a1471d1d.woff"
   },
   {
-    "revision": "b7a70b78f09e5f9b548c28625ed3518d",
+    "revision": "115cb09e9d86ef13ccb306471b83da88",
     "url": "index.html"
   },
   {
-    "revision": "e9dbbe8a693dd275c16d32feb101f1c1",
-    "url": "fonts/KFOkCnqEu92Fr1MmgVxIIzQ.e9dbbe8a.woff"
+    "revision": "bafb105baeb22d965c70fe52ba6b49d9",
+    "url": "fonts/KFOmCnqEu92Fr1Mu4mxM.bafb105b.woff"
   },
   {
     "revision": "8a9a261c8b8dfe90db11f1817a9d22e1",
@@ -84,10 +84,6 @@ self.__precacheManifest = [
     "url": "fonts/flUhRq6tzZclQEJ-Vdg-IuiaDsNa.c38ebd3c.woff"
   },
   {
-    "revision": "bafb105baeb22d965c70fe52ba6b49d9",
-    "url": "fonts/KFOmCnqEu92Fr1Mu4mxM.bafb105b.woff"
-  },
-  {
     "revision": "8c2ade503b34e31430d6c98aa29a52a3",
     "url": "fonts/KFOlCnqEu92Fr1MmYUtfBBc-.8c2ade50.woff"
   },
@@ -96,12 +92,16 @@ self.__precacheManifest = [
     "url": "fonts/KFOlCnqEu92Fr1MmWUlfBBc-.cf6613d1.woff"
   },
   {
-    "revision": "7ac49a5dbbc9a7b1b2ab",
+    "revision": "de8b7431b74642e830af4d4f4b513ec9",
+    "url": "fonts/KFOlCnqEu92Fr1MmEU9fBBc-.de8b7431.woff"
+  },
+  {
+    "revision": "b1654a9eb43bc12587e6",
     "url": "css/app.99127b2f.css"
   },
   {
-    "revision": "c499d4a8e8a53fb45418",
-    "url": "css/92367fdc.7ac28700.css"
+    "revision": "e93e217c87f940928dfb",
+    "url": "css/92367fdc.b6d23833.css"
   },
   {
     "revision": "def92ecae2f23e9b81b2",
