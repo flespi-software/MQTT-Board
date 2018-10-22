@@ -36,7 +36,7 @@
             <div v-if="version === 5">
               <div class="q-mb-sm">
                 Retain handling
-                <q-btn-toggle :disable="status" toggle-color="dark" class="q-ml-sm" size="sm" v-model="config.options.rh" :options="[{label: 'null', value: null},{label: '0', value: 0},{label: '1', value: 1},{label: '2', value: 2}]"/>
+                <q-btn-toggle :disable="status" toggle-color="dark" class="q-ml-sm" size="sm" v-model="config.options.rh" :options="[{label: '0', value: 0},{label: '1', value: 1},{label: '2', value: 2}]"/>
               </div>
             </div>
             <q-collapsible v-if="version === 5" class="q-mt-sm q-mb-sm bg-grey-4" label="Properties">
@@ -70,7 +70,16 @@
           <q-item-tile style="margin-top: 0; font-size: 0.75rem" class="ellipsis" sublabel>{{config.topic}}</q-item-tile>
         </q-item-main>
       </q-item>
-      <q-select color="dark" class="q-mx-sm" v-model="config.mode" :options="modeSelectOptions"/>
+      <q-collapsible class="bg-white" style="z-index: 1;" popup>
+        <template slot="header">
+          <q-item-main>
+            <q-item-tile label style="font-size: .9rem">Settings</q-item-tile>
+            <q-item-tile class="ellipsis" sublabel style="font-size: .7rem">{{`Mode: ${config.mode ? 'History' : 'Unique'} ${filter ? `by filter: ${filter}` : ''}`}}</q-item-tile>
+          </q-item-main>
+        </template>
+        <q-select color="dark" v-model="config.mode" :options="modeSelectOptions"/>
+        <q-input placeholder="Filter by topic" float-label="Filter" color="dark" v-model="filter"/>
+      </q-collapsible>
       <virtual-list
         ref="scroller"
         :onscroll="listScroll"
@@ -80,7 +89,7 @@
         :remain="15"
         class="subscriber__list"
       >
-        <message :message="message" v-for="(message, msgIndex) in messagesByMode" :key="`subMsg$${msgIndex}`"/>
+        <message :message="message" v-for="(message, msgIndex) in renderedMessages" :key="`subMsg$${msgIndex}`"/>
       </virtual-list>
       <div v-else class="subscriber__list--empty">No messages</div>
     </div>
@@ -123,12 +132,15 @@ export default {
         }
       ],
       needAutoScroll: true,
-      isPlayed: this.status || null
+      isPlayed: this.status || null,
+      filter: ''
     }
   },
   computed: {
-    messagesByMode () {
-      let messages = this.messages
+    renderedMessages () {
+      let messages = this.filter
+        ? this.messages.filter(message => message.topic.indexOf(this.filter) !== -1)
+        : this.messages
       switch (this.config.mode) {
         case HISTORY_MODE: {
           return messages
@@ -249,7 +261,7 @@ export default {
       right 5px
     .subscriber__list
       position absolute
-      top 100px
+      top 110px
       bottom 0
       right 0
       left 0

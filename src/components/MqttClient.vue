@@ -1,5 +1,5 @@
 <template>
-  <div ref="wrapper" v-touch-swipe.horizontal="swipeHandler" style="position: absolute; bottom: 0; right: 0; top: 0; left: 0;">
+  <div ref="wrapper" v-touch-swipe.horizontal.noMouse="swipeHandler" style="position: absolute; bottom: 0; right: 0; top: 0; left: 0;">
     <flespi-topic ref="felspiModal" @topic="(topic) => { addSubscriber(); subscribers[subscribers.length - 1].topic = topic }"/>
     <q-modal @show="showSettingsModalHandler" v-model='settingsModalModel'>
       <q-modal-layout>
@@ -228,9 +228,9 @@ const
     mode: 0,
     options: {
       qos: 0,
-      nl: null,
-      rap: null,
-      rh: null,
+      nl: false,
+      rap: false,
+      rh: 0,
       properties: {
         subscriptionIdentifier: null,
         userProperties: null
