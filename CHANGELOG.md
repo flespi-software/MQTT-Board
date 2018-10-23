@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.0.10] - 2018-10-23
+[fix] mqtt 5 settings init prpoerties values
 ### [1.0.9] - 2018-10-22
 [feature] added filter by topic in subscribers
 [fix] mqtt 5 settings init values
