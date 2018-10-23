@@ -201,8 +201,8 @@ const
       receiveMaximum: null,
       maximumPacketSize: null,
       topicAliasMaximum: null,
-      requestResponseInformation: false,
-      requestProblemInformation: false,
+      requestResponseInformation: null,
+      requestProblemInformation: null,
       userProperties: null,
       authenticationMethod: null,
       authenticationData: null
@@ -211,10 +211,10 @@ const
       topic: null,
       payload: null,
       qos: null,
-      retain: false,
+      retain: null,
       properties: {
         willDelayInterval: null,
-        payloadFormatIndicator: false,
+        payloadFormatIndicator: null,
         messageExpiryInterval: null,
         contentType: null,
         responseTopic: null,
