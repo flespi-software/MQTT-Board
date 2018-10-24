@@ -1,5 +1,5 @@
 <template>
-  <div class="mqtt-client__not-resolved-msgs col-xl-3 col-md-6 col-sm-12 col-xs-12" >
+  <div class="mqtt-client__not-resolved-msgs col-md-6 col-sm-12 col-xs-12" >
     <div class="not-resolved-msgs__main q-ma-sm q-card">
       <q-toolbar style="border-bottom: 1px solid #999;" color="white" text-color="dark">
         <q-toolbar-title>Unresolved messages</q-toolbar-title>
@@ -62,6 +62,7 @@ export default {
 
 <style lang="stylus">
   .mqtt-client__not-resolved-msgs
+    transition all ease-in-out .3s
     .not-resolved-msgs__main
       position relative
       border 2px solid #f2c037

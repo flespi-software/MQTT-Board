@@ -1,5 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.0.12] - 2018-10-24
+[feature] added new props to component
+[update] default client id
+[fix] adaptive width of entities
 ### [1.0.11] - 2018-10-23
 [fix] default settings values reverted
 ### [1.0.10] - 2018-10-23

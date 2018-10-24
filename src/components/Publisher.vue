@@ -1,5 +1,5 @@
 <template>
-  <div class="mqtt-client__publisher col-xl-3 col-md-6 col-sm-12 col-xs-12">
+  <div class="mqtt-client__publisher col-md-6 col-sm-12 col-xs-12">
     <q-card class="publisher__item q-ma-sm">
       <q-card-actions>
         <q-item style="width: calc(100% - 20px);" dense class="q-card cursor-pointer" highlight @click.native="$emit('publish')">
@@ -102,16 +102,18 @@ export default {
 </script>
 
 <style lang="stylus">
-  .publisher__item
-    border 2px solid indigo
-    height calc(100% - 32px)
-    position relative
-  .publisher__remove
-    position absolute
-    top 5px
-    right 5px
-  .publisher__main
-    position relative
-    height calc(100% - 54px)
-    overflow auto
+  .mqtt-client__publisher
+    transition all ease-in-out .3s
+    .publisher__item
+      border 2px solid indigo
+      height calc(100% - 32px)
+      position relative
+    .publisher__remove
+      position absolute
+      top 5px
+      right 5px
+    .publisher__main
+      position relative
+      height calc(100% - 54px)
+      overflow auto
 </style>

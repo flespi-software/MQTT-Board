@@ -10,7 +10,7 @@
           </q-toolbar-title>
         </q-toolbar>
         <div style="margin: 20px;" :style="{ height: $q.platform.is.mobile ? 'calc(100% - 100px)' : '50vh', width: $q.platform.is.mobile ? 'calc(100% - 40px)' : '50vw'}">
-          <q-input color="dark"  v-model="currentSettings.clientId" float-label="Client ID" :error="!currentSettings.clientId" :after="[{icon: 'mdi-refresh', handler () { currentSettings.clientId = `mqtt-client-${Math.random().toString(16).substr(2, 8)}` }}]"/>
+          <q-input color="dark"  v-model="currentSettings.clientId" float-label="Client ID" :error="!currentSettings.clientId" :after="[{icon: 'mdi-refresh', handler () { currentSettings.clientId = `mqtt-board-${Math.random().toString(16).substr(2, 8)}` }}]"/>
           <q-input color="dark"  v-model="currentSettings.host" float-label="Host" :error="!currentSettings.host || currentSettings.host.indexOf('ws:') === 0" :after="[{icon: 'mdi-alert-outline', handler: hostErrorHandler, error: true}]"/>
           <q-input color="dark"  v-model="currentSettings.keepalive" type="number" float-label="Keep alive"/>
           <q-select color="dark" v-model="currentSettings.protocolVersion" :options="[{label: '3.1.1', value: 4}, {label: '5.0', value: 5}]" float-label="Version of MQTT"/>
@@ -95,6 +95,7 @@
       <q-btn v-if="!activeClient" @click.native="addClientHandler" icon="mdi-plus">
         Client
       </q-btn>
+      <q-btn v-if="activeClient" icon="mdi-settings" @click.stop="editClientHandler(activeClient.id)"/>
       <q-btn v-if="activeClient" @click.native="addPublisher" icon="mdi-publish">
         <span v-if="$q.platform.is.desktop">Publisher</span>
         <q-tooltip>Add new publisher</q-tooltip>
@@ -137,9 +138,10 @@
         <q-btn v-if="!activeClient" @click.native="addClientHandler">Create client</q-btn>
       </div>
     </div>
-    <div ref="wrapper" class="no-wrap row" style="height: calc(100% - 50px); width: 100%; overflow: auto;" v-else>
+    <div ref="wrapper" class="no-wrap row" style="height: calc(100% - 50px); width: 100%; overflow: auto;" v-else-if="statuses[activeClient.id]">
       <template v-for="(entity, index) in entities">
         <publisher
+          :class='[`col-xl-${entities.length < 4 ? 12 / entities.length : 3}`]'
           v-if="entity.type === 'publisher'"
           :key="`publ${index}`"
           :value="publishers[entity.index]"
@@ -149,6 +151,7 @@
           @publish="publishMessageHandler(publishers[entity.index])"
         />
         <subscriber
+          :class='[`col-xl-${entities.length < 4 ? 12 / entities.length : 3}`]'
           v-else-if="entity.type === 'subscriber'"
           :key="`subs${index}`"
           :value="subscribers[entity.index]"
@@ -161,12 +164,14 @@
           @unsubscribe="unsubscribeMessageHandler(entity.index, subscribers[entity.index])"
         />
         <unresolved
+          :class='[`col-xl-${entities.length < 4 ? 12 / entities.length : 3}`]'
           v-else-if="notResolvedMessages.length && entity.type === 'unresolved'"
           :key="`unresolved${index}`"
           :messages="notResolvedMessages"
         />
       </template>
     </div>
+    <div v-else class="text-center q-mt-lg text-dark text-weight-bold" style="font-size: 2.5rem;">Client not connected</div>
   </div>
 </template>
 
@@ -187,9 +192,18 @@ import Publisher from './Publisher'
 import Unresolved from './Unresolved'
 import { version } from '../../package.json'
 
+let saveClientsToLocalStorage = debounce((clients) => {
+  LocalStorage.set('clients', clients.map(client => ({
+    config: client.config,
+    publishers: client.publishers,
+    subscribers: client.subscribers,
+    entities: client.entities
+  })))
+}, 500, { trailing: true })
+
 const
   defaultSettings = {
-    clientId: `mqtt-client-${Math.random().toString(16).substr(2, 8)}`,
+    clientId: `mqtt-board-${Math.random().toString(16).substr(2, 8)}`,
     host: 'wss://mqtt.flespi.io',
     keepalive: 60,
     protocolVersion: 5,
@@ -266,6 +280,14 @@ export default {
     whiteLabel: {
       type: String,
       default: ''
+    },
+    useLocalStorage: {
+      type: Boolean,
+      default: true
+    },
+    needInitNewClient: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -321,7 +343,7 @@ export default {
     },
     clearCurrentSettings () {
       this.currentSettings = cloneDeep(merge(defaultSettings, this.initSettings))
-      this.currentSettings.clientId = `mqtt-client-${Math.random().toString(16).substr(2, 8)}`
+      this.currentSettings.clientId = `mqtt-board-${Math.random().toString(16).substr(2, 8)}`
       this.activeClientSettings = null
     },
     saveSettingsHandler () {
@@ -426,14 +448,11 @@ export default {
         timeout: 2000
       })
     },
-    saveClientsToLocalStorage: debounce((clients) => {
-      LocalStorage.set('clients', clients.map(client => ({
-        config: client.config,
-        publishers: client.publishers,
-        subscribers: client.subscribers,
-        entities: client.entities
-      })))
-    }, 500, { trailing: true }),
+    saveClientsToLocalStorage () {
+      if (this.useLocalStorage) {
+        saveClientsToLocalStorage(this.clients)
+      }
+    },
     initClient (key, config) {
       let endHandler = () => { Vue.set(this.statuses, key, false) },
         errorHandler = this.errorHandler
@@ -483,7 +502,7 @@ export default {
               this.notResolvedMessages.push(packet)
               if (this.notResolvedMessages.length === 1) {
                 this.entities.push({type: 'unresolved'})
-                this.saveClientsToLocalStorage(this.clients)
+                this.saveClientsToLocalStorage()
               }
             }
           })
@@ -517,7 +536,7 @@ export default {
           this.statuses[key] = false
         }
       }
-      this.saveClientsToLocalStorage(this.clients)
+      this.saveClientsToLocalStorage()
       this.initClient(key, config)
       this.clearCurrentSettings()
     },
@@ -565,16 +584,16 @@ export default {
           this.statuses.splice(key, 1)
         }
         this.clients.splice(key, 1)
-        this.saveClientsToLocalStorage(this.clients)
+        this.saveClientsToLocalStorage()
       })
         .catch(() => {})
     },
     setActiveClient (key) {
       let client = this.clients[key]
-      if (!client.client || !client.client._client.connected) {
-        this.errorHandler(new Error('Client not connected'))
-        return false
-      }
+      // if (!client.client || !client.client._client.connected) {
+      //   this.errorHandler(new Error('Client not connected'))
+      //   return false
+      // }
       this.entities = client.entities
       this.subscribers = client.subscribers
       this.publishers = client.publishers
@@ -602,7 +621,7 @@ export default {
     addPublisher () {
       this.publishers.push(cloneDeep(defaultPublisher))
       this.entities.push({type: 'publisher', index: this.publishers.length - 1})
-      this.saveClientsToLocalStorage(this.clients)
+      this.saveClientsToLocalStorage()
       this.isNeedScroll = true
     },
     addSubscriber () {
@@ -610,7 +629,7 @@ export default {
       this.subscribersMessages.push([])
       this.subscribersStatuses.push(false)
       this.entities.push({type: 'subscriber', index: this.subscribers.length - 1})
-      this.saveClientsToLocalStorage(this.clients)
+      this.saveClientsToLocalStorage()
       this.isNeedScroll = true
     },
     removePublisher (key) {
@@ -621,7 +640,7 @@ export default {
           entity.index--
         }
       })
-      this.saveClientsToLocalStorage(this.clients)
+      this.saveClientsToLocalStorage()
     },
     async removeSubscriber (key) {
       let subscriber = this.subscribers[key],
@@ -641,15 +660,15 @@ export default {
           entity.index--
         }
       })
-      this.saveClientsToLocalStorage(this.clients)
+      this.saveClientsToLocalStorage()
     },
     inputSubscriber (index, val) {
       this.subscribers[index] = val
-      this.saveClientsToLocalStorage(this.clients)
+      this.saveClientsToLocalStorage()
     },
     inputPublisher (index, val) {
       this.publishers[index] = val
-      this.saveClientsToLocalStorage(this.clients)
+      this.saveClientsToLocalStorage()
     },
     async publishMessageHandler (settings) {
       settings = this.clearObject(settings)
@@ -734,20 +753,27 @@ export default {
     }
   },
   created () {
-    let savedClients = LocalStorage.get.item('clients')
-    if (savedClients) {
-      savedClients.forEach(client => {
-        this.currentSettings = client.config
-        this.createClient()
-        let currentClient = this.clients[this.clients.length - 1]
-        currentClient.publishers = client.publishers
-        currentClient.subscribers = client.subscribers
-        currentClient.entities = client.entities
-        currentClient.messages = new Array(client.subscribers.length)
-        currentClient.messages.fill([])
-        currentClient.subscribersStatuses = new Array(client.subscribers.length)
-        currentClient.subscribersStatuses.fill(false)
-      })
+    if (this.needInitNewClient) {
+      this.currentSettings = merge(defaultSettings, this.initSettings)
+      this.createClient()
+      this.setActiveClient(0)
+    }
+    if (this.useLocalStorage) {
+      let savedClients = LocalStorage.get.item('clients')
+      if (savedClients) {
+        savedClients.forEach(client => {
+          this.currentSettings = client.config
+          this.createClient()
+          let currentClient = this.clients[this.clients.length - 1]
+          currentClient.publishers = client.publishers
+          currentClient.subscribers = client.subscribers
+          currentClient.entities = client.entities
+          currentClient.messages = new Array(client.subscribers.length)
+          currentClient.messages.fill([])
+          currentClient.subscribersStatuses = new Array(client.subscribers.length)
+          currentClient.subscribersStatuses.fill(false)
+        })
+      }
     }
     if (window) {
       window.addEventListener('beforeunload', () => {

@@ -1,5 +1,5 @@
 <template>
-  <div class="mqtt-client__subscriber col-xl-3 col-md-6 col-sm-12 col-xs-12">
+  <div class="mqtt-client__subscriber col-md-6 col-sm-12 col-xs-12">
     <q-card class="subscriber__item q-ma-sm" v-if="!status && isPlayed === null">
       <q-card-actions>
         <q-item style="width: calc(100% - 20px);" dense class="q-card cursor-pointer" highlight @click.native="subscribeMessageHandler()">
@@ -74,7 +74,7 @@
         <template slot="header">
           <q-item-main>
             <q-item-tile label style="font-size: .9rem">Settings</q-item-tile>
-            <q-item-tile class="ellipsis" sublabel style="font-size: .7rem">{{`Mode: ${config.mode ? 'History' : 'Unique'} ${filter ? `by filter: ${filter}` : ''}`}}</q-item-tile>
+            <q-item-tile class="ellipsis" sublabel style="font-size: .7rem">{{`Mode: ${config.mode ? 'Unique' : 'History'} ${filter ? `by filter: ${filter}` : ''}`}}</q-item-tile>
           </q-item-main>
         </template>
         <q-select color="dark" v-model="config.mode" :options="modeSelectOptions"/>
@@ -247,6 +247,7 @@ export default {
 
 <style lang="stylus">
   .mqtt-client__subscriber
+    transition all ease-in-out .3s
     .subscriber__item
       border 2px solid orange
       height calc(100% - 32px)
