@@ -93,6 +93,13 @@ export default {
 ```html
 <mqtt-client :initSettings="settings" whiteLabel="My MQTT"/>
 ```
+| Name  | Description  | Default |
+|---|---|---|
+| initSettings | Init settings for clients | undefined |
+| whiteLabel | Label in component | '' |
+| useLocalStorage | local storage usage flag | true |
+| needInitNewClient | Need create and init new client with default settings | false |
+
 settings structure:
 ```js
 let settings = {
