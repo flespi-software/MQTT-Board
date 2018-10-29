@@ -11,10 +11,10 @@
  * See https://goo.gl/2aRDsh
  */
 
-importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.2/workbox-sw.js");
+importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "precache-manifest.23e5c2098d1dfb355e82084ad1a17da2.js"
+  "precache-manifest.64916c04739529a785e094f3224c3663.js"
 );
 
 workbox.core.setCacheNameDetails({prefix: "mqtt-board"});
