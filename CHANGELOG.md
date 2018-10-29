@@ -1,5 +1,8 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.1.0] - 2018-10-29
+[feature] logs by client
+[fix] validate on subscribers and publishers
 ### [1.0.12] - 2018-10-24
 [feature] added new props to component
 [update] default client id
@@ -7,7 +10,7 @@ All notable changes to this project will be documented in this file.
 ### [1.0.11] - 2018-10-23
 [fix] default settings values reverted
 ### [1.0.10] - 2018-10-23
-[fix] mqtt 5 settings init prpoerties values
+[fix] mqtt 5 settings init properties values
 ### [1.0.9] - 2018-10-22
 [feature] added filter by topic in subscribers
 [fix] mqtt 5 settings init values

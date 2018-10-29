@@ -138,21 +138,21 @@
         <q-btn v-if="!activeClient" @click.native="addClientHandler">Create client</q-btn>
       </div>
     </div>
-    <div ref="wrapper" class="no-wrap row" style="height: calc(100% - 50px); width: 100%; overflow: auto;" v-else-if="statuses[activeClient.id]">
+    <div ref="wrapper" class="no-wrap row" style="height: calc(100% - 50px); width: 100%; overflow: auto;" v-else>
       <template v-for="(entity, index) in entities">
         <publisher
           :class='[`col-xl-${entities.length < 4 ? 12 / entities.length : 3}`]'
-          v-if="entity.type === 'publisher'"
+          v-if="statuses[activeClient.id] && entity.type === 'publisher'"
           :key="`publ${index}`"
           :value="publishers[entity.index]"
           @input="(val) => { inputPublisher(entity.index, val) }"
           :version="activeClient.config.protocolVersion"
           @remove="removePublisher(entity.index)"
-          @publish="publishMessageHandler(publishers[entity.index])"
+          @publish="publishMessageHandler(activeClient.id, entity.index)"
         />
         <subscriber
           :class='[`col-xl-${entities.length < 4 ? 12 / entities.length : 3}`]'
-          v-else-if="entity.type === 'subscriber'"
+          v-else-if="statuses[activeClient.id] && entity.type === 'subscriber'"
           :key="`subs${index}`"
           :value="subscribers[entity.index]"
           @input="(val) => { inputSubscriber(entity.index, val) }"
@@ -160,18 +160,23 @@
           :messages="subscribersMessages[entity.index]"
           :version="activeClient.config.protocolVersion"
           @remove="removeSubscriber(entity.index)"
-          @subscribe="subscribeMessageHandler(entity.index, subscribers[entity.index])"
-          @unsubscribe="unsubscribeMessageHandler(entity.index, subscribers[entity.index])"
+          @subscribe="subscribeMessageHandler(activeClient.id, entity.index)"
+          @unsubscribe="unsubscribeMessageHandler(activeClient.id, entity.index)"
         />
         <unresolved
           :class='[`col-xl-${entities.length < 4 ? 12 / entities.length : 3}`]'
-          v-else-if="notResolvedMessages.length && entity.type === 'unresolved'"
+          v-else-if="statuses[activeClient.id] && notResolvedMessages.length && entity.type === 'unresolved'"
           :key="`unresolved${index}`"
           :messages="notResolvedMessages"
         />
+        <logs
+          :class='[`col-xl-${entities.length < 4 ? 12 / entities.length : 3}`]'
+          v-else-if="entity.type === 'logs'"
+          :key="`subs${index}`"
+          :logs="activeClient.logs"
+        />
       </template>
     </div>
-    <div v-else class="text-center q-mt-lg text-dark text-weight-bold" style="font-size: 2.5rem;">Client not connected</div>
   </div>
 </template>
 
@@ -190,6 +195,7 @@ import FlespiTopic from './FlespiTopicConfigurator'
 import Subscriber from './Subscriber'
 import Publisher from './Publisher'
 import Unresolved from './Unresolved'
+import Logs from './Logs'
 import { version } from '../../package.json'
 
 let saveClientsToLocalStorage = debounce((clients) => {
@@ -242,9 +248,9 @@ const
     mode: 0,
     options: {
       qos: 0,
-      nl: false,
-      rap: false,
-      rh: 0,
+      nl: null,
+      rap: null,
+      rh: null,
       properties: {
         subscriptionIdentifier: null,
         userProperties: null
@@ -259,13 +265,12 @@ const
       retain: false,
       dup: false,
       properties: {
-        payloadFormatIndicator: false,
+        payloadFormatIndicator: null,
         messageExpiryInterval: null,
         topicAlias: null,
         responseTopic: null,
         correlationData: null,
         userProperties: null,
-        subscriptionIdentifier: null,
         contentType: null
       }
     }
@@ -293,7 +298,7 @@ export default {
   data () {
     return {
       version: version,
-      currentSettings: cloneDeep(merge(defaultSettings, this.initSettings)),
+      currentSettings: cloneDeep(merge({}, defaultSettings, this.initSettings)),
       prevSettings: null,
       clients: [],
       statuses: [],
@@ -342,7 +347,7 @@ export default {
       this.prevSettings = null
     },
     clearCurrentSettings () {
-      this.currentSettings = cloneDeep(merge(defaultSettings, this.initSettings))
+      this.currentSettings = cloneDeep(merge({}, defaultSettings, this.initSettings))
       this.currentSettings.clientId = `mqtt-board-${Math.random().toString(16).substr(2, 8)}`
       this.activeClientSettings = null
     },
@@ -440,7 +445,14 @@ export default {
         return false
       }
     },
-    errorHandler (e) {
+    errorHandler (key, e, needShow) {
+      let clientObj = this.clients[key]
+      clientObj.logs.push({type: 'error', data: { error: e }, timestamp: Date.now()})
+      if (needShow) {
+        this.showError(e)
+      }
+    },
+    showError (e) {
       this.$q.notify({
         message: e.message,
         color: 'negative',
@@ -454,30 +466,31 @@ export default {
       }
     },
     initClient (key, config) {
-      let endHandler = () => { Vue.set(this.statuses, key, false) },
-        errorHandler = this.errorHandler
+      let clientObj = this.clients[key]
+      let endHandler = () => { Vue.set(this.statuses, key, false) }
 
-      let client = mqtt.connect(config.host, this.clearObject(config))
+      let client = mqtt.connect(config.host, config)
       /* resubscribe to exists topics */
       client.once('connect', () => {
-        let currentStatuses = this.clients[key].subscribersStatuses
+        let currentStatuses = clientObj.subscribersStatuses
         if (currentStatuses.includes(true)) {
           currentStatuses.forEach((status, index) => {
             if (status) {
-              let messages = this.clients[key].messages
+              let messages = clientObj.messages
               messages.forEach((arr, index) => {
                 messages[index].splice(0, messages[index].length)
               })
-              this.subscribe(client, index, this.clients[key].subscribers[index])
+              this.subscribe(key, index)
             }
           })
         }
       })
-      client.on('connect', () => {
+      client.on('connect', (connack) => {
+        /* client connect logs push */
+        clientObj.logs.push({type: 'connect', data: {...connack}, timestamp: Date.now()})
         Vue.set(this.statuses, key, true)
         client.on('message', (topic, message, packet) => {
-          let resolveFlag = false,
-            clientObj = this.clients[key]
+          let resolveFlag = false
           clientObj.subscribers.forEach((sub, index, subs) => {
             let isResolved = this.resolveSubscription(packet, sub)
             resolveFlag = resolveFlag || isResolved
@@ -499,24 +512,38 @@ export default {
               }
             }
             if (subs.length - 1 === index && !resolveFlag) {
-              this.notResolvedMessages.push(packet)
-              if (this.notResolvedMessages.length === 1) {
-                this.entities.push({type: 'unresolved'})
-                this.saveClientsToLocalStorage()
+              clientObj.notResolvedMessages.push(packet)
+              if (clientObj.notResolvedMessages.length === 1) {
+                clientObj.entities.push({type: 'unresolved'})
+                this.saveClientsToLocalStorage(this.clients)
               }
             }
           })
         })
       })
-      client.on('error', errorHandler)
-      client.on('close', endHandler)
-      client.on('offline', endHandler)
-      client.on('end', endHandler)
+      client.on('error', (error) => {
+        this.errorHandler(key, error, true)
+      })
+      client.on('close', () => {
+        clientObj.logs.push({type: 'disconnect', timestamp: Date.now()})
+        endHandler()
+      })
+      client.on('offline', () => {
+        clientObj.logs.push({type: 'offline', timestamp: Date.now()})
+        endHandler()
+      })
+      client.on('end', () => {
+        clientObj.logs.push({type: 'end', timestamp: Date.now()})
+        endHandler()
+      })
+      client.on('reconnect', () => {
+        clientObj.logs.push({type: 'reconnect', timestamp: Date.now()})
+      })
       Vue.set(this.clients[key], 'client', client)
       Vue.set(this.clients[key], 'config', config)
     },
     async createClient (index) {
-      let config = this.currentSettings,
+      let config = this.clearObject(this.currentSettings),
         key = typeof index === 'number' ? index : this.clients.length
       /* init new client */
       if (!this.clients[key]) {
@@ -525,9 +552,11 @@ export default {
         client.status = false
         client.subscribers = [cloneDeep(defaultSubscriber)]
         client.publishers = [cloneDeep(defaultPublisher)]
-        client.entities = [{type: 'subscriber', index: 0}, {type: 'publisher', index: 0}]
+        client.entities = [{type: 'logs'}, {type: 'subscriber', index: 0}, {type: 'publisher', index: 0}]
         client.messages = [[]]
         client.subscribersStatuses = [false]
+        client.logs = [{type: 'created', data: {...config}, timestamp: Date.now()}]
+        client.notResolvedMessages = []
         this.clients[key] = client
       } else {
         let clientObj = this.clients[key]
@@ -535,6 +564,7 @@ export default {
           await clientObj.client.end(true)
           this.statuses[key] = false
         }
+        clientObj.logs.push({type: 'updated', data: {...config}, timestamp: Date.now()})
       }
       this.saveClientsToLocalStorage()
       this.initClient(key, config)
@@ -544,7 +574,7 @@ export default {
       this.settingsModalModel = true
     },
     editClientHandler (key) {
-      this.currentSettings = cloneDeep(this.clients[key].config)
+      this.currentSettings = cloneDeep(merge({}, defaultSettings, this.clients[key].config))
       this.activeClientSettings = key
       this.settingsModalModel = true
     },
@@ -558,14 +588,12 @@ export default {
     },
     async disconnectClientHandler (key) {
       let clientObj = this.clients[key]
-      clientObj.subscribers.forEach((subscriber, index) => {
+      for (let index = 0; index < clientObj.subscribers.length; index++) {
         let status = clientObj.subscribersStatuses[index]
         if (status) {
-          try {
-            clientObj.client.unsubscribe(subscriber.topic)
-          } catch (e) { this.errorHandler(e) }
+          await this.unsubscribe(key, index)
         }
-      })
+      }
       await clientObj.client.end(true)
       clientObj.client = null
       this.statuses[key] = false
@@ -590,10 +618,6 @@ export default {
     },
     setActiveClient (key) {
       let client = this.clients[key]
-      // if (!client.client || !client.client._client.connected) {
-      //   this.errorHandler(new Error('Client not connected'))
-      //   return false
-      // }
       this.entities = client.entities
       this.subscribers = client.subscribers
       this.publishers = client.publishers
@@ -642,21 +666,20 @@ export default {
       })
       this.saveClientsToLocalStorage()
     },
-    async removeSubscriber (key) {
-      let subscriber = this.subscribers[key],
-        status = this.subscribersStatuses[key]
+    async removeSubscriber (subscriberIndex) {
+      let status = this.subscribersStatuses[subscriberIndex]
       if (status) {
-        await this.unsubscribeMessageHandler(key, subscriber)
+        await this.unsubscribeMessageHandler(this.activeClient.id, subscriberIndex)
       }
-      this.subscribers.splice(key, 1)
-      this.subscribersStatuses.splice(key, 1)
-      this.subscribersMessages.splice(key, 1)
+      this.subscribers.splice(subscriberIndex, 1)
+      this.subscribersStatuses.splice(subscriberIndex, 1)
+      this.subscribersMessages.splice(subscriberIndex, 1)
       if (!this.subscribers) {
         clearInterval(this.renderInterval)
       }
-      this.entities.splice(this.findEntity({type: 'subscriber', index: key}), 1)
+      this.entities.splice(this.findEntity({type: 'subscriber', index: subscriberIndex}), 1)
       this.entities.forEach(entity => {
-        if (entity.type === 'subscriber' && entity.index > key) {
+        if (entity.type === 'subscriber' && entity.index > subscriberIndex) {
           entity.index--
         }
       })
@@ -670,8 +693,8 @@ export default {
       this.publishers[index] = val
       this.saveClientsToLocalStorage()
     },
-    async publishMessageHandler (settings) {
-      settings = this.clearObject(settings)
+    async publishMessageHandler (clientKey, publisherIndex) {
+      let settings = this.clearObject(this.publishers[publisherIndex])
       try {
         await this.activeClient.client.publish(settings.topic, settings.payload, settings.options)
         this.$q.notify({
@@ -680,9 +703,10 @@ export default {
           color: 'positive',
           timeout: 700
         })
-      } catch (e) { this.errorHandler(e) }
+      } catch (e) { this.errorHandler(clientKey, e, true) }
     },
-    async subscribeMessageHandler (key, settings) {
+    async subscribeMessageHandler (clientKey, subscriberIndex) {
+      let settings = this.clearObject(this.subscribers[subscriberIndex])
       if (
         this.subscribers.reduce((res, sub, index) => {
           if (this.subscribersStatuses[index]) {
@@ -692,11 +716,11 @@ export default {
         }, [])
           .filter(topic => topic === settings.topic || settings.topic === this.getSharedTopicFilter(topic) || topic === this.getSharedTopicFilter(settings.topic)).length
       ) {
-        this.errorHandler(new Error('You have another subscription with same topic'))
+        this.showError(new Error('You have another subscription with same topic'))
         return false
       }
       if (this.subscribersMessages && this.subscribersMessages.length) {
-        Vue.set(this.subscribersMessages, key, [])
+        Vue.set(this.subscribersMessages, clientKey, [])
       }
       if (!this.renderInterval) {
         this.renderInterval = setInterval(() => {
@@ -712,23 +736,33 @@ export default {
           this.subscribersMessagesBuffer = []
         }, 500)
       }
-      await this.subscribe(this.activeClient.client, key, settings)
+      await this.subscribe(clientKey, subscriberIndex)
     },
-    async subscribe (client, key, settings) {
-      settings = this.clearObject(settings)
+    async subscribe (clientKey, subscriberIndex) {
+      let clientObj = this.clients[clientKey],
+        settings = this.clearObject(this.subscribers[subscriberIndex])
       try {
-        Vue.set(this.subscribersStatuses, key, true)
-        await client.subscribe(settings.topic, settings.options)
+        Vue.set(this.subscribersStatuses, subscriberIndex, true)
+        let grants = await clientObj.client.subscribe(settings.topic, settings.options)
+        clientObj.logs.push({type: 'subscribe', data: { settings, grants }, timestamp: Date.now()})
       } catch (e) {
-        Vue.set(this.subscribersStatuses, key, false)
-        this.errorHandler(e)
+        Vue.set(this.subscribersStatuses, subscriberIndex, false)
+        this.errorHandler(clientKey, e, true)
       }
     },
-    async unsubscribeMessageHandler (key, settings) {
+    async unsubscribeMessageHandler (clientKey, subscriberIndex) {
+      await this.unsubscribe(clientKey, subscriberIndex)
+    },
+    async unsubscribe (clientKey, subscriberIndex) {
+      let clientObj = this.clients[clientKey],
+        settings = this.clearObject(this.subscribers[subscriberIndex])
       try {
-        await this.activeClient.client.unsubscribe(settings.topic)
-        Vue.set(this.subscribersStatuses, key, false)
-      } catch (e) { this.errorHandler(e) }
+        await clientObj.client.unsubscribe(settings.topic)
+        clientObj.logs.push({type: 'unsubscribe', data: this.clearObject(settings), timestamp: Date.now()})
+        Vue.set(this.subscribersStatuses, subscriberIndex, false)
+      } catch (e) {
+        this.errorHandler(clientKey, e, true)
+      }
     },
     /* pub/sub logic end */
     swipeHandler (data) {
@@ -754,7 +788,7 @@ export default {
   },
   created () {
     if (this.needInitNewClient) {
-      this.currentSettings = merge(defaultSettings, this.initSettings)
+      this.currentSettings = cloneDeep(merge({}, defaultSettings, this.initSettings))
       this.createClient()
       this.setActiveClient(0)
     }
@@ -767,6 +801,10 @@ export default {
           let currentClient = this.clients[this.clients.length - 1]
           currentClient.publishers = client.publishers
           currentClient.subscribers = client.subscribers
+          /* preserve for old clients */
+          if (client.entities.length && !client.entities.filter(entity => entity.type === 'logs').length) {
+            client.entities.unshift({type: 'logs'})
+          }
           currentClient.entities = client.entities
           currentClient.messages = new Array(client.subscribers.length)
           currentClient.messages.fill([])
@@ -777,19 +815,19 @@ export default {
     }
     if (window) {
       window.addEventListener('beforeunload', () => {
-        this.clients.forEach(async (clientObj) => {
-          await clientObj.client.end(true)
+        this.clients.forEach((clientObj) => {
+          clientObj.client.end(true)
         })
       })
     }
   },
   destroyed () {
-    this.clients.forEach(async (clientObj) => {
-      await clientObj.client.end(true)
+    this.clients.forEach((clientObj) => {
+      clientObj.client.end(true)
     })
   },
   components: {
-    VirtualList, FlespiTopic, Subscriber, Publisher, Unresolved
+    VirtualList, FlespiTopic, Subscriber, Publisher, Unresolved, Logs
   },
   updated () {
     if (this.isNeedScroll) {

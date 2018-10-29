@@ -62,7 +62,6 @@ export default {
 
 <style lang="stylus">
   .mqtt-client__not-resolved-msgs
-    transition all ease-in-out .3s
     .not-resolved-msgs__main
       position relative
       border 2px solid #f2c037

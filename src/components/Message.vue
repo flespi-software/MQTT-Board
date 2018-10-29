@@ -5,7 +5,7 @@
         {{message.topic}}
       </div>
       <div class="message__sys text-grey-7">
-        {{`qos: ${message.qos}, dup: ${message.dup ? '+' : '-'}`}}
+        {{`qos: ${message.qos}, dup: ${message.dup ? '+' : '-'}, retain: ${message.retain ? '+' : '-'}`}}
       </div>
     </div>
     <div class="message__payload q-pa-sm q-mr-xs q-ml-xs bg-grey-2">{{message.payload.toString()}}</div>

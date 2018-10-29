@@ -2,13 +2,14 @@
   <div class="mqtt-client__subscriber col-md-6 col-sm-12 col-xs-12">
     <q-card class="subscriber__item q-ma-sm" v-if="!status && isPlayed === null">
       <q-card-actions>
-        <q-item style="width: calc(100% - 20px);" dense class="q-card cursor-pointer" highlight @click.native="subscribeMessageHandler()">
-          <q-item-side icon="mdi-play"/>
-          <q-item-main>
-            <q-item-tile style="font-size: 0.9rem;" class="uppercase text-bold" label>Subscribe</q-item-tile>
-            <q-item-tile style="margin-top: 0; font-size: 0.75rem" class="ellipsis" sublabel>{{config.topic}}</q-item-tile>
-          </q-item-main>
-        </q-item>
+        <q-btn align="left" icon="mdi-play" :disable="!isValidSubscriber" style="width: calc(100% - 20px);" @click="subscribeMessageHandler()">
+          <q-item dense>
+            <q-item-main>
+              <q-item-tile style="font-size: 0.9rem;" class="uppercase text-bold" label>Subscribe</q-item-tile>
+              <q-item-tile style="margin-top: 0; font-size: 0.75rem; text-transform: initial;" class="ellipsis" sublabel>{{config.topic}}</q-item-tile>
+            </q-item-main>
+          </q-item>
+        </q-btn>
       </q-card-actions>
       <q-icon class="subscriber__remove cursor-pointer" size="1rem" name="mdi-close" @click.native="removeSubscriber()"/>
       <q-card-main class="item__main q-pb-none">
@@ -31,12 +32,12 @@
               QoS
               <q-btn-toggle :disable="status" toggle-color="dark" class="q-ml-sm" size="sm" v-model="config.options.qos" :options="[{label: '0', value: 0},{label: '1', value: 1},{label: '2', value: 2}]"/>
             </div>
-            <q-checkbox :disable="status" v-if="version === 5" style="display: flex;" color="dark" class="q-mt-sm q-mb-sm" v-model="config.options.nl" label="No local"/>
-            <q-checkbox :disable="status" v-if="version === 5" style="display: flex;" color="dark" class="q-mt-sm q-mb-sm" v-model="config.options.rap" label="Retain as Published"/>
+            <q-checkbox :disable="status" v-if="version === 5" style="display: flex;" color="dark" class="q-mt-sm q-mb-sm" toggle-indeterminate :indeterminate-value="null" v-model="config.options.nl" label="No local"/>
+            <q-checkbox :disable="status" v-if="version === 5" style="display: flex;" color="dark" class="q-mt-sm q-mb-sm" toggle-indeterminate :indeterminate-value="null" v-model="config.options.rap" label="Retain as Published"/>
             <div v-if="version === 5">
               <div class="q-mb-sm">
                 Retain handling
-                <q-btn-toggle :disable="status" toggle-color="dark" class="q-ml-sm" size="sm" v-model="config.options.rh" :options="[{label: '0', value: 0},{label: '1', value: 1},{label: '2', value: 2}]"/>
+                <q-btn-toggle :disable="status" toggle-color="dark" class="q-ml-sm" size="sm" v-model="config.options.rh" :options="[{label: 'null', value: null}, {label: '0', value: 0},{label: '1', value: 1},{label: '2', value: 2}]"/>
               </div>
             </div>
             <q-collapsible v-if="version === 5" class="q-mt-sm q-mb-sm bg-grey-4" label="Properties">
@@ -62,14 +63,16 @@
     </q-card>
     <div v-else class="subscriber__item q-ma-sm q-card" >
       <q-icon class="subscriber__remove cursor-pointer" size="1rem" name="mdi-close" @click.native="removeSubscriber()"/>
-      <q-btn class="q-ml-sm q-mt-sm" :icon="isPlayed ? 'mdi-stop' : 'mdi-play'" @click="playStopHandler"/>
-      <q-item style="width: calc(100% - 95px); display: inline-block;" dense class="q-card cursor-pointer q-mt-sm q-ml-sm q-mb-sm q-mr-lg" highlight @click.native="unsubscribeMessageHandler()">
-        <q-tooltip>Unsubscribe from {{config.topic}}</q-tooltip>
-        <q-item-main>
-          <q-item-tile style="font-size: 0.9rem;" class="uppercase text-bold" label>Unsubscribe</q-item-tile>
-          <q-item-tile style="margin-top: 0; font-size: 0.75rem" class="ellipsis" sublabel>{{config.topic}}</q-item-tile>
-        </q-item-main>
-      </q-item>
+      <q-btn class="q-ml-sm" :icon="isPlayed ? 'mdi-stop' : 'mdi-play'" @click="playStopHandler"/>
+      <q-btn align="left" class="q-mt-sm q-ml-sm q-mb-sm q-mr-lg q-py-none" style="width: calc(100% - 95px); display: inline-block;" @click="unsubscribeMessageHandler()">
+        <q-item dense class="q-px-none">
+          <q-tooltip>Unsubscribe from {{config.topic}}</q-tooltip>
+          <q-item-main>
+            <q-item-tile style="font-size: 0.9rem;" class="uppercase text-bold" label>Unsubscribe</q-item-tile>
+            <q-item-tile style="margin-top: 0; font-size: 0.75rem; text-transform: initial;" class="ellipsis" sublabel>{{config.topic}}</q-item-tile>
+          </q-item-main>
+        </q-item>
+      </q-btn>
       <q-collapsible class="bg-white" style="z-index: 1;" popup>
         <template slot="header">
           <q-item-main>
@@ -153,6 +156,9 @@ export default {
           return obj
         }
       }
+    },
+    isValidSubscriber () {
+      return !!this.config.topic
     }
   },
   methods: {
@@ -229,6 +235,12 @@ export default {
         this.loadingStatus = false
         this.isPlayed = true
       }
+    },
+    value: {
+      deep: true,
+      handler (value) {
+        this.config = value
+      }
     }
   },
   components: { VirtualList, Message },
@@ -247,7 +259,6 @@ export default {
 
 <style lang="stylus">
   .mqtt-client__subscriber
-    transition all ease-in-out .3s
     .subscriber__item
       border 2px solid orange
       height calc(100% - 32px)
