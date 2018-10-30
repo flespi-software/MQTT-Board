@@ -45,8 +45,8 @@
           </q-collapsible>
           <q-collapsible class="q-mt-sm q-mb-sm bg-grey-2" label="Will">
             <div>
-              <q-input color="dark" v-model="currentSettings.will.topic" float-label="Will topic"/>
-              <q-input color="dark" v-model="currentSettings.will.payload" type="textarea" float-label="Will payload"/>
+              <q-input color="dark" v-model="currentSettings.will.topic" :error="!this.currentSettings.will.topic && !!this.currentSettings.will.payload" float-label="Will topic"/>
+              <q-input color="dark" v-model="currentSettings.will.payload" :error="!!this.currentSettings.will.topic && !this.currentSettings.will.payload" type="textarea" float-label="Will payload"/>
               <div class="q-my-sm">
                 QoS
                 <q-btn-toggle toggle-color="dark" class="q-ml-sm" size="sm" v-model="currentSettings.will.qos" :options="[{label: '0', value: 0},{label: '1', value: 1},{label: '2', value: 2}]"/>
@@ -217,29 +217,29 @@ const
     username: 'FlespiToken XXXXXXXXXXXXXXXXXXX',
     password: '',
     properties: {
-      sessionExpiryInterval: null,
-      receiveMaximum: null,
-      maximumPacketSize: null,
-      topicAliasMaximum: null,
-      requestResponseInformation: null,
-      requestProblemInformation: null,
-      userProperties: null,
-      authenticationMethod: null,
-      authenticationData: null
+      sessionExpiryInterval: undefined,
+      receiveMaximum: undefined,
+      maximumPacketSize: undefined,
+      topicAliasMaximum: undefined,
+      requestResponseInformation: false,
+      requestProblemInformation: false,
+      userProperties: undefined,
+      authenticationMethod: undefined,
+      authenticationData: undefined
     },
     will: {
-      topic: null,
-      payload: null,
-      qos: null,
-      retain: null,
+      topic: undefined,
+      payload: undefined,
+      qos: 0,
+      retain: false,
       properties: {
-        willDelayInterval: null,
-        payloadFormatIndicator: null,
-        messageExpiryInterval: null,
-        contentType: null,
-        responseTopic: null,
-        correlationData: null,
-        userProperties: null
+        willDelayInterval: undefined,
+        payloadFormatIndicator: false,
+        messageExpiryInterval: undefined,
+        contentType: undefined,
+        responseTopic: undefined,
+        correlationData: undefined,
+        userProperties: undefined
       }
     }
   },
@@ -248,12 +248,12 @@ const
     mode: 0,
     options: {
       qos: 0,
-      nl: null,
-      rap: null,
-      rh: null,
+      nl: false,
+      rap: false,
+      rh: 0,
       properties: {
-        subscriptionIdentifier: null,
-        userProperties: null
+        subscriptionIdentifier: undefined,
+        userProperties: undefined
       }
     }
   },
@@ -265,13 +265,13 @@ const
       retain: false,
       dup: false,
       properties: {
-        payloadFormatIndicator: null,
-        messageExpiryInterval: null,
-        topicAlias: null,
-        responseTopic: null,
-        correlationData: null,
-        userProperties: null,
-        contentType: null
+        payloadFormatIndicator: undefined,
+        messageExpiryInterval: undefined,
+        topicAlias: undefined,
+        responseTopic: undefined,
+        correlationData: undefined,
+        userProperties: undefined,
+        contentType: undefined
       }
     }
   }
@@ -334,7 +334,11 @@ export default {
     },
     validateCurrentSettings () {
       return !!this.currentSettings.clientId &&
-        (!!this.currentSettings.host && !(this.currentSettings.host.indexOf('ws:') === 0))
+        (!!this.currentSettings.host && !(this.currentSettings.host.indexOf('ws:') === 0)) &&
+        (
+          (!!this.currentSettings.will.topic && !!this.currentSettings.will.payload) ||
+          (!this.currentSettings.will.topic && !this.currentSettings.will.payload)
+        )
     }
   },
   methods: {
@@ -400,10 +404,10 @@ export default {
         if (value instanceof Object) {
           value = this.clearObject(value)
           if (!Object.keys(value).length) {
-            value = null
+            value = undefined
           }
         }
-        if (value !== null) {
+        if (value !== undefined) {
           result[key] = value
         }
         return result
@@ -464,6 +468,17 @@ export default {
       if (this.useLocalStorage) {
         saveClientsToLocalStorage(this.clients)
       }
+    },
+    createConnectPacket (config) {
+      config = this.clearObject(config)
+      if (config.protocolVersion !== 5) {
+        delete config.properties
+        delete config.will.properties
+      }
+      if (config.will && !config.will.topic && !config.will.payload) {
+        delete config.will
+      }
+      return config
     },
     initClient (key, config) {
       let clientObj = this.clients[key]
@@ -543,7 +558,7 @@ export default {
       Vue.set(this.clients[key], 'config', config)
     },
     async createClient (index) {
-      let config = this.clearObject(this.currentSettings),
+      let config = this.createConnectPacket(this.currentSettings),
         key = typeof index === 'number' ? index : this.clients.length
       /* init new client */
       if (!this.clients[key]) {
@@ -720,7 +735,7 @@ export default {
         return false
       }
       if (this.subscribersMessages && this.subscribersMessages.length) {
-        Vue.set(this.subscribersMessages, clientKey, [])
+        Vue.set(this.subscribersMessages, subscriberIndex, [])
       }
       if (!this.renderInterval) {
         this.renderInterval = setInterval(() => {

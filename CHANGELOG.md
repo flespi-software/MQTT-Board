@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.1.1] - 2018-10-30
+[fix] validation connect packet
 ### [1.1.0] - 2018-10-29
 [feature] logs by client
 [fix] validate on subscribers and publishers

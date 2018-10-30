@@ -37,7 +37,7 @@
             <div v-if="version === 5">
               <div class="q-mb-sm">
                 Retain handling
-                <q-btn-toggle :disable="status" toggle-color="dark" class="q-ml-sm" size="sm" v-model="config.options.rh" :options="[{label: 'null', value: null}, {label: '0', value: 0},{label: '1', value: 1},{label: '2', value: 2}]"/>
+                <q-btn-toggle :disable="status" toggle-color="dark" class="q-ml-sm" size="sm" v-model="config.options.rh" :options="[{label: '0', value: 0},{label: '1', value: 1},{label: '2', value: 2}]"/>
               </div>
             </div>
             <q-collapsible v-if="version === 5" class="q-mt-sm q-mb-sm bg-grey-4" label="Properties">
