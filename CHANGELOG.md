@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.1.3] - 2018-10-30
+[fix] mobile scroll logic
 ### [1.1.2] - 2018-10-30
 [feature] button play/stop rebased to play/pause
 [feature] clear messages

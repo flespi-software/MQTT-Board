@@ -1,5 +1,5 @@
 <template>
-  <div ref="wrapper" v-touch-swipe.horizontal.noMouse="swipeHandler" style="position: absolute; bottom: 0; right: 0; top: 0; left: 0;">
+  <div style="position: absolute; bottom: 0; right: 0; top: 0; left: 0;">
     <flespi-topic ref="felspiModal" @topic="(topic) => { addSubscriber(); subscribers[subscribers.length - 1].topic = topic }"/>
     <q-modal @show="showSettingsModalHandler" v-model='settingsModalModel'>
       <q-modal-layout>
@@ -138,7 +138,7 @@
         <q-btn v-if="!activeClient" @click.native="addClientHandler">Create client</q-btn>
       </div>
     </div>
-    <div ref="wrapper" class="no-wrap row" style="height: calc(100% - 50px); width: 100%; overflow: auto;" v-else>
+    <div ref="wrapper" v-touch-swipe.horizontal.noMouse="swipeHandler" class="no-wrap row" style="height: calc(100% - 50px); width: 100%; overflow: auto;" v-else>
       <template v-for="(entity, index) in entities">
         <publisher
           :class='[`col-xl-${entities.length < 4 ? 12 / entities.length : 3}`]'
