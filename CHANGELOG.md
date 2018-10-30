@@ -1,5 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.1.2] - 2018-10-30
+[feature] button play/stop rebased to play/pause
+[feature] clear messages
+[fix] init config with null values
+[fix] autoscroll
+[fix] validate connect packet
 ### [1.1.1] - 2018-10-30
 [fix] validation connect packet
 ### [1.1.0] - 2018-10-29

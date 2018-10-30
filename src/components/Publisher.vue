@@ -15,7 +15,7 @@
       <q-card-main class="publisher__main q-pb-none">
         <div>
           <q-input color="dark" v-model="config.topic" float-label="Topic" :error="!config.topic"/>
-          <q-input color="dark" type="textarea" :max-height="300" v-model="config.payload" float-label="Message" :error="!config.payload"/>
+          <q-input color="dark" type="textarea" :max-height="300" v-model="config.payload" float-label="Message" />
           <q-collapsible opened class="q-mt-sm q-mb-sm bg-grey-2" label="Options">
             <div>
               <div class="q-mb-sm">

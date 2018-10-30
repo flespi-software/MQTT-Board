@@ -68,7 +68,8 @@ module.exports = function (ctx) {
         'QCardActions',
         'QCollapsible',
         'QTooltip',
-        'QBtnToggle'
+        'QBtnToggle',
+        'QPopover'
       ],
       directives: [
         'Ripple',

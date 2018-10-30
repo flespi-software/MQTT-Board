@@ -70,7 +70,8 @@ framework: {
     'QCardActions',
     'QCollapsible',
     'QTooltip',
-    'QBtnToggle'
+    'QBtnToggle',
+    'QPopover'
   ],
   directives: [
     'CloseOverlay',

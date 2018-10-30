@@ -63,7 +63,7 @@
     </q-card>
     <div v-else class="subscriber__item q-ma-sm q-card" >
       <q-icon class="subscriber__remove cursor-pointer" size="1rem" name="mdi-close" @click.native="removeSubscriber()"/>
-      <q-btn class="q-ml-sm" :icon="isPlayed ? 'mdi-stop' : 'mdi-play'" @click="playStopHandler"/>
+      <q-btn class="q-ml-sm" :icon="isPlayed && status !== 'paused' ? 'mdi-pause' : 'mdi-play'" @click="playStopHandler"/>
       <q-btn align="left" class="q-mt-sm q-ml-sm q-mb-sm q-mr-lg q-py-none" style="width: calc(100% - 95px); display: inline-block;" @click="unsubscribeMessageHandler()">
         <q-item dense class="q-px-none">
           <q-tooltip>Unsubscribe from {{config.topic}}</q-tooltip>
@@ -73,16 +73,22 @@
           </q-item-main>
         </q-item>
       </q-btn>
-      <q-collapsible class="bg-white" style="z-index: 1;" popup>
-        <template slot="header">
+      <q-btn style="vertical-align: top" class="q-mx-sm" icon="mdi-playlist-remove" title="Clear messages" @click="clearMessagesHandler"/>
+      <q-btn align="left" style="width: calc(100% - 95px); display: inline-block;" class="q-mb-sm q-mr-lg q-py-none">
+        <q-item dense class="q-px-none">
+          <q-tooltip>Unsubscribe from {{config.topic}}</q-tooltip>
           <q-item-main>
-            <q-item-tile label style="font-size: .9rem">Settings</q-item-tile>
-            <q-item-tile class="ellipsis" sublabel style="font-size: .7rem">{{`Mode: ${config.mode ? 'Unique' : 'History'} ${filter ? `by filter: ${filter}` : ''}`}}</q-item-tile>
+            <q-item-tile style="font-size: 0.9rem;" class="uppercase text-bold" label>Settings</q-item-tile>
+            <q-item-tile style="margin-top: 0; font-size: 0.75rem; text-transform: initial;" class="ellipsis" sublabel>{{`Mode: ${config.mode ? 'Unique' : 'History'} ${filter ? `by filter: ${filter}` : ''}`}}</q-item-tile>
           </q-item-main>
-        </template>
-        <q-select color="dark" v-model="config.mode" :options="modeSelectOptions"/>
-        <q-input placeholder="Filter by topic" float-label="Filter" color="dark" v-model="filter"/>
-      </q-collapsible>
+        </q-item>
+        <q-popover style="height: 120px; width: 400px; max-width: 100%" anchor="bottom middle" self="top middle">
+          <div class="q-ma-sm">
+            <q-select color="dark" v-model="config.mode" :options="modeSelectOptions"/>
+            <q-input placeholder="Filter by topic" float-label="Filter" color="dark" v-model="filter"/>
+          </div>
+        </q-popover>
+      </q-btn>
       <virtual-list
         ref="scroller"
         :onscroll="listScroll"
@@ -164,9 +170,9 @@ export default {
   methods: {
     playStopHandler () {
       if (this.isPlayed) {
-        this.$emit('unsubscribe')
+        this.$emit('pause')
       } else {
-        this.$emit('subscribe')
+        this.$emit('play')
       }
       this.isPlayed = !this.isPlayed
     },
@@ -208,7 +214,7 @@ export default {
       })
     },
     listScroll (e) {
-      if (this.isPlayed) {
+      if (this.status) {
         let el = this.$refs.scroller.$el
         if (el.scrollTop < el.scrollHeight - el.clientHeight) {
           this.needAutoScroll = false
@@ -221,6 +227,9 @@ export default {
       this.currentScrollTop = 0
       this.allScrollTop = 0
       this.needAutoScroll = true
+    },
+    clearMessagesHandler () {
+      this.$emit('clear')
     }
   },
   watch: {

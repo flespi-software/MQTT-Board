@@ -162,6 +162,9 @@
           @remove="removeSubscriber(entity.index)"
           @subscribe="subscribeMessageHandler(activeClient.id, entity.index)"
           @unsubscribe="unsubscribeMessageHandler(activeClient.id, entity.index)"
+          @play="playSubscriberHandler(entity.index)"
+          @pause="pauseSubscriberHandler(entity.index)"
+          @clear="clearMessagesHandler(entity.index)"
         />
         <unresolved
           :class='[`col-xl-${entities.length < 4 ? 12 / entities.length : 3}`]'
@@ -407,7 +410,7 @@ export default {
             value = undefined
           }
         }
-        if (value !== undefined) {
+        if (value !== undefined && value !== null) {
           result[key] = value
         }
         return result
@@ -473,7 +476,9 @@ export default {
       config = this.clearObject(config)
       if (config.protocolVersion !== 5) {
         delete config.properties
-        delete config.will.properties
+        if (config.will) {
+          delete config.will.properties
+        }
       }
       if (config.will && !config.will.topic && !config.will.payload) {
         delete config.will
@@ -514,7 +519,9 @@ export default {
                 if (!this.subscribersMessagesBuffer[index]) {
                   this.subscribersMessagesBuffer[index] = []
                 }
-                this.subscribersMessagesBuffer[index].push(packet)
+                if (this.subscribersStatuses[index] && this.subscribersStatuses[index] !== 'paused') {
+                  this.subscribersMessagesBuffer[index].push(packet)
+                }
               } else {
                 if (!clientObj.messages[index]) {
                   clientObj.messages[index] = []
@@ -523,7 +530,9 @@ export default {
                 if (count > this.messagesLimitCount) {
                   clientObj.messages[index].splice(0, 1)
                 }
-                clientObj.messages[index].push(packet)
+                if (clientObj.subscribersStatuses[index] && clientObj.subscribersStatuses[index] !== 'paused') {
+                  clientObj.messages[index].push(packet)
+                }
               }
             }
             if (subs.length - 1 === index && !resolveFlag) {
@@ -764,6 +773,16 @@ export default {
         Vue.set(this.subscribersStatuses, subscriberIndex, false)
         this.errorHandler(clientKey, e, true)
       }
+    },
+    playSubscriberHandler (subscriberIndex) {
+      Vue.set(this.subscribersStatuses, subscriberIndex, true)
+    },
+    pauseSubscriberHandler (subscriberIndex) {
+      Vue.set(this.subscribersStatuses, subscriberIndex, 'paused')
+    },
+    clearMessagesHandler (subscriberIndex) {
+      let messages = this.subscribersMessages[subscriberIndex]
+      messages.splice(0, messages.length)
     },
     async unsubscribeMessageHandler (clientKey, subscriberIndex) {
       await this.unsubscribe(clientKey, subscriberIndex)
