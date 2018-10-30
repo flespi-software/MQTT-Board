@@ -1,7 +1,7 @@
 self.__precacheManifest = [
   {
-    "revision": "8c2ade503b34e31430d6c98aa29a52a3",
-    "url": "fonts/KFOlCnqEu92Fr1MmYUtfBBc-.8c2ade50.woff"
+    "revision": "cf6613d1adf490972c557a8e318e0868",
+    "url": "fonts/KFOlCnqEu92Fr1MmWUlfBBc-.cf6613d1.woff"
   },
   {
     "revision": "a9ff913a3c17b881b663",
@@ -16,16 +16,16 @@ self.__precacheManifest = [
     "url": "statics/mqttboard.png"
   },
   {
-    "revision": "36b52cd913f88fedd4d6",
-    "url": "js/72cccce5.f2a1a9cf.js"
+    "revision": "24e05e897531bcb37eeb",
+    "url": "js/72cccce5.01eb33ca.js"
   },
   {
     "revision": "81463c75bc15a1879fcd66065271a2f4",
     "url": "statics/icons/ms-icon-310x310.png"
   },
   {
-    "revision": "9207ba6c580524891a89",
-    "url": "js/app.8c4277f0.js"
+    "revision": "1bd73a866df358899ab4",
+    "url": "js/app.5313a754.js"
   },
   {
     "revision": "52b381796d7b5d07c6ca",
@@ -56,11 +56,11 @@ self.__precacheManifest = [
     "url": "statics/icons/favicon-16x16.png"
   },
   {
-    "revision": "de8b7431b74642e830af4d4f4b513ec9",
-    "url": "fonts/KFOlCnqEu92Fr1MmEU9fBBc-.de8b7431.woff"
+    "revision": "e9dbbe8a693dd275c16d32feb101f1c1",
+    "url": "fonts/KFOkCnqEu92Fr1MmgVxIIzQ.e9dbbe8a.woff"
   },
   {
-    "revision": "03f4ec315e578f2321ec5b1e4aafe05a",
+    "revision": "c4eed3c42ffd0dc0783be4cbc8c33f81",
     "url": "index.html"
   },
   {
@@ -88,19 +88,19 @@ self.__precacheManifest = [
     "url": "fonts/KFOmCnqEu92Fr1Mu4mxM.bafb105b.woff"
   },
   {
-    "revision": "cf6613d1adf490972c557a8e318e0868",
-    "url": "fonts/KFOlCnqEu92Fr1MmWUlfBBc-.cf6613d1.woff"
+    "revision": "8c2ade503b34e31430d6c98aa29a52a3",
+    "url": "fonts/KFOlCnqEu92Fr1MmYUtfBBc-.8c2ade50.woff"
   },
   {
-    "revision": "e9dbbe8a693dd275c16d32feb101f1c1",
-    "url": "fonts/KFOkCnqEu92Fr1MmgVxIIzQ.e9dbbe8a.woff"
+    "revision": "de8b7431b74642e830af4d4f4b513ec9",
+    "url": "fonts/KFOlCnqEu92Fr1MmEU9fBBc-.de8b7431.woff"
   },
   {
-    "revision": "9207ba6c580524891a89",
+    "revision": "1bd73a866df358899ab4",
     "url": "css/app.99127b2f.css"
   },
   {
-    "revision": "36b52cd913f88fedd4d6",
+    "revision": "24e05e897531bcb37eeb",
     "url": "css/72cccce5.0975b467.css"
   },
   {
