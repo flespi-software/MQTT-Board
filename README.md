@@ -54,10 +54,12 @@ framework: {
     'QModal',
     'QModalLayout',
     'QList',
+    'QListHeader',
     'QItem',
     'QItemMain',
     'QItemSide',
     'QItemTile',
+    'QItemSeparator',
     'QBtn',
     'QIcon',
     'QInput',
@@ -100,6 +102,7 @@ export default {
 | whiteLabel | Label in component | '' |
 | useLocalStorage | local storage usage flag | true |
 | needInitNewClient | Need create and init new client with default settings | false |
+| secure | Need validate by security host | true |
 
 settings structure:
 ```js
