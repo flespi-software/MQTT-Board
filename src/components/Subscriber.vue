@@ -1,18 +1,25 @@
 <template>
   <div class="mqtt-client__subscriber col-md-6 col-sm-12 col-xs-12">
     <q-card class="subscriber__item q-ma-sm" v-if="!status && isPlayed === null">
-      <q-card-actions>
-        <q-btn align="left" icon="mdi-play" :disable="!isValidSubscriber" style="width: calc(100% - 20px);" @click="subscribeMessageHandler()">
-          <q-item dense>
-            <q-item-main>
-              <q-item-tile style="font-size: 0.9rem;" class="uppercase text-bold" label>Subscribe</q-item-tile>
-              <q-item-tile style="margin-top: 0; font-size: 0.75rem; text-transform: initial;" class="ellipsis" sublabel>{{config.topic}}</q-item-tile>
-            </q-item-main>
-          </q-item>
-        </q-btn>
-      </q-card-actions>
-      <q-icon class="subscriber__remove cursor-pointer" size="1rem" name="mdi-close" @click.native="removeSubscriber()"/>
-      <q-card-main class="item__main q-pb-none">
+      <q-card-title class="q-pa-none">
+        <q-toolbar color="orange" class="q-px-none">
+          <q-toolbar-title>Subscriber</q-toolbar-title>
+          <q-btn round flat icon="mdi-arrow-right-bold-circle-outline" @click="subscribeMessageHandler">
+            <q-tooltip>Subscribe</q-tooltip>
+          </q-btn>
+          <q-btn round flat icon="mdi-dots-vertical">
+            <q-popover anchor="bottom right" self="top right">
+              <q-list>
+                <q-item class="cursor-pointer" highlight @click.native="removeSubscriber()">
+                  <q-item-side color="red" icon="mdi-delete-outline" />
+                  <q-item-main label="Remove"/>
+                </q-item>
+              </q-list>
+            </q-popover>
+          </q-btn>
+        </q-toolbar>
+      </q-card-title>
+      <q-card-main class="q-py-none">
         <div>
           <q-input
             :disable="status"
@@ -20,24 +27,26 @@
             v-model="config.topic"
             float-label="Topic"
             :error="!config.topic"
-            :after="[{
-              icon: 'mdi-alert',
-              condition: config.topic.indexOf('$share') === 0,
-              handler: showSharedSubscriptionNotification
-            }]"
+            :after="[
+              {
+                icon: 'mdi-alert',
+                condition: config.topic.indexOf('$share') === 0,
+                handler: showSharedSubscriptionNotification
+              }
+            ]"
             :warning="config.topic.indexOf('$share') === 0"
           />
           <q-collapsible opened class="q-mt-sm q-mb-sm bg-grey-2" label="Options">
             <div>
               QoS
-              <q-btn-toggle :disable="status" toggle-color="dark" class="q-ml-sm" size="sm" v-model="config.options.qos" :options="[{label: '0', value: 0},{label: '1', value: 1},{label: '2', value: 2}]"/>
+              <q-btn-toggle :disable="status" flat rounded toggle-text-color="dark" text-color="grey-6" class="q-ml-sm" v-model="config.options.qos" :options="[{label: '0', value: 0},{label: '1', value: 1},{label: '2', value: 2}]"/>
             </div>
-            <q-checkbox :disable="status" v-if="version === 5" style="display: flex;" color="dark" class="q-mt-sm q-mb-sm" toggle-indeterminate :indeterminate-value="null" v-model="config.options.nl" label="No local"/>
-            <q-checkbox :disable="status" v-if="version === 5" style="display: flex;" color="dark" class="q-mt-sm q-mb-sm" toggle-indeterminate :indeterminate-value="null" v-model="config.options.rap" label="Retain as Published"/>
+            <q-checkbox :disable="status" v-if="version === 5" style="display: flex;" color="dark" class="q-mt-sm q-mb-sm" v-model="config.options.nl" label="No local"/>
+            <q-checkbox :disable="status" v-if="version === 5" style="display: flex;" color="dark" class="q-mt-sm q-mb-sm" v-model="config.options.rap" label="Retain as Published"/>
             <div v-if="version === 5">
               <div class="q-mb-sm">
                 Retain handling
-                <q-btn-toggle :disable="status" toggle-color="dark" class="q-ml-sm" size="sm" v-model="config.options.rh" :options="[{label: '0', value: 0},{label: '1', value: 1},{label: '2', value: 2}]"/>
+                <q-btn-toggle :disable="status" flat rounded toggle-text-color="dark" text-color="grey-6" class="q-ml-sm" v-model="config.options.rh" :options="[{label: '0', value: 0},{label: '1', value: 1},{label: '2', value: 2}]"/>
               </div>
             </div>
             <q-collapsible v-if="version === 5" class="q-mt-sm q-mb-sm bg-grey-4" label="Properties">
@@ -61,34 +70,63 @@
         </div>
       </q-card-main>
     </q-card>
-    <div v-else class="subscriber__item q-ma-sm q-card" >
-      <q-icon class="subscriber__remove cursor-pointer" size="1rem" name="mdi-close" @click.native="removeSubscriber()"/>
-      <q-btn class="q-ml-sm" :icon="isPlayed && status !== 'paused' ? 'mdi-pause' : 'mdi-play'" @click="playStopHandler"/>
-      <q-btn align="left" class="q-mt-sm q-ml-sm q-mb-sm q-mr-lg q-py-none" style="width: calc(100% - 95px); display: inline-block;" @click="unsubscribeMessageHandler()">
-        <q-item dense class="q-px-none">
-          <q-tooltip>Unsubscribe from {{config.topic}}</q-tooltip>
-          <q-item-main>
-            <q-item-tile style="font-size: 0.9rem;" class="uppercase text-bold" label>Unsubscribe</q-item-tile>
-            <q-item-tile style="margin-top: 0; font-size: 0.75rem; text-transform: initial;" class="ellipsis" sublabel>{{config.topic}}</q-item-tile>
-          </q-item-main>
-        </q-item>
-      </q-btn>
-      <q-btn style="vertical-align: top" class="q-mx-sm" icon="mdi-playlist-remove" title="Clear messages" @click="clearMessagesHandler"/>
-      <q-btn align="left" style="width: calc(100% - 95px); display: inline-block;" class="q-mb-sm q-mr-lg q-py-none">
-        <q-item dense class="q-px-none">
-          <q-tooltip>Unsubscribe from {{config.topic}}</q-tooltip>
-          <q-item-main>
-            <q-item-tile style="font-size: 0.9rem;" class="uppercase text-bold" label>Settings</q-item-tile>
-            <q-item-tile style="margin-top: 0; font-size: 0.75rem; text-transform: initial;" class="ellipsis" sublabel>{{`Mode: ${config.mode ? 'Unique' : 'History'} ${filter ? `by filter: ${filter}` : ''}`}}</q-item-tile>
-          </q-item-main>
-        </q-item>
-        <q-popover style="height: 120px; width: 400px; max-width: 100%" anchor="bottom middle" self="top middle">
-          <div class="q-ma-sm">
-            <q-select color="dark" v-model="config.mode" :options="modeSelectOptions"/>
-            <q-input placeholder="Filter by topic" float-label="Filter" color="dark" v-model="filter"/>
-          </div>
-        </q-popover>
-      </q-btn>
+    <q-card v-else class="subscriber__item q-ma-sm" >
+      <q-card-title class="q-pa-none">
+        <q-toolbar v-if="!filterMode" color="orange" class="q-px-none">
+          <q-btn round flat icon="mdi-close" @click="unsubscribeMessageHandler()" />
+          <q-toolbar-title>
+            {{config.topic}}
+            <q-tooltip>{{config.topic}}</q-tooltip>
+          </q-toolbar-title>
+          <q-btn round flat :icon="isPlayed && status !== 'paused' ? 'mdi-pause' : 'mdi-play'" @click="playStopHandler"/>
+          <q-btn round flat icon="mdi-magnify" @click="filterMode = true"/>
+          <q-btn round flat icon="mdi-dots-vertical">
+            <q-popover anchor="bottom right" self="top right">
+              <q-list>
+                <q-item>
+                  <q-item-main>
+                    <q-btn-toggle flat rounded toggle-text-color="dark" text-color="grey-6" v-model="config.mode" :options="modeSelectOptions"/>
+                  </q-item-main>
+                </q-item>
+                <q-item class="cursor-pointer" highlight @click.native="clearMessagesHandler">
+                  <q-item-side icon="mdi-playlist-remove" />
+                  <q-item-main label="Clear messages"/>
+                </q-item>
+                <q-item-separator/>
+                <q-item class="cursor-pointer" highlight @click.native="removeSubscriber()">
+                  <q-item-side color="red" icon="mdi-delete-outline" />
+                  <q-item-main label="Remove"/>
+                </q-item>
+              </q-list>
+            </q-popover>
+          </q-btn>
+        </q-toolbar>
+        <q-input
+          v-else
+          class="q-ma-sm"
+          color="dark"
+          v-model="filter"
+          placeholder="Filter by topic"
+          autofocus
+          :before="[
+            {
+              icon: 'mdi-arrow-left',
+              handler () {
+                filterMode = false
+                filter = ''
+              }
+            }
+          ]"
+          :after="[
+            {
+              icon: 'mdi-close',
+              condition: !!filter,
+              handler () { filter = '' }
+            }
+          ]"
+        />
+      </q-card-title>
+
       <virtual-list
         ref="scroller"
         :onscroll="listScroll"
@@ -101,7 +139,7 @@
         <message :message="message" v-for="(message, msgIndex) in renderedMessages" :key="`subMsg$${msgIndex}`"/>
       </virtual-list>
       <div v-else class="subscriber__list--empty">No messages</div>
-    </div>
+    </q-card>
   </div>
 </template>
 
@@ -124,6 +162,7 @@ export default {
   ],
   data () {
     return {
+      filterMode: false,
       config: this.value,
       loadingStatus: false,
       subscriberUserProperty: {
@@ -272,17 +311,9 @@ export default {
       border 2px solid orange
       height calc(100% - 32px)
       position relative
-      .item__main
-        position relative
-        height calc(100% - 54px)
-        overflow auto
-    .subscriber__remove
-      position absolute
-      top 5px
-      right 5px
     .subscriber__list
       position absolute
-      top 110px
+      top 50px
       bottom 0
       right 0
       left 0

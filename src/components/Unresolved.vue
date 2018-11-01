@@ -1,10 +1,36 @@
 <template>
   <div class="mqtt-client__not-resolved-msgs col-md-6 col-sm-12 col-xs-12" >
-    <div class="not-resolved-msgs__main q-ma-sm q-card">
-      <q-toolbar style="border-bottom: 1px solid #999;" color="white" text-color="dark">
-        <q-toolbar-title>Unresolved messages</q-toolbar-title>
-      </q-toolbar>
-      <q-input placeholder="Topic filter" color="dark" v-model="filter" class="q-mx-sm q-mt-xs"/>
+    <q-card class="not-resolved-msgs__main q-ma-sm">
+      <q-card-title class="q-pa-none">
+        <q-toolbar v-if="!filterMode" color="red-6" class="q-px-none">
+          <q-toolbar-title>Unresolved messages</q-toolbar-title>
+          <q-btn round flat icon="mdi-magnify" @click="filterMode = true"/>
+        </q-toolbar>
+        <q-input
+          v-else
+          class="q-ma-sm"
+          color="dark"
+          v-model="filter"
+          placeholder="Filter by topic"
+          autofocus
+          :before="[
+            {
+              icon: 'mdi-arrow-left',
+              handler () {
+                filterMode = false
+                filter = ''
+              }
+            }
+          ]"
+          :after="[
+            {
+              icon: 'mdi-close',
+              condition: !!filter,
+              handler () { filter = '' }
+            }
+          ]"
+        />
+      </q-card-title>
       <virtual-list
         :size="110"
         :remain="15"
@@ -14,7 +40,7 @@
       >
         <message :message="message" v-for="(message, msgIndex) in filteredNotResolvedMessages" :key="`subNRMsg${msgIndex}`"/>
       </virtual-list>
-    </div>
+    </q-card>
   </div>
 </template>
 
@@ -28,7 +54,8 @@ export default {
   data () {
     return {
       filter: '',
-      needAutoScroll: true
+      needAutoScroll: true,
+      filterMode: false
     }
   },
   computed: {
@@ -64,11 +91,11 @@ export default {
   .mqtt-client__not-resolved-msgs
     .not-resolved-msgs__main
       position relative
-      border 2px solid #f2c037
+      border 2px solid red
       height calc(100% - 32px)
     .not-resolved-msgs__list
       position absolute
-      top 102px
+      top 50px
       bottom 0
       right 0
       left 0

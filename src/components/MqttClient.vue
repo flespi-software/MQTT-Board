@@ -11,7 +11,7 @@
         </q-toolbar>
         <div style="margin: 20px;" :style="{ height: $q.platform.is.mobile ? 'calc(100% - 100px)' : '50vh', width: $q.platform.is.mobile ? 'calc(100% - 40px)' : '50vw'}">
           <q-input color="dark"  v-model="currentSettings.clientId" float-label="Client ID" :error="!currentSettings.clientId" :after="[{icon: 'mdi-refresh', handler () { currentSettings.clientId = `mqtt-board-${Math.random().toString(16).substr(2, 8)}` }}]"/>
-          <q-input color="dark"  v-model="currentSettings.host" float-label="Host" :error="!currentSettings.host || currentSettings.host.indexOf('ws:') === 0" :after="[{icon: 'mdi-alert-outline', handler: hostErrorHandler, error: true}]"/>
+          <q-input color="dark"  v-model="currentSettings.host" float-label="Host" :error="!currentSettings.host || (secure && currentSettings.host.indexOf('ws:') === 0)" :after="[{icon: 'mdi-alert-outline', handler: hostErrorHandler, error: true}]"/>
           <q-input color="dark"  v-model="currentSettings.keepalive" type="number" float-label="Keep alive"/>
           <q-select color="dark" v-model="currentSettings.protocolVersion" :options="[{label: '3.1.1', value: 4}, {label: '5.0', value: 5}]" float-label="Version of MQTT"/>
           <q-checkbox color="dark" class="q-mt-sm q-mb-sm" v-model="currentSettings.clean" :label="currentSettings.protocolVersion === 5 ? 'Clean start' : 'Clean session'"/>
@@ -49,7 +49,7 @@
               <q-input color="dark" v-model="currentSettings.will.payload" :error="!!this.currentSettings.will.topic && !this.currentSettings.will.payload" type="textarea" float-label="Will payload"/>
               <div class="q-my-sm">
                 QoS
-                <q-btn-toggle toggle-color="dark" class="q-ml-sm" size="sm" v-model="currentSettings.will.qos" :options="[{label: '0', value: 0},{label: '1', value: 1},{label: '2', value: 2}]"/>
+                <q-btn-toggle flat rounded toggle-text-color="dark" text-color="grey-6" class="q-ml-sm" v-model="currentSettings.will.qos" :options="[{label: '0', value: 0},{label: '1', value: 1},{label: '2', value: 2}]"/>
               </div>
               <q-checkbox color="dark" class="q-mt-sm q-mb-sm" v-model="currentSettings.will.retain" label="Will retain"/>
               <q-collapsible class="bg-grey-4" label="Will properties" v-if="currentSettings.protocolVersion === 5">
@@ -85,33 +85,45 @@
         </q-toolbar>
       </q-modal-layout>
     </q-modal>
+    <q-btn fab v-if="!activeClient" @click.native="addClientHandler" icon="mdi-plus" class="absolute" color="light-blue-7" style="right: 16px; top: 21px; z-index: 1;"/>
     <q-toolbar color="dark">
-      <q-btn v-if="activeClient" flat dense icon="keyboard_arrow_left" @click="clearActiveClient"/>
+      <q-btn round v-if="activeClient" flat dense icon="mdi-close" @click="clearActiveClient"/>
       <q-toolbar-title>
-        <img v-if="whiteLabel === ''" src="statics/mqttboard.png" alt="MQTT Board" style="height: 30px">
+        <img v-if="!activeClient && whiteLabel === ''" src="statics/mqttboard.png" alt="MQTT Board" style="height: 30px">
         {{activeClient ? `${activeClient.config.clientId}` : (whiteLabel || 'MQTT Board')}}
-        <sup v-if="whiteLabel === ''" style="position: relative; font-size: .9rem; padding-left: 4px">{{version}}</sup>
+        <sup v-if="!activeClient && whiteLabel === ''" style="position: relative; font-size: .9rem; padding-left: 4px">{{version}}</sup>
       </q-toolbar-title>
-      <q-btn v-if="!activeClient" @click.native="addClientHandler" icon="mdi-plus">
-        Client
-      </q-btn>
-      <q-btn v-if="activeClient" icon="mdi-settings" @click.stop="editClientHandler(activeClient.id)"/>
-      <q-btn v-if="activeClient" @click.native="addPublisher" icon="mdi-publish">
-        <span v-if="$q.platform.is.desktop">Publisher</span>
-        <q-tooltip>Add new publisher</q-tooltip>
-      </q-btn>
-      <q-btn v-if="activeClient" @click.native="addSubscriber" icon="mdi-arrow-down-bold">
-        <span v-if="$q.platform.is.desktop">Subscriber</span>
-        <q-tooltip>Add new subscriber</q-tooltip>
-      </q-btn>
-      <q-btn v-if="activeClient && activeClient.config.host.indexOf('flespi') !== -1" @click.native="$refs.felspiModal.open()" icon="mdi-star-outline">
-        <span v-if="$q.platform.is.desktop">Flespi subscriber</span>
-        <q-tooltip>Add new flespi subscriber</q-tooltip>
+      <q-btn round flat v-if="activeClient" icon="mdi-settings" @click.stop="editClientHandler(activeClient.id)"/>
+      <q-btn round flat v-if="activeClient && !entities.filter(entity => entity.type === 'logs').length" icon="mdi-script" @click="showLogs"/>
+      <q-btn round flat v-if="activeClient" icon="mdi-plus">
+        <q-popover anchor="bottom right" self="top right">
+          <q-list>
+            <q-list-header>Add pane</q-list-header>
+            <q-item class="cursor-pointer" highlight @click.native="addPublisher">
+              <q-item-side icon="mdi-publish" />
+              <q-item-main label="Publisher">
+                <q-tooltip>Add new publisher</q-tooltip>
+              </q-item-main>
+            </q-item>
+            <q-item class="cursor-pointer" highlight @click.native="addSubscriber">
+              <q-item-side icon="mdi-arrow-down-bold" />
+              <q-item-main label="Subscriber">
+                <q-tooltip>Add new subscriber</q-tooltip>
+              </q-item-main>
+            </q-item>
+            <q-item v-if="activeClient && activeClient.config.host.indexOf('flespi') !== -1" class="cursor-pointer" highlight @click.native="$refs.felspiModal.open()">
+              <q-item-side icon="mdi-star-outline" />
+              <q-item-main label="Flespi subscriber">
+                <q-tooltip>Add new flespi subscriber</q-tooltip>
+              </q-item-main>
+            </q-item>
+          </q-list>
+        </q-popover>
       </q-btn>
     </q-toolbar>
-    <div v-if="!activeClient">
-      <div v-if="clients.length" class="mqtt-clients row">
-        <div class="q-pt-md q-px-md cursor-pointer col-xl-3 col-md-4 col-sm-6 col-xs-12" v-for="(client, index) in clients" :key="index">
+    <div v-if="!activeClient" style="overflow: hidden; height: calc(100% - 50px)">
+      <div v-if="clients.length" class="mqtt-clients row q-pt-md scroll" style="height: 100%">
+        <div class="client__item q-pt-md q-px-md cursor-pointer col-xl-3 col-md-4 col-sm-6 col-xs-12" v-for="(client, index) in clients" :key="index">
           <q-card :class="{'bg-red-2': !statuses[index], 'bg-green-2': statuses[index]}" @click.native="setActiveClient(index)">
             <q-card-title>
               <div class="ellipsis">{{client.config.clientId}}</div>
@@ -125,10 +137,14 @@
               </q-card-main>
             <q-card-separator />
             <q-card-actions align="end">
-              <q-btn v-if="statuses[index]" icon="mdi-stop" @click.stop="disconnectClientHandler(index)"/>
-              <q-btn v-else icon="mdi-play" @click.stop="connectClientHandler(index)"/>
-              <q-btn icon="mdi-settings" @click.stop="editClientHandler(index)"/>
-              <q-btn icon="mdi-delete" @click.stop="deleteClientHandler(index)"/>
+              <q-btn round flat v-if="statuses[index]" icon="mdi-stop" @click.stop="disconnectClientHandler(index)">
+                <q-tooltip>Deactivate client</q-tooltip>
+              </q-btn>
+              <q-btn round flat v-else icon="mdi-play" @click.stop="connectClientHandler(index)">
+                <q-tooltip>Activate client</q-tooltip>
+              </q-btn>
+              <q-btn round flat icon="mdi-settings" @click.stop="editClientHandler(index)"/>
+              <q-btn round flat icon="mdi-delete" @click.stop="deleteClientHandler(index)"/>
             </q-card-actions>
           </q-card>
         </div>
@@ -177,6 +193,7 @@
           v-else-if="entity.type === 'logs'"
           :key="`subs${index}`"
           :logs="activeClient.logs"
+          @hide="hideLogs"
         />
       </template>
     </div>
@@ -184,6 +201,9 @@
 </template>
 
 <style lang="stylus">
+  .client__item:last-child
+    margin-bottom 88px
+
 </style>
 
 <script>
@@ -206,7 +226,7 @@ let saveClientsToLocalStorage = debounce((clients) => {
     config: client.config,
     publishers: client.publishers,
     subscribers: client.subscribers,
-    entities: client.entities
+    entities: client.entities.filter(entity => entity.type !== 'unresolved')
   })))
 }, 500, { trailing: true })
 
@@ -296,6 +316,10 @@ export default {
     needInitNewClient: {
       type: Boolean,
       default: false
+    },
+    secure: {
+      type: Boolean,
+      default: true
     }
   },
   data () {
@@ -337,7 +361,7 @@ export default {
     },
     validateCurrentSettings () {
       return !!this.currentSettings.clientId &&
-        (!!this.currentSettings.host && !(this.currentSettings.host.indexOf('ws:') === 0)) &&
+        (!!this.currentSettings.host && this.secure && !(this.currentSettings.host.indexOf('ws:') === 0)) &&
         (
           (!!this.currentSettings.will.topic && !!this.currentSettings.will.payload) ||
           (!this.currentSettings.will.topic && !this.currentSettings.will.payload)
@@ -546,7 +570,7 @@ export default {
         })
       })
       client.on('error', (error) => {
-        this.errorHandler(key, error, true)
+        this.errorHandler(key, error, false)
       })
       client.on('close', () => {
         clientObj.logs.push({type: 'disconnect', timestamp: Date.now()})
@@ -576,7 +600,7 @@ export default {
         client.status = false
         client.subscribers = [cloneDeep(defaultSubscriber)]
         client.publishers = [cloneDeep(defaultPublisher)]
-        client.entities = [{type: 'logs'}, {type: 'subscriber', index: 0}, {type: 'publisher', index: 0}]
+        client.entities = [{type: 'subscriber', index: 0}, {type: 'publisher', index: 0}]
         client.messages = [[]]
         client.subscribersStatuses = [false]
         client.logs = [{type: 'created', data: {...config}, timestamp: Date.now()}]
@@ -799,6 +823,13 @@ export default {
       }
     },
     /* pub/sub logic end */
+    hideLogs () {
+      let indexLogsEntity = this.entities.findIndex(entity => entity.type === 'logs')
+      this.entities.splice(indexLogsEntity, 1)
+    },
+    showLogs () {
+      this.entities.unshift({type: 'logs'})
+    },
     swipeHandler (data) {
       let el = this.$refs.wrapper,
         elementOffsetWidth = el.offsetWidth,
