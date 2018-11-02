@@ -64,6 +64,7 @@ framework: {
     'QIcon',
     'QInput',
     'QCheckbox',
+    'QToggle',
     'QSelect',
     'QCard',
     'QCardTitle',

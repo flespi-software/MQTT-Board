@@ -1,7 +1,7 @@
 self.__precacheManifest = [
   {
-    "revision": "cf6613d1adf490972c557a8e318e0868",
-    "url": "fonts/KFOlCnqEu92Fr1MmWUlfBBc-.cf6613d1.woff"
+    "revision": "de8b7431b74642e830af4d4f4b513ec9",
+    "url": "fonts/KFOlCnqEu92Fr1MmEU9fBBc-.de8b7431.woff"
   },
   {
     "revision": "a9ff913a3c17b881b663",
@@ -16,16 +16,16 @@ self.__precacheManifest = [
     "url": "statics/mqttboard.png"
   },
   {
-    "revision": "e17e718b8061222f888c",
-    "url": "js/72cccce5.1133dc2f.js"
+    "revision": "2d0c1a8c5e55327f6d78",
+    "url": "js/72cccce5.02433704.js"
   },
   {
     "revision": "81463c75bc15a1879fcd66065271a2f4",
     "url": "statics/icons/ms-icon-310x310.png"
   },
   {
-    "revision": "550a49df4e77a8953c1f",
-    "url": "js/app.42712737.js"
+    "revision": "091bad934d0de94f9133",
+    "url": "js/app.aa530d4a.js"
   },
   {
     "revision": "dbbaa83852ef49fdab38",
@@ -60,7 +60,7 @@ self.__precacheManifest = [
     "url": "fonts/KFOkCnqEu92Fr1MmgVxIIzQ.e9dbbe8a.woff"
   },
   {
-    "revision": "303d31f7ee9a52abc5bdb9ef2c3e861f",
+    "revision": "f4ea7ad480b90ac354b47c118d43e9a9",
     "url": "index.html"
   },
   {
@@ -92,16 +92,16 @@ self.__precacheManifest = [
     "url": "fonts/KFOlCnqEu92Fr1MmYUtfBBc-.8c2ade50.woff"
   },
   {
-    "revision": "de8b7431b74642e830af4d4f4b513ec9",
-    "url": "fonts/KFOlCnqEu92Fr1MmEU9fBBc-.de8b7431.woff"
+    "revision": "cf6613d1adf490972c557a8e318e0868",
+    "url": "fonts/KFOlCnqEu92Fr1MmWUlfBBc-.cf6613d1.woff"
   },
   {
-    "revision": "550a49df4e77a8953c1f",
+    "revision": "091bad934d0de94f9133",
     "url": "css/app.99127b2f.css"
   },
   {
-    "revision": "e17e718b8061222f888c",
-    "url": "css/72cccce5.773c6aa6.css"
+    "revision": "2d0c1a8c5e55327f6d78",
+    "url": "css/72cccce5.b9cf919d.css"
   },
   {
     "revision": "def92ecae2f23e9b81b2",
