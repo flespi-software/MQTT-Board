@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.1.5] - 2018-11-02
+[fix] scroll after logs showed
 ### [1.1.4] - 2018-11-01
 [feature] restyling
 [feature] secure flag

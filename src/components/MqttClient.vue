@@ -829,6 +829,13 @@ export default {
     },
     showLogs () {
       this.entities.unshift({type: 'logs'})
+      let el = this.$refs.wrapper
+      animate.start({
+        from: el.scrollLeft,
+        to: 0,
+        duration: 200,
+        apply (pos) { el.scrollLeft = pos }
+      })
     },
     swipeHandler (data) {
       let el = this.$refs.wrapper,
