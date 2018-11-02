@@ -4,13 +4,13 @@
       <q-card-title class="q-pa-none">
         <q-toolbar color="orange" class="q-px-none">
           <q-toolbar-title>Subscriber</q-toolbar-title>
-          <q-btn round flat icon="mdi-arrow-right-bold-circle-outline" @click="subscribeMessageHandler">
+          <q-btn round flat :disable="!isValidSubscriber" icon="mdi-arrow-right-bold-circle-outline" @click="subscribeMessageHandler">
             <q-tooltip>Subscribe</q-tooltip>
           </q-btn>
           <q-btn round flat icon="mdi-dots-vertical">
             <q-popover anchor="bottom right" self="top right">
               <q-list>
-                <q-item class="cursor-pointer" highlight @click.native="removeSubscriber()">
+                <q-item class="cursor-pointer" v-close-overlay highlight @click.native="removeSubscriber()">
                   <q-item-side color="red" icon="mdi-delete-outline" />
                   <q-item-main label="Remove"/>
                 </q-item>
@@ -19,14 +19,14 @@
           </q-btn>
         </q-toolbar>
       </q-card-title>
-      <q-card-main class="q-py-none">
+      <q-card-main class="item__main q-py-none">
         <div>
           <q-input
             :disable="status"
             color="dark"
             v-model="config.topic"
             float-label="Topic"
-            :error="!config.topic"
+            :error="!isValidSubscriber"
             :after="[
               {
                 icon: 'mdi-alert',
@@ -93,7 +93,7 @@
                   <q-item-main label="Clear messages"/>
                 </q-item>
                 <q-item-separator/>
-                <q-item class="cursor-pointer" highlight @click.native="removeSubscriber()">
+                <q-item class="cursor-pointer" v-close-overlay highlight @click.native="removeSubscriber()">
                   <q-item-side color="red" icon="mdi-delete-outline" />
                   <q-item-main label="Remove"/>
                 </q-item>
@@ -147,6 +147,7 @@
 import Vue from 'vue'
 import VirtualList from 'vue-virtual-scroll-list'
 import Message from './Message'
+import validateTopic from '../mixins/validateTopic.js'
 
 const
   HISTORY_MODE = 0,
@@ -203,7 +204,7 @@ export default {
       }
     },
     isValidSubscriber () {
-      return !!this.config.topic
+      return !!this.config.topic && this.validateTopic(this.config.topic)
     }
   },
   methods: {
@@ -301,7 +302,8 @@ export default {
         el.scrollTop = el.scrollHeight - el.clientHeight
       }
     }
-  }
+  },
+  mixins: [validateTopic]
 }
 </script>
 
@@ -311,6 +313,10 @@ export default {
       border 2px solid orange
       height calc(100% - 32px)
       position relative
+      .item__main
+        position relative
+        height calc(100% - 50px)
+        overflow auto
     .subscriber__list
       position absolute
       top 50px

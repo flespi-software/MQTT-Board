@@ -4,16 +4,6 @@
       <q-card-title class="q-pa-none">
         <q-toolbar color="blue" class="q-px-none">
           <q-toolbar-title>Logs</q-toolbar-title>
-          <q-btn round flat icon="mdi-dots-vertical">
-            <q-popover anchor="bottom right" self="top right">
-              <q-list>
-                <q-item class="cursor-pointer" highlight @click.native="hideLogsHandler">
-                  <q-item-side color="red" icon="mdi-eye-off-outline" />
-                  <q-item-main label="Hide"/>
-                </q-item>
-              </q-list>
-            </q-popover>
-          </q-btn>
         </q-toolbar>
       </q-card-title>
       <q-card-main class="scroll q-pa-md" style="height: calc(100% - 50px)">
@@ -156,9 +146,6 @@ export default {
         return 'red'
       }
       return this.colors[log.type]
-    },
-    hideLogsHandler () {
-      this.$emit('hide')
     }
   }
 }

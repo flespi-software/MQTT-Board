@@ -1,7 +1,7 @@
 <template>
   <div style="position: absolute; bottom: 0; right: 0; top: 0; left: 0;">
     <flespi-topic ref="felspiModal" @topic="(topic) => { addSubscriber(); subscribers[subscribers.length - 1].topic = topic }"/>
-    <q-modal @show="showSettingsModalHandler" v-model='settingsModalModel'>
+    <q-modal @show="showSettingsModalHandler" @hide="clearCurrentSettings" v-model='settingsModalModel'>
       <q-modal-layout>
          <q-toolbar slot="header" color='dark'>
           <q-btn flat dense v-close-overlay icon="keyboard_arrow_left" @click="revertSettings"/>
@@ -93,29 +93,26 @@
         {{activeClient ? `${activeClient.config.clientId}` : (whiteLabel || 'MQTT Board')}}
         <sup v-if="!activeClient && whiteLabel === ''" style="position: relative; font-size: .9rem; padding-left: 4px">{{version}}</sup>
       </q-toolbar-title>
+      <div style="display: inline-flex">
+        <q-tooltip class="gt-sm">Logs</q-tooltip>
+        <q-toggle class="q-mr-sm" v-if="activeClient" :value="logsModel" @change="changeLogsStatus" icon="mdi-script" dark />
+      </div>
       <q-btn round flat v-if="activeClient" icon="mdi-settings" @click.stop="editClientHandler(activeClient.id)"/>
-      <q-btn round flat v-if="activeClient && !entities.filter(entity => entity.type === 'logs').length" icon="mdi-script" @click="showLogs"/>
       <q-btn round flat v-if="activeClient" icon="mdi-plus">
         <q-popover anchor="bottom right" self="top right">
           <q-list>
             <q-list-header>Add pane</q-list-header>
-            <q-item class="cursor-pointer" highlight @click.native="addPublisher">
+            <q-item class="cursor-pointer" v-close-overlay highlight @click.native="addPublisher">
               <q-item-side icon="mdi-publish" />
-              <q-item-main label="Publisher">
-                <q-tooltip>Add new publisher</q-tooltip>
-              </q-item-main>
+              <q-item-main label="Publisher" />
             </q-item>
-            <q-item class="cursor-pointer" highlight @click.native="addSubscriber">
+            <q-item class="cursor-pointer" v-close-overlay highlight @click.native="addSubscriber">
               <q-item-side icon="mdi-arrow-down-bold" />
-              <q-item-main label="Subscriber">
-                <q-tooltip>Add new subscriber</q-tooltip>
-              </q-item-main>
+              <q-item-main label="Subscriber" />
             </q-item>
-            <q-item v-if="activeClient && activeClient.config.host.indexOf('flespi') !== -1" class="cursor-pointer" highlight @click.native="$refs.felspiModal.open()">
+            <q-item v-if="activeClient && activeClient.config.host.indexOf('flespi') !== -1" class="cursor-pointer" v-close-overlay highlight @click.native="$refs.felspiModal.open()">
               <q-item-side icon="mdi-star-outline" />
-              <q-item-main label="Flespi subscriber">
-                <q-tooltip>Add new flespi subscriber</q-tooltip>
-              </q-item-main>
+              <q-item-main label="Flespi subscriber" />
             </q-item>
           </q-list>
         </q-popover>
@@ -159,7 +156,7 @@
         <publisher
           :class='[`col-xl-${entities.length < 4 ? 12 / entities.length : 3}`]'
           v-if="statuses[activeClient.id] && entity.type === 'publisher'"
-          :key="`publ${index}`"
+          :key="`publ${entity.id}`"
           :value="publishers[entity.index]"
           @input="(val) => { inputPublisher(entity.index, val) }"
           :version="activeClient.config.protocolVersion"
@@ -169,7 +166,7 @@
         <subscriber
           :class='[`col-xl-${entities.length < 4 ? 12 / entities.length : 3}`]'
           v-else-if="statuses[activeClient.id] && entity.type === 'subscriber'"
-          :key="`subs${index}`"
+          :key="`subs${entity.id}`"
           :value="subscribers[entity.index]"
           @input="(val) => { inputSubscriber(entity.index, val) }"
           :status="subscribersStatuses[entity.index]"
@@ -193,7 +190,6 @@
           v-else-if="entity.type === 'logs'"
           :key="`subs${index}`"
           :logs="activeClient.logs"
-          @hide="hideLogs"
         />
       </template>
     </div>
@@ -366,6 +362,9 @@ export default {
           (!!this.currentSettings.will.topic && !!this.currentSettings.will.payload) ||
           (!this.currentSettings.will.topic && !this.currentSettings.will.payload)
         )
+    },
+    logsModel () {
+      return !!this.activeClient && !!this.entities.filter(entity => entity.type === 'logs').length
     }
   },
   methods: {
@@ -692,7 +691,7 @@ export default {
     },
     addPublisher () {
       this.publishers.push(cloneDeep(defaultPublisher))
-      this.entities.push({type: 'publisher', index: this.publishers.length - 1})
+      this.entities.push({type: 'publisher', index: this.publishers.length - 1, id: Math.random().toString(16).substr(2, 8)})
       this.saveClientsToLocalStorage()
       this.isNeedScroll = true
     },
@@ -700,7 +699,7 @@ export default {
       this.subscribers.push(cloneDeep(defaultSubscriber))
       this.subscribersMessages.push([])
       this.subscribersStatuses.push(false)
-      this.entities.push({type: 'subscriber', index: this.subscribers.length - 1})
+      this.entities.push({type: 'subscriber', index: this.subscribers.length - 1, id: Math.random().toString(16).substr(2, 8)})
       this.saveClientsToLocalStorage()
       this.isNeedScroll = true
     },
@@ -823,6 +822,13 @@ export default {
       }
     },
     /* pub/sub logic end */
+    changeLogsStatus (status) {
+      if (status) {
+        this.showLogs()
+      } else {
+        this.hideLogs()
+      }
+    },
     hideLogs () {
       let indexLogsEntity = this.entities.findIndex(entity => entity.type === 'logs')
       this.entities.splice(indexLogsEntity, 1)
@@ -873,10 +879,16 @@ export default {
           let currentClient = this.clients[this.clients.length - 1]
           currentClient.publishers = client.publishers
           currentClient.subscribers = client.subscribers
-          /* preserve for old clients */
+          /* preserve for old clients start */
           if (client.entities.length && !client.entities.filter(entity => entity.type === 'logs').length) {
             client.entities.unshift({type: 'logs'})
           }
+          client.entities.forEach((entity, index) => {
+            if (entity.type === 'subscriber' || entity.type === 'publisher') {
+              client.entities[index].id = Math.random().toString(16).substr(2, 8)
+            }
+          })
+          /* preserve for old clients end */
           currentClient.entities = client.entities
           currentClient.messages = new Array(client.subscribers.length)
           currentClient.messages.fill([])

@@ -1,5 +1,8 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.1.6] - 2018-11-02
+[fix] validation topic on subscribers and publishers
+[fix] some ux issues
 ### [1.1.5] - 2018-11-02
 [fix] scroll after logs showed
 ### [1.1.4] - 2018-11-01

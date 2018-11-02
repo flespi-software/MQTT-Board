@@ -61,6 +61,7 @@ module.exports = function (ctx) {
         'QIcon',
         'QInput',
         'QCheckbox',
+        'QToggle',
         'QSelect',
         'QCard',
         'QCardTitle',

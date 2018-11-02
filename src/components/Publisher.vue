@@ -4,13 +4,13 @@
       <q-card-title class="q-pa-none">
         <q-toolbar color="indigo" class="q-px-none">
           <q-toolbar-title>Publisher</q-toolbar-title>
-          <q-btn round flat icon="mdi-send" @click="$emit('publish')">
+          <q-btn round :disable="!isValidPublisher" flat icon="mdi-send" @click="$emit('publish')">
             <q-tooltip>Publish</q-tooltip>
           </q-btn>
           <q-btn round flat icon="mdi-dots-vertical">
             <q-popover anchor="bottom right" self="top right">
               <q-list>
-                <q-item class="cursor-pointer" highlight @click.native="$emit('remove')">
+                <q-item class="cursor-pointer" v-close-overlay highlight @click.native="$emit('remove')">
                   <q-item-side color="red" icon="mdi-delete-outline" />
                   <q-item-main label="Remove"/>
                 </q-item>
@@ -21,7 +21,7 @@
       </q-card-title>
       <q-card-main class="publisher__main q-pb-none">
         <div>
-          <q-input color="dark" v-model="config.topic" float-label="Topic" :error="!config.topic"/>
+          <q-input color="dark" v-model="config.topic" float-label="Topic" :error="!isValidPublisher"/>
           <q-input
             color="dark"
             type="textarea"
@@ -69,6 +69,7 @@
 
 <script>
 import Vue from 'vue'
+import validateTopic from '../mixins/validateTopic.js'
 
 export default {
   name: 'Publisher',
@@ -83,6 +84,11 @@ export default {
         value: '',
         name: ''
       }
+    }
+  },
+  computed: {
+    isValidPublisher () {
+      return !!this.config.topic && this.validateTopic(this.config.topic)
     }
   },
   methods: {
@@ -116,7 +122,8 @@ export default {
         this.config = value
       }
     }
-  }
+  },
+  mixins: [validateTopic]
 }
 </script>
 
@@ -132,6 +139,6 @@ export default {
       right 5px
     .publisher__main
       position relative
-      height calc(100% - 54px)
+      height calc(100% - 50px)
       overflow auto
 </style>
