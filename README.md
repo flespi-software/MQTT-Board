@@ -104,11 +104,12 @@ export default {
 | useLocalStorage | local storage usage flag | true |
 | needInitNewClient | Need create and init new client with default settings | false |
 | secure | Need validate by security host | true |
+| initEntities | Start-pack entities in new clients | [SUBSCRIBER, PUBLISHER]] |
 
 settings structure:
 ```js
 let settings = {
-  clientId: `mqtt-client-${Math.random().toString(16).substr(2, 8)}`,
+  clientId: `mqtt-board-${Math.random().toString(16).substr(2, 8)}`,
   host: 'wss://mqtt.flespi.io',
   keepalive: 60,
   protocolVersion: 5,
@@ -116,29 +117,67 @@ let settings = {
   username: 'FlespiToken XXXXXXXXXXXXXXXXXXX',
   password: '',
   properties: {
-    sessionExpiryInterval: null,
-    receiveMaximum: null,
-    maximumPacketSize: null,
-    topicAliasMaximum: null,
-    requestResponseInformation: null,
-    requestProblemInformation: null,
-    userProperties: null,
-    authenticationMethod: null,
-    authenticationData: null
+    sessionExpiryInterval: undefined,
+    receiveMaximum: undefined,
+    maximumPacketSize: undefined,
+    topicAliasMaximum: undefined,
+    requestResponseInformation: false,
+    requestProblemInformation: false,
+    userProperties: undefined,
+    authenticationMethod: undefined,
+    authenticationData: undefined
   },
   will: {
-    topic: null,
-    payload: null,
-    qos: null,
-    retain: null,
+    topic: undefined,
+    payload: undefined,
+    qos: 0,
+    retain: false,
     properties: {
-      willDelayInterval: null,
-      payloadFormatIndicator: null,
-      messageExpiryInterval: null,
-      contentType: null,
-      responseTopic: null,
-      correlationData: null,
-      userProperties: null
+      willDelayInterval: undefined,
+      payloadFormatIndicator: false,
+      messageExpiryInterval: undefined,
+      contentType: undefined,
+      responseTopic: undefined,
+      correlationData: undefined,
+      userProperties: undefined
+    }
+  }
+}
+```
+subscriber structure:
+```js
+let subscriber = {
+  topic: '#',
+  mode: 0,
+  options: {
+    qos: 0,
+    nl: false,
+    rap: false,
+    rh: 0,
+    properties: {
+      subscriptionIdentifier: undefined,
+      userProperties: undefined
+    }
+  }
+}
+```
+publisher structure:
+```js
+let publisher = {
+  topic: 'my/topic',
+  payload: '{"hello": "world"}',
+  options: {
+    qos: 0,
+    retain: false,
+    dup: false,
+    properties: {
+      payloadFormatIndicator: undefined,
+      messageExpiryInterval: undefined,
+      topicAlias: undefined,
+      responseTopic: undefined,
+      correlationData: undefined,
+      userProperties: undefined,
+      contentType: undefined
     }
   }
 }
