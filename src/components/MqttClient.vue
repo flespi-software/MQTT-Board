@@ -85,8 +85,8 @@
         </q-toolbar>
       </q-modal-layout>
     </q-modal>
-    <q-btn fab v-if="!activeClient" @click.native="addClientHandler" icon="mdi-plus" class="absolute" color="light-blue-7" style="right: 16px; top: 21px; z-index: 1;"/>
-    <q-toolbar color="dark">
+    <q-btn fab v-if="!activeClient" @click.native="addClientHandler" icon="mdi-plus" class="absolute" color="light-blue-7" style="position: fixed; right: 16px; top: 21px; z-index: 2;"/>
+    <q-toolbar color="dark" class="fixed-top" style="z-index: 1">
       <q-btn round v-if="activeClient" flat dense icon="mdi-close" @click="clearActiveClient"/>
       <q-toolbar-title>
         <img v-if="!activeClient && whiteLabel === ''" src="statics/mqttboard.png" alt="MQTT Board" style="height: 30px">
@@ -118,8 +118,8 @@
         </q-popover>
       </q-btn>
     </q-toolbar>
-    <div v-if="!activeClient" style="overflow: hidden; height: calc(100% - 50px)">
-      <div v-if="clients.length" class="mqtt-clients row q-pt-md scroll" style="height: 100%">
+    <div v-if="!activeClient" style="overflow: hidden; padding-top: 50px;">
+      <div v-if="clients.length" class="mqtt-clients row q-pt-md scroll">
         <div class="client__item q-pt-md q-px-md cursor-pointer col-xl-3 col-md-4 col-sm-6 col-xs-12" v-for="(client, index) in clients" :key="index">
           <q-card :class="{'bg-red-2': !statuses[index], 'bg-green-2': statuses[index]}" @click.native="setActiveClient(index)">
             <q-card-title>
@@ -151,7 +151,7 @@
         <q-btn v-if="!activeClient" @click.native="addClientHandler">Create client</q-btn>
       </div>
     </div>
-    <div ref="wrapper" v-touch-swipe.horizontal.noMouse="swipeHandler" class="no-wrap row" style="height: calc(100% - 50px); width: 100%; overflow: auto;" v-else>
+    <div ref="wrapper" v-touch-swipe.horizontal.noMouse="swipeHandler" class="no-wrap row" style="padding-top: 50px; height: 100%; width: 100%; overflow: auto;" v-else-if="entities.length">
       <template v-for="(entity, index) in entities">
         <publisher
           :class='[`col-xl-${entities.length < 4 ? 12 / entities.length : 3}`]'
@@ -193,12 +193,13 @@
         />
       </template>
     </div>
+    <div v-else class="text-center q-mt-lg text-dark text-weight-bold" style="font-size: 2.5rem;">No active entities</div>
   </div>
 </template>
 
 <style lang="stylus">
   .client__item:last-child
-    margin-bottom 88px
+    margin-bottom 16px
 
 </style>
 
@@ -216,6 +217,7 @@ import Publisher from './Publisher'
 import Unresolved from './Unresolved'
 import Logs from './Logs'
 import { version } from '../../package.json'
+import validateEntities from '../mixins/validateEntities.js'
 
 let saveClientsToLocalStorage = debounce((clients) => {
   LocalStorage.set('clients', clients.map(client => ({
@@ -316,6 +318,29 @@ export default {
     secure: {
       type: Boolean,
       default: true
+    },
+    initEntities: {
+      type: Array,
+      default () {
+        return [
+          {
+            type: 'subscriber',
+            settings: cloneDeep(defaultSubscriber)
+          },
+          {
+            type: 'publisher',
+            settings: cloneDeep(defaultPublisher)
+          }
+        ]
+      },
+      validator (entities) {
+        return entities.reduce((result, entity, index) => {
+          if (!validateEntities.methods.validateEntity(entity)) {
+            return result && false
+          }
+          return result && true
+        }, true)
+      }
     }
   },
   data () {
@@ -528,10 +553,10 @@ export default {
           })
         }
       })
-      client.on('connect', (connack) => {
+      client.on('connect', () => { Vue.set(this.statuses, key, true) })
+      client.once('connect', (connack) => {
         /* client connect logs push */
         clientObj.logs.push({type: 'connect', data: {...connack}, timestamp: Date.now()})
-        Vue.set(this.statuses, key, true)
         client.on('message', (topic, message, packet) => {
           let resolveFlag = false
           clientObj.subscribers.forEach((sub, index, subs) => {
@@ -597,11 +622,7 @@ export default {
         let client = {}
         client.id = key
         client.status = false
-        client.subscribers = [cloneDeep(defaultSubscriber)]
-        client.publishers = [cloneDeep(defaultPublisher)]
-        client.entities = [{type: 'subscriber', index: 0}, {type: 'publisher', index: 0}]
-        client.messages = [[]]
-        client.subscribersStatuses = [false]
+        this.createInitEntities(client)
         client.logs = [{type: 'created', data: {...config}, timestamp: Date.now()}]
         client.notResolvedMessages = []
         this.clients[key] = client
@@ -616,6 +637,33 @@ export default {
       this.saveClientsToLocalStorage()
       this.initClient(key, config)
       this.clearCurrentSettings()
+    },
+    createInitEntities (client) {
+      let entities = this.initEntities
+      client.subscribers = []
+      client.publishers = []
+      client.entities = []
+      client.messages = []
+      client.subscribersStatuses = []
+      entities.forEach((entity, index) => {
+        switch (entity.type) {
+          case 'subscriber': {
+            client.subscribers.push(cloneDeep(merge({}, defaultSubscriber, entity.settings)))
+            client.messages.push([])
+            client.subscribersStatuses.push(false)
+            client.entities.push({type: 'subscriber', index: client.subscribers.length - 1, id: Math.random().toString(16).substr(2, 8)})
+            break
+          }
+          case 'publisher': {
+            client.publishers.push(cloneDeep(merge({}, defaultPublisher, entity.settings)))
+            client.entities.push({type: 'publisher', index: client.publishers.length - 1, id: Math.random().toString(16).substr(2, 8)})
+            break
+          }
+          default: {
+            this.showError(new Error(`Unknown type of entity: ${entity.type}`))
+          }
+        }
+      })
     },
     addClientHandler () {
       this.settingsModalModel = true
@@ -836,25 +884,27 @@ export default {
     showLogs () {
       this.entities.unshift({type: 'logs'})
       let el = this.$refs.wrapper
-      animate.start({
-        from: el.scrollLeft,
-        to: 0,
-        duration: 200,
-        apply (pos) { el.scrollLeft = pos }
-      })
+      if (el) {
+        animate.start({
+          from: el.scrollLeft,
+          to: 0,
+          duration: 200,
+          apply (pos) { el.scrollLeft = pos }
+        })
+      }
     },
     swipeHandler (data) {
       let el = this.$refs.wrapper,
-        elementOffsetWidth = el.offsetWidth,
+        elementOffsetWidth = el && el.offsetWidth,
         { direction } = data
-      if (direction === 'left') {
+      if (el && direction === 'left') {
         animate.start({
           from: el.scrollLeft,
           to: el.scrollLeft + elementOffsetWidth,
           duration: 200,
           apply (pos) { el.scrollLeft = pos }
         })
-      } else if (direction === 'right') {
+      } else if (el && direction === 'right') {
         animate.start({
           from: el.scrollLeft,
           to: el.scrollLeft - elementOffsetWidth,
@@ -924,6 +974,7 @@ export default {
       })
       this.isNeedScroll = false
     }
-  }
+  },
+  mixins: [ validateEntities ]
 }
 </script>

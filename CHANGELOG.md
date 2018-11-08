@@ -1,5 +1,8 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.1.7] - 2018-11-08
+[feature] init entities in props
+[fix] reconnect init
 ### [1.1.6] - 2018-11-02
 [fix] validation topic on subscribers and publishers
 [fix] some ux issues
