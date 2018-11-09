@@ -1,7 +1,7 @@
 self.__precacheManifest = [
   {
-    "revision": "de8b7431b74642e830af4d4f4b513ec9",
-    "url": "fonts/KFOlCnqEu92Fr1MmEU9fBBc-.de8b7431.woff"
+    "revision": "8c2ade503b34e31430d6c98aa29a52a3",
+    "url": "fonts/KFOlCnqEu92Fr1MmYUtfBBc-.8c2ade50.woff"
   },
   {
     "revision": "a9ff913a3c17b881b663",
@@ -16,16 +16,16 @@ self.__precacheManifest = [
     "url": "statics/mqttboard.png"
   },
   {
-    "revision": "c13fd4aec6ab51fb9c29",
-    "url": "js/72cccce5.eca0813e.js"
+    "revision": "ba7b7ee42c6bc21cd952",
+    "url": "js/72cccce5.3316dc29.js"
   },
   {
     "revision": "81463c75bc15a1879fcd66065271a2f4",
     "url": "statics/icons/ms-icon-310x310.png"
   },
   {
-    "revision": "151012196dd1cf210c57",
-    "url": "js/app.bfbfcb9f.js"
+    "revision": "7c2580866d3d4e559a01",
+    "url": "js/app.b88a446f.js"
   },
   {
     "revision": "dbbaa83852ef49fdab38",
@@ -56,11 +56,11 @@ self.__precacheManifest = [
     "url": "statics/icons/favicon-16x16.png"
   },
   {
-    "revision": "e9dbbe8a693dd275c16d32feb101f1c1",
-    "url": "fonts/KFOkCnqEu92Fr1MmgVxIIzQ.e9dbbe8a.woff"
+    "revision": "de8b7431b74642e830af4d4f4b513ec9",
+    "url": "fonts/KFOlCnqEu92Fr1MmEU9fBBc-.de8b7431.woff"
   },
   {
-    "revision": "09ff7e4015e98b33578997819a22b592",
+    "revision": "a57499bb7aa8428c578abd6a95b3c958",
     "url": "index.html"
   },
   {
@@ -88,19 +88,19 @@ self.__precacheManifest = [
     "url": "fonts/KFOmCnqEu92Fr1Mu4mxM.bafb105b.woff"
   },
   {
-    "revision": "8c2ade503b34e31430d6c98aa29a52a3",
-    "url": "fonts/KFOlCnqEu92Fr1MmYUtfBBc-.8c2ade50.woff"
-  },
-  {
     "revision": "cf6613d1adf490972c557a8e318e0868",
     "url": "fonts/KFOlCnqEu92Fr1MmWUlfBBc-.cf6613d1.woff"
   },
   {
-    "revision": "151012196dd1cf210c57",
+    "revision": "e9dbbe8a693dd275c16d32feb101f1c1",
+    "url": "fonts/KFOkCnqEu92Fr1MmgVxIIzQ.e9dbbe8a.woff"
+  },
+  {
+    "revision": "7c2580866d3d4e559a01",
     "url": "css/app.99127b2f.css"
   },
   {
-    "revision": "c13fd4aec6ab51fb9c29",
+    "revision": "ba7b7ee42c6bc21cd952",
     "url": "css/72cccce5.bb182b5c.css"
   },
   {

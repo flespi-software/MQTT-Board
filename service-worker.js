@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "precache-manifest.334cc87a49e7d498394b1da829ffacb6.js"
+  "precache-manifest.064f2d4b1e3927d098ff1e644449f4ee.js"
 );
 
 workbox.core.setCacheNameDetails({prefix: "mqtt-board"});
