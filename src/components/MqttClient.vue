@@ -85,8 +85,8 @@
         </q-toolbar>
       </q-modal-layout>
     </q-modal>
-    <q-btn fab v-if="!activeClient" @click.native="addClientHandler" icon="mdi-plus" color="light-blue-7" style="position: fixed; right: 16px; top: 21px; z-index: 2;"/>
-    <q-toolbar color="dark" class="fixed-top" style="z-index: 1">
+    <q-btn fab v-if="!activeClient" @click.native="addClientHandler" icon="mdi-plus" color="light-blue-7" style="position: absolute; right: 16px; top: 21px; z-index: 2;"/>
+    <q-toolbar color="dark" style="position: absolute; z-index: 1">
       <q-btn round v-if="activeClient" flat dense icon="mdi-close" @click="clearActiveClient"/>
       <q-toolbar-title>
         <img v-if="!activeClient && whiteLabel === ''" src="statics/mqttboard.png" alt="MQTT Board" style="height: 30px">
@@ -119,8 +119,8 @@
       </q-btn>
       <q-btn v-if="!activeClient && !whiteLabel" dense @click="openURL('https://github.com/flespi-software/MQTT-Board')" color="blue" icon="mdi-github-circle" style="margin-right: 90px" label="Fork me!"/>
     </q-toolbar>
-    <div v-if="!activeClient" style="overflow: hidden; padding-top: 50px;">
-      <div v-if="clients.length" class="mqtt-clients row q-pt-md scroll">
+    <div v-if="!activeClient" class="absolute scroll" style="top:50px; left: 0; right: 0; bottom: 0;">
+      <div v-if="clients.length" class="mqtt-clients row q-pt-md">
         <div class="client__item q-pt-md q-px-md cursor-pointer col-xl-3 col-md-4 col-sm-6 col-xs-12" v-for="(client, index) in clients" :key="index">
           <q-card :class="{'bg-red-2': !statuses[index], 'bg-green-2': statuses[index]}" @click.native="setActiveClient(index)">
             <q-card-title>
@@ -152,7 +152,7 @@
         <q-btn v-if="!activeClient" @click.native="addClientHandler">Create client</q-btn>
       </div>
     </div>
-    <div ref="wrapper" v-touch-swipe.horizontal.noMouse="swipeHandler" class="no-wrap row" style="padding-top: 50px; height: 100%; width: 100%; overflow: auto;" v-else-if="entities.length">
+    <div ref="wrapper" v-touch-swipe.horizontal.noMouse="swipeHandler" class="no-wrap row" style="position: absolute; top: 50px; bottom: 0; left: 0; right: 0; overflow: auto;" v-else-if="entities.length">
       <template v-for="(entity, index) in entities">
         <publisher
           :class='[`col-xl-${entities.length < 4 ? 12 / entities.length : 3}`]'

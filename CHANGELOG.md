@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.1.10] - 2018-11-09
+[fix] style position wrapper
 ### [1.1.9] - 2018-11-09
 [fix] github link
 ### [1.1.8] - 2018-11-09
