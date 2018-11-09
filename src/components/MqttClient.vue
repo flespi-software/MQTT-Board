@@ -81,7 +81,7 @@
           <q-toolbar-title>
           </q-toolbar-title>
           <q-btn flat dense v-close-overlay class="q-mr-sm" @click="revertSettings">Close</q-btn>
-          <q-btn flat dense v-close-overlay :disable="!validateCurrentSettings" @click="saveSettingsHandler">Save</q-btn>
+          <q-btn flat dense :disable="!validateCurrentSettings" @click="saveSettingsHandler">Save</q-btn>
         </q-toolbar>
       </q-modal-layout>
     </q-modal>
@@ -411,6 +411,7 @@ export default {
     saveSettingsHandler () {
       this.prevSettings = null
       this.createClient(this.activeClientSettings)
+      this.settingsModalModel = false
     },
     addUserProperty () {
       if (!this.currentSettings.properties.userProperties) {
