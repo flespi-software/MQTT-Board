@@ -85,7 +85,7 @@
         </q-toolbar>
       </q-modal-layout>
     </q-modal>
-    <q-btn fab v-if="!activeClient" @click.native="addClientHandler" icon="mdi-plus" class="absolute" color="light-blue-7" style="position: fixed; right: 16px; top: 21px; z-index: 2;"/>
+    <q-btn fab v-if="!activeClient" @click.native="addClientHandler" icon="mdi-plus" color="light-blue-7" style="position: fixed; right: 16px; top: 21px; z-index: 2;"/>
     <q-toolbar color="dark" class="fixed-top" style="z-index: 1">
       <q-btn round v-if="activeClient" flat dense icon="mdi-close" @click="clearActiveClient"/>
       <q-toolbar-title>
@@ -117,6 +117,7 @@
           </q-list>
         </q-popover>
       </q-btn>
+      <q-btn v-if="!activeClient && !whiteLabel" dense @click="openURL('https://github.com/flespi-software/mqtt-board')" color="blue" icon="mdi-github-circle" style="margin-right: 90px" label="Fork me!"/>
     </q-toolbar>
     <div v-if="!activeClient" style="overflow: hidden; padding-top: 50px;">
       <div v-if="clients.length" class="mqtt-clients row q-pt-md scroll">
@@ -209,7 +210,7 @@ import VirtualList from 'vue-virtual-scroll-list'
 import merge from 'lodash/merge'
 import cloneDeep from 'lodash/cloneDeep'
 import debounce from 'lodash/debounce'
-import { animate, LocalStorage } from 'quasar'
+import { animate, LocalStorage, openURL } from 'quasar'
 import Vue from 'vue'
 import FlespiTopic from './FlespiTopicConfigurator'
 import Subscriber from './Subscriber'
@@ -393,6 +394,7 @@ export default {
     }
   },
   methods: {
+    openURL: openURL,
     /* settings modal handlers start */
     showSettingsModalHandler () {
       this.prevSettings = cloneDeep(this.currentSettings)
