@@ -117,7 +117,7 @@
           </q-list>
         </q-popover>
       </q-btn>
-      <q-btn v-if="!activeClient && !whiteLabel" dense @click="openURL('https://github.com/flespi-software/mqtt-board')" color="blue" icon="mdi-github-circle" style="margin-right: 90px" label="Fork me!"/>
+      <q-btn v-if="!activeClient && !whiteLabel" dense @click="openURL('https://github.com/flespi-software/MQTT-Board')" color="blue" icon="mdi-github-circle" style="margin-right: 90px" label="Fork me!"/>
     </q-toolbar>
     <div v-if="!activeClient" style="overflow: hidden; padding-top: 50px;">
       <div v-if="clients.length" class="mqtt-clients row q-pt-md scroll">
