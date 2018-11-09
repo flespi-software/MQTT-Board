@@ -1,7 +1,7 @@
 self.__precacheManifest = [
   {
-    "revision": "de8b7431b74642e830af4d4f4b513ec9",
-    "url": "fonts/KFOlCnqEu92Fr1MmEU9fBBc-.de8b7431.woff"
+    "revision": "cf6613d1adf490972c557a8e318e0868",
+    "url": "fonts/KFOlCnqEu92Fr1MmWUlfBBc-.cf6613d1.woff"
   },
   {
     "revision": "a9ff913a3c17b881b663",
@@ -16,16 +16,16 @@ self.__precacheManifest = [
     "url": "statics/mqttboard.png"
   },
   {
-    "revision": "45cd80db6acb1fd3d326",
-    "url": "js/72cccce5.464857b4.js"
+    "revision": "5343a18a0acaf64daad7",
+    "url": "js/72cccce5.4f6c9f62.js"
   },
   {
     "revision": "81463c75bc15a1879fcd66065271a2f4",
     "url": "statics/icons/ms-icon-310x310.png"
   },
   {
-    "revision": "3caa373b5c3d377ea48d",
-    "url": "js/app.9c0dedab.js"
+    "revision": "6cbfedd9adfe5b990e13",
+    "url": "js/app.cf72ea58.js"
   },
   {
     "revision": "e349eb55e959684e73f9",
@@ -48,24 +48,24 @@ self.__precacheManifest = [
     "url": "statics/icons/apple-icon-120x120.png"
   },
   {
-    "revision": "6134322248dd299877006292ee663416",
-    "url": "statics/icons/favicon-16x16.png"
-  },
-  {
     "revision": "550ee5f57ea96e4a311f918ae2f6e48c",
     "url": "statics/icons/favicon-32x32.png"
   },
   {
-    "revision": "cf6613d1adf490972c557a8e318e0868",
-    "url": "fonts/KFOlCnqEu92Fr1MmWUlfBBc-.cf6613d1.woff"
+    "revision": "6134322248dd299877006292ee663416",
+    "url": "statics/icons/favicon-16x16.png"
   },
   {
-    "revision": "5b02ae410f18c07e89e9d703e3470ba5",
+    "revision": "de8b7431b74642e830af4d4f4b513ec9",
+    "url": "fonts/KFOlCnqEu92Fr1MmEU9fBBc-.de8b7431.woff"
+  },
+  {
+    "revision": "fd43806b57049f16cdf6718cd6eca2a3",
     "url": "index.html"
   },
   {
-    "revision": "e9dbbe8a693dd275c16d32feb101f1c1",
-    "url": "fonts/KFOkCnqEu92Fr1MmgVxIIzQ.e9dbbe8a.woff"
+    "revision": "a1471d1d6431c893582a5f6a250db3f9",
+    "url": "fonts/KFOlCnqEu92Fr1MmSU5fBBc-.a1471d1d.woff"
   },
   {
     "revision": "8a9a261c8b8dfe90db11f1817a9d22e1",
@@ -92,15 +92,15 @@ self.__precacheManifest = [
     "url": "fonts/KFOlCnqEu92Fr1MmYUtfBBc-.8c2ade50.woff"
   },
   {
-    "revision": "a1471d1d6431c893582a5f6a250db3f9",
-    "url": "fonts/KFOlCnqEu92Fr1MmSU5fBBc-.a1471d1d.woff"
+    "revision": "e9dbbe8a693dd275c16d32feb101f1c1",
+    "url": "fonts/KFOkCnqEu92Fr1MmgVxIIzQ.e9dbbe8a.woff"
   },
   {
-    "revision": "3caa373b5c3d377ea48d",
+    "revision": "6cbfedd9adfe5b990e13",
     "url": "css/app.99127b2f.css"
   },
   {
-    "revision": "45cd80db6acb1fd3d326",
+    "revision": "5343a18a0acaf64daad7",
     "url": "css/72cccce5.bb182b5c.css"
   },
   {
