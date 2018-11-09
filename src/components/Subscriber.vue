@@ -70,62 +70,60 @@
         </div>
       </q-card-main>
     </q-card>
-    <q-card v-else class="subscriber__item q-ma-sm" >
-      <q-card-title class="q-pa-none">
-        <q-toolbar v-if="!filterMode" color="orange" class="q-px-none">
-          <q-btn round flat icon="mdi-close" @click="unsubscribeMessageHandler()" />
-          <q-toolbar-title>
-            {{config.topic}}
-            <q-tooltip>{{config.topic}}</q-tooltip>
-          </q-toolbar-title>
-          <q-btn round flat :icon="isPlayed && status !== 'paused' ? 'mdi-pause' : 'mdi-play'" @click="playStopHandler"/>
-          <q-btn round flat icon="mdi-magnify" @click="filterMode = true"/>
-          <q-btn round flat icon="mdi-dots-vertical">
-            <q-popover anchor="bottom right" self="top right">
-              <q-list>
-                <q-item>
-                  <q-item-main>
-                    <q-btn-toggle flat rounded toggle-text-color="dark" text-color="grey-6" v-model="config.mode" :options="modeSelectOptions"/>
-                  </q-item-main>
-                </q-item>
-                <q-item class="cursor-pointer" highlight @click.native="clearMessagesHandler">
-                  <q-item-side icon="mdi-playlist-remove" />
-                  <q-item-main label="Clear messages"/>
-                </q-item>
-                <q-item-separator/>
-                <q-item class="cursor-pointer" v-close-overlay highlight @click.native="removeSubscriber()">
-                  <q-item-side color="red" icon="mdi-delete-outline" />
-                  <q-item-main label="Remove"/>
-                </q-item>
-              </q-list>
-            </q-popover>
-          </q-btn>
-        </q-toolbar>
-        <q-input
-          v-else
-          class="q-ma-sm"
-          color="dark"
-          v-model="filter"
-          placeholder="Filter by topic"
-          autofocus
-          :before="[
-            {
-              icon: 'mdi-arrow-left',
-              handler () {
-                filterMode = false
-                filter = ''
-              }
+    <q-card v-else class="subscriber__item q-ma-sm">
+      <q-toolbar v-if="!filterMode" color="orange" class="q-px-none" style="border-top-right-radius: 0; border-top-left-radius: 0;">
+        <q-btn round flat icon="mdi-close" @click="unsubscribeMessageHandler()" />
+        <q-toolbar-title style="width: calc(100% - 150px)">
+          {{config.topic}}
+          <q-tooltip>{{config.topic}}</q-tooltip>
+        </q-toolbar-title>
+        <q-btn round flat :icon="isPlayed && status !== 'paused' ? 'mdi-pause' : 'mdi-play'" @click="playStopHandler"/>
+        <q-btn round flat icon="mdi-magnify" @click="filterMode = true"/>
+        <q-btn round flat icon="mdi-dots-vertical">
+          <q-popover anchor="bottom right" self="top right">
+            <q-list>
+              <q-item>
+                <q-item-main>
+                  <q-btn-toggle flat rounded toggle-text-color="dark" text-color="grey-6" v-model="config.mode" :options="modeSelectOptions"/>
+                </q-item-main>
+              </q-item>
+              <q-item class="cursor-pointer" highlight @click.native="clearMessagesHandler">
+                <q-item-side icon="mdi-playlist-remove" />
+                <q-item-main label="Clear messages"/>
+              </q-item>
+              <q-item-separator/>
+              <q-item class="cursor-pointer" v-close-overlay highlight @click.native="removeSubscriber()">
+                <q-item-side color="red" icon="mdi-delete-outline" />
+                <q-item-main label="Remove"/>
+              </q-item>
+            </q-list>
+          </q-popover>
+        </q-btn>
+      </q-toolbar>
+      <q-input
+        v-else
+        class="q-ma-sm"
+        color="dark"
+        v-model="filter"
+        placeholder="Filter by topic"
+        autofocus
+        :before="[
+          {
+            icon: 'mdi-arrow-left',
+            handler () {
+              filterMode = false
+              filter = ''
             }
-          ]"
-          :after="[
-            {
-              icon: 'mdi-close',
-              condition: !!filter,
-              handler () { filter = '' }
-            }
-          ]"
-        />
-      </q-card-title>
+          }
+        ]"
+        :after="[
+          {
+            icon: 'mdi-close',
+            condition: !!filter,
+            handler () { filter = '' }
+          }
+        ]"
+      />
 
       <virtual-list
         ref="scroller"
