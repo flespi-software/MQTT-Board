@@ -16,16 +16,16 @@ self.__precacheManifest = [
     "url": "statics/mqttboard.png"
   },
   {
-    "revision": "a4d4cf8e139b721be85f",
-    "url": "js/72cccce5.60dd8ca2.js"
+    "revision": "45cd80db6acb1fd3d326",
+    "url": "js/72cccce5.464857b4.js"
   },
   {
     "revision": "81463c75bc15a1879fcd66065271a2f4",
     "url": "statics/icons/ms-icon-310x310.png"
   },
   {
-    "revision": "00ce85a7a916c89085ae",
-    "url": "js/app.f92cfb11.js"
+    "revision": "3caa373b5c3d377ea48d",
+    "url": "js/app.9c0dedab.js"
   },
   {
     "revision": "e349eb55e959684e73f9",
@@ -48,19 +48,19 @@ self.__precacheManifest = [
     "url": "statics/icons/apple-icon-120x120.png"
   },
   {
-    "revision": "550ee5f57ea96e4a311f918ae2f6e48c",
-    "url": "statics/icons/favicon-32x32.png"
-  },
-  {
     "revision": "6134322248dd299877006292ee663416",
     "url": "statics/icons/favicon-16x16.png"
   },
   {
-    "revision": "bafb105baeb22d965c70fe52ba6b49d9",
-    "url": "fonts/KFOmCnqEu92Fr1Mu4mxM.bafb105b.woff"
+    "revision": "550ee5f57ea96e4a311f918ae2f6e48c",
+    "url": "statics/icons/favicon-32x32.png"
   },
   {
-    "revision": "d22d14f3835885b0b055d2b8d628bdff",
+    "revision": "cf6613d1adf490972c557a8e318e0868",
+    "url": "fonts/KFOlCnqEu92Fr1MmWUlfBBc-.cf6613d1.woff"
+  },
+  {
+    "revision": "5b02ae410f18c07e89e9d703e3470ba5",
     "url": "index.html"
   },
   {
@@ -84,23 +84,23 @@ self.__precacheManifest = [
     "url": "fonts/flUhRq6tzZclQEJ-Vdg-IuiaDsNa.c38ebd3c.woff"
   },
   {
-    "revision": "8c2ade503b34e31430d6c98aa29a52a3",
-    "url": "fonts/KFOlCnqEu92Fr1MmYUtfBBc-.8c2ade50.woff"
+    "revision": "bafb105baeb22d965c70fe52ba6b49d9",
+    "url": "fonts/KFOmCnqEu92Fr1Mu4mxM.bafb105b.woff"
   },
   {
-    "revision": "cf6613d1adf490972c557a8e318e0868",
-    "url": "fonts/KFOlCnqEu92Fr1MmWUlfBBc-.cf6613d1.woff"
+    "revision": "8c2ade503b34e31430d6c98aa29a52a3",
+    "url": "fonts/KFOlCnqEu92Fr1MmYUtfBBc-.8c2ade50.woff"
   },
   {
     "revision": "a1471d1d6431c893582a5f6a250db3f9",
     "url": "fonts/KFOlCnqEu92Fr1MmSU5fBBc-.a1471d1d.woff"
   },
   {
-    "revision": "00ce85a7a916c89085ae",
+    "revision": "3caa373b5c3d377ea48d",
     "url": "css/app.99127b2f.css"
   },
   {
-    "revision": "a4d4cf8e139b721be85f",
+    "revision": "45cd80db6acb1fd3d326",
     "url": "css/72cccce5.bb182b5c.css"
   },
   {
