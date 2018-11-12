@@ -1,8 +1,8 @@
 # MQTT Board
 ![Logo](/misc/logo.png?raw=true "MQTT Board logo")
-> Diagnostic oriented MQTT client tool. Supports MQTT 5.0 and 3.1.X protocols, connections to multiple brokers, MQTT operations logs and multiple subscribe widgets with unique/history topic filtering mode. Persists configuration in browser's local cache.
+> Diagnostic-oriented MQTT client tool. Supports MQTT 5.0 and 3.1.X protocols, connections to multiple brokers, MQTT operations logs and multiple subscribe widgets with unique/history topic filtering mode. Saves configuration in browser's local cache.
 
-> Live version available here: https://mqttboard.flespi.io.
+> Live version available here: [MQTT-Board](https://mqttboard.flespi.io).
 
 ![Screenshot](/misc/screenshot.png?raw=true "MQTT Board")
 
