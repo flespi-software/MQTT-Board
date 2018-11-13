@@ -106,7 +106,9 @@ export default {
 | useLocalStorage | local storage usage flag | true |
 | needInitNewClient | Need create and init new client with default settings | false |
 | secure | Need validate by security host | true |
-| initEntities | Start-pack entities in new clients | [SUBSCRIBER, PUBLISHER]] |
+| initEntities | Start-pack entities in new clients | [SUBSCRIBER, PUBLISHER] |
+| color | Color of bars by quasar color palette | 'dark' |
+| accentColor | Color of bars by quasar color palette | 'light-blue-7' |
 
 settings structure:
 ```js

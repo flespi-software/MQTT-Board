@@ -1,7 +1,7 @@
 <template>
   <q-modal v-model='opened'>
     <q-modal-layout>
-      <q-toolbar slot="header" color='dark'>
+      <q-toolbar slot="header" :color='color'>
         <q-btn flat dense v-close-overlay icon="keyboard_arrow_left" @click="clear"/>
         <q-toolbar-title>
           Topic config
@@ -25,7 +25,7 @@
         <q-input color="dark" v-model="id" float-label="Identifier" />
         <q-input color="dark" v-model="postfix" float-label="Postfix" />
       </div>
-      <q-toolbar slot="footer" color='dark'>
+      <q-toolbar slot="footer" :color='color'>
         <q-toolbar-title>
         </q-toolbar-title>
         <q-btn flat dense v-close-overlay @click="saveSettingsHandler">Save</q-btn>
@@ -37,6 +37,12 @@
 <script>
 export default {
   name: 'FlespiTopicConfigurator',
+  props: {
+    color: {
+      type: String,
+      default: 'dark'
+    }
+  },
   data () {
     return {
       opened: false,

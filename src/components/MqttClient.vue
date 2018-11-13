@@ -1,9 +1,9 @@
 <template>
   <div style="position: absolute; bottom: 0; right: 0; top: 0; left: 0;">
     <flespi-topic ref="felspiModal" @topic="(topic) => { addSubscriber(); subscribers[subscribers.length - 1].topic = topic }"/>
-    <q-modal @show="showSettingsModalHandler" @hide="clearCurrentSettings" v-model='settingsModalModel'>
+    <q-modal @show="showSettingsModalHandler" @hide="clearCurrentSettings" v-model='settingsModalModel' :color="color">
       <q-modal-layout>
-         <q-toolbar slot="header" color='dark'>
+         <q-toolbar slot="header" :color='color'>
           <q-btn flat dense v-close-overlay icon="keyboard_arrow_left" @click="revertSettings"/>
           <q-toolbar-title>
             Connection settings
@@ -77,7 +77,7 @@
             </div>
           </q-collapsible>
         </div>
-        <q-toolbar slot="footer" color='dark'>
+        <q-toolbar slot="footer" :color='color'>
           <q-toolbar-title>
           </q-toolbar-title>
           <q-btn flat dense v-close-overlay class="q-mr-sm" @click="revertSettings">Close</q-btn>
@@ -85,8 +85,8 @@
         </q-toolbar>
       </q-modal-layout>
     </q-modal>
-    <q-btn fab v-if="!activeClient" @click.native="addClientHandler" icon="mdi-plus" color="light-blue-7" style="position: absolute; right: 16px; top: 21px; z-index: 2;"/>
-    <q-toolbar color="dark" style="position: absolute; z-index: 1">
+    <q-btn fab v-if="!activeClient" @click.native="addClientHandler" icon="mdi-plus" :color="accentColor" style="position: absolute; right: 16px; top: 21px; z-index: 2;"/>
+    <q-toolbar :color="color" style="position: absolute; z-index: 1">
       <q-btn round v-if="activeClient" flat dense icon="mdi-close" @click="clearActiveClient"/>
       <q-toolbar-title>
         <img v-if="!activeClient && whiteLabel === ''" src="statics/mqttboard.png" alt="MQTT Board" style="height: 30px">
@@ -319,6 +319,14 @@ export default {
     secure: {
       type: Boolean,
       default: true
+    },
+    color: {
+      type: String,
+      default: 'dark'
+    },
+    accentColor: {
+      type: String,
+      default: 'light-blue-7'
     },
     initEntities: {
       type: Array,
