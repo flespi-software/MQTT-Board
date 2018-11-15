@@ -108,7 +108,7 @@ export default {
 | secure | Need validate by security host | true |
 | initEntities | Start-pack entities in new clients | [SUBSCRIBER, PUBLISHER] |
 | color | Color of bars by quasar color palette | 'dark' |
-| accentColor | Color of bars by quasar color palette | 'light-blue-7' |
+| accentColor | Secondary color by quasar color palette | 'light-blue-7' |
 
 settings structure:
 ```js

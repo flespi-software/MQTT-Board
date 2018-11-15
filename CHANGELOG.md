@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.1.14] - 2018-11-15
+[fix] small ui fixes
 ### [1.1.13] - 2018-11-13
 [feature] coloring
 ### [1.1.12] - 2018-11-09

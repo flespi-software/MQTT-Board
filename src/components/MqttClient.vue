@@ -194,7 +194,7 @@
         />
       </template>
     </div>
-    <div v-else class="text-center q-mt-lg text-dark text-weight-bold" style="font-size: 2.5rem;">No active entities</div>
+    <div v-else class="text-center q-mt-lg text-dark text-weight-bold absolute" style="font-size: 2.5rem; top: 50px; bottom: 0; left: 0; right: 0;">No active entities</div>
   </div>
 </template>
 
