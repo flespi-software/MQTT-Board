@@ -16,20 +16,24 @@ self.__precacheManifest = [
     "url": "statics/icons/ms-icon-310x310.png"
   },
   {
-    "revision": "b189a385b41e5b671680",
-    "url": "js/72cccce5.f26afc66.js"
+    "revision": "2c06fd8f0408bf547ca9",
+    "url": "js/72cccce5.bd450166.js"
   },
   {
     "revision": "e8e7a69f36941e4205dbd10ff20da23d",
     "url": "statics/mqttboard.png"
   },
   {
-    "revision": "4af65b5accb46f121fb8",
-    "url": "js/app.b05fd33c.js"
+    "revision": "61c8541a89b827c799d2",
+    "url": "js/app.eb0e2d2b.js"
   },
   {
     "revision": "e349eb55e959684e73f9",
     "url": "js/vendor.f243ad4e.js"
+  },
+  {
+    "revision": "672e6d5974ed05010533442279ac8703",
+    "url": "statics/icons/icon-192x192.png"
   },
   {
     "revision": "3f98b5073b939bdfe6a2d7e70720dca8",
@@ -38,10 +42,6 @@ self.__precacheManifest = [
   {
     "revision": "15327de252d4457541d192e2b8b62977",
     "url": "statics/icons/apple-icon-152x152.png"
-  },
-  {
-    "revision": "672e6d5974ed05010533442279ac8703",
-    "url": "statics/icons/icon-192x192.png"
   },
   {
     "revision": "665b8886ae2cb2135a9ed8dc7a4a2828",
@@ -60,7 +60,7 @@ self.__precacheManifest = [
     "url": "fonts/KFOlCnqEu92Fr1MmSU5fBBc-.a1471d1d.woff"
   },
   {
-    "revision": "6c6a28a33781f816507704f90b594b50",
+    "revision": "22938c673ac7d0deb36c15ae310b057b",
     "url": "index.html"
   },
   {
@@ -96,11 +96,11 @@ self.__precacheManifest = [
     "url": "fonts/KFOlCnqEu92Fr1MmWUlfBBc-.cf6613d1.woff"
   },
   {
-    "revision": "4af65b5accb46f121fb8",
+    "revision": "61c8541a89b827c799d2",
     "url": "css/app.99127b2f.css"
   },
   {
-    "revision": "b189a385b41e5b671680",
+    "revision": "2c06fd8f0408bf547ca9",
     "url": "css/72cccce5.32845ada.css"
   },
   {
