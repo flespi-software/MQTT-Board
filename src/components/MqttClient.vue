@@ -277,6 +277,9 @@ const
         subscriptionIdentifier: undefined,
         userProperties: undefined
       }
+    },
+    unsubscribeProperties: {
+      userProperties: undefined
     }
   },
   defaultPublisher = {
@@ -792,11 +795,11 @@ export default {
       this.saveClientsToLocalStorage()
     },
     inputSubscriber (index, val) {
-      this.subscribers[index] = val
+      Vue.set(this.subscribers, index, val)
       this.saveClientsToLocalStorage()
     },
     inputPublisher (index, val) {
-      this.publishers[index] = val
+      Vue.set(this.publishers, index, val)
       this.saveClientsToLocalStorage()
     },
     async publishMessageHandler (clientKey, publisherIndex) {
@@ -873,7 +876,7 @@ export default {
       let clientObj = this.clients[clientKey],
         settings = this.clearObject(this.subscribers[subscriberIndex])
       try {
-        await clientObj.client.unsubscribe(settings.topic)
+        await clientObj.client.unsubscribe(settings.topic, { properties: settings.unsubscribeProperties })
         clientObj.logs.push({type: 'unsubscribe', data: this.clearObject(settings), timestamp: Date.now()})
         Vue.set(this.subscribersStatuses, subscriberIndex, false)
       } catch (e) {
@@ -938,8 +941,6 @@ export default {
           this.currentSettings = client.config
           this.createClient()
           let currentClient = this.clients[this.clients.length - 1]
-          currentClient.publishers = client.publishers
-          currentClient.subscribers = client.subscribers
           /* preserve for old clients start */
           if (client.entities.length && !client.entities.filter(entity => entity.type === 'logs').length) {
             client.entities.unshift({type: 'logs'})
@@ -949,7 +950,14 @@ export default {
               client.entities[index].id = Math.random().toString(16).substr(2, 8)
             }
           })
+          client.subscribers.forEach((subscriber, index) => {
+            if (!subscriber.unsubscribeProperties) {
+              client.subscribers[index].unsubscribeProperties = { userProperties: undefined }
+            }
+          })
           /* preserve for old clients end */
+          currentClient.publishers = client.publishers
+          currentClient.subscribers = client.subscribers
           currentClient.entities = client.entities
           currentClient.messages = new Array(client.subscribers.length)
           currentClient.messages.fill([])

@@ -1,5 +1,8 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.2.0] - 2018-11-26
+[feature] unsubscribe properties added to subscriber settings
+[fix] edit user properties
 ### [1.1.14] - 2018-11-15
 [fix] small ui fixes
 ### [1.1.13] - 2018-11-13

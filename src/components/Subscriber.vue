@@ -53,6 +53,7 @@
               <q-input :disable="status" color="dark" type="number" v-model="config.options.properties.subscriptionIdentifier" float-label="Subscription identifier"/>
               <div v-if="!status || config.options.properties.userProperties">
                 <div class="q-mt-md">User Properties</div>
+                <q-checkbox style="display: flex;" color="dark" class="q-mt-sm q-mb-sm" v-model="needUseSubUserPropsToUnsub" label="Also use to unsubscribe"/>
                 <div>
                   <q-list v-if="config.options.properties.userProperties">
                     <q-item v-for="(value, name) in config.options.properties.userProperties" :key="`${name}: ${value}`">
@@ -63,6 +64,22 @@
                   <q-input v-if="!status" color="dark" v-model="subscriberUserProperty.name" float-label="User property name"/>
                   <q-input v-if="!status" color="dark" v-model="subscriberUserProperty.value" float-label="User property value"/>
                   <q-btn :disable="!subscriberUserProperty.name || !subscriberUserProperty.value" v-if="!status" style="width: 100%" class="q-mt-sm" color="dark" @click="addSubscriberUserProperty">Add</q-btn>
+                </div>
+              </div>
+            </q-collapsible>
+            <q-collapsible v-if="version === 5 && !needUseSubUserPropsToUnsub" :opened="!!config.unsubscribeProperties.userProperties" class="q-mt-sm q-mb-sm bg-grey-4" label="Unsubscribe properties">
+              <div v-if="!status || config.unsubscribeProperties.userProperties">
+                <div class="q-mt-md">User Properties</div>
+                <div>
+                  <q-list v-if="config.unsubscribeProperties.userProperties">
+                    <q-item v-for="(value, name) in config.unsubscribeProperties.userProperties" :key="`${name}: ${value}`">
+                      <q-icon v-if="!status" class="q-mr-sm cursor-pointer" size='1rem' @click.native="removeUnsubscribeUserProperty(name)" name="mdi-close-circle"/>
+                      <span>{{`${name}: ${value}`}}</span>
+                    </q-item>
+                  </q-list>
+                  <q-input v-if="!status" color="dark" v-model="unsubscribeUserProperty.name" float-label="User property name"/>
+                  <q-input v-if="!status" color="dark" v-model="unsubscribeUserProperty.value" float-label="User property value"/>
+                  <q-btn :disable="!unsubscribeUserProperty.name || !unsubscribeUserProperty.value" v-if="!status" style="width: 100%" class="q-mt-sm" color="dark" @click="addUnsubscribeUserProperty">Add</q-btn>
                 </div>
               </div>
             </q-collapsible>
@@ -166,7 +183,12 @@ export default {
       filterMode: false,
       config: this.value,
       loadingStatus: false,
+      needUseSubUserPropsToUnsub: false,
       subscriberUserProperty: {
+        value: '',
+        name: ''
+      },
+      unsubscribeUserProperty: {
         value: '',
         name: ''
       },
@@ -218,6 +240,9 @@ export default {
     },
     subscribeMessageHandler () {
       this.loadingStatus = true
+      if (this.needUseSubUserPropsToUnsub) {
+        Vue.set(this.config.unsubscribeProperties, 'userProperties', Object.assign({}, this.config.options.properties.userProperties))
+      }
       this.$emit('subscribe')
     },
     unsubscribeMessageHandler (key, settings) {
@@ -230,9 +255,9 @@ export default {
     },
     addSubscriberUserProperty () {
       if (!this.config.options.properties.userProperties) {
-        this.config.options.properties.userProperties = {}
+        Vue.set(this.config.options.properties, 'userProperties', {})
       }
-      this.config.options.properties.userProperties[this.subscriberUserProperty.name] = this.subscriberUserProperty.value
+      Vue.set(this.config.options.properties.userProperties, this.subscriberUserProperty.name, this.subscriberUserProperty.value)
       this.subscriberUserProperty = {
         value: '',
         name: ''
@@ -241,7 +266,23 @@ export default {
     removeSubscriberUserProperty (name) {
       Vue.delete(this.config.options.properties.userProperties, name)
       if (!Object.keys(this.config.options.properties.userProperties).length) {
-        this.config.options.properties.userProperties = null
+        Vue.set(this.config.options.properties, 'userProperties', null)
+      }
+    },
+    addUnsubscribeUserProperty () {
+      if (!this.config.unsubscribeProperties.userProperties) {
+        Vue.set(this.config.unsubscribeProperties, 'userProperties', {})
+      }
+      Vue.set(this.config.unsubscribeProperties.userProperties, this.unsubscribeUserProperty.name, this.unsubscribeUserProperty.value)
+      this.unsubscribeUserProperty = {
+        value: '',
+        name: ''
+      }
+    },
+    removeUnsubscribeUserProperty (name) {
+      Vue.delete(this.config.unsubscribeProperties.userProperties, name)
+      if (!Object.keys(this.config.unsubscribeProperties.userProperties).length) {
+        Vue.set(this.config.unsubscribeProperties, 'userProperties', null)
       }
     },
     showSharedSubscriptionNotification () {

@@ -94,9 +94,9 @@ export default {
   methods: {
     addPublishUserProperty () {
       if (!this.config.options.properties.userProperties) {
-        this.config.options.properties.userProperties = {}
+        Vue.set(this.config.options.properties, 'userProperties', {})
       }
-      this.config.options.properties.userProperties[this.publishUserProperty.name] = this.publishUserProperty.value
+      Vue.set(this.config.options.properties.userProperties, this.publishUserProperty.name, this.publishUserProperty.value)
       this.publishUserProperty = {
         value: '',
         name: ''
@@ -105,7 +105,7 @@ export default {
     removePublishUserProperty (name) {
       Vue.delete(this.config.options.properties.userProperties, name)
       if (!Object.keys(this.config.options.properties.userProperties).length) {
-        this.config.options.properties.userProperties = null
+        Vue.set(this.config.options.properties, 'userProperties', null)
       }
     }
   },
