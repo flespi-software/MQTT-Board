@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.2.1] - 2018-11-28
+[fix] validation of all entities
 ### [1.2.0] - 2018-11-26
 [feature] unsubscribe properties added to subscriber settings
 [fix] edit user properties

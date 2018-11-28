@@ -50,7 +50,7 @@
               </div>
             </div>
             <q-collapsible v-if="version === 5" class="q-mt-sm q-mb-sm bg-grey-4" label="Properties">
-              <q-input :disable="status" color="dark" type="number" v-model="config.options.properties.subscriptionIdentifier" float-label="Subscription identifier"/>
+              <q-input :disable="status" color="dark" type="number" v-model="config.options.properties.subscriptionIdentifier" float-label="Subscription identifier" :error="!isNil(config.options.properties.subscriptionIdentifier) && config.options.properties.subscriptionIdentifier <= 0"/>
               <div v-if="!status || config.options.properties.userProperties">
                 <div class="q-mt-md">User Properties</div>
                 <q-checkbox style="display: flex;" color="dark" class="q-mt-sm q-mb-sm" v-model="needUseSubUserPropsToUnsub" label="Also use to unsubscribe"/>
@@ -165,6 +165,7 @@ import Vue from 'vue'
 import VirtualList from 'vue-virtual-scroll-list'
 import Message from './Message'
 import validateTopic from '../mixins/validateTopic.js'
+import isNil from 'lodash/isNil'
 
 const
   HISTORY_MODE = 0,
@@ -226,10 +227,12 @@ export default {
       }
     },
     isValidSubscriber () {
-      return !!this.config.topic && this.validateTopic(this.config.topic)
+      return !!this.config.topic && this.validateTopic(this.config.topic) &&
+        (isNil(this.config.options.properties.subscriptionIdentifier) || this.config.options.properties.subscriptionIdentifier > 0)
     }
   },
   methods: {
+    isNil,
     playStopHandler () {
       if (this.isPlayed) {
         this.$emit('pause')

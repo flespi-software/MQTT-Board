@@ -19,10 +19,10 @@
           <q-input color="dark" v-model="currentSettings.password" float-label="Password"/>
           <q-collapsible class="q-mt-sm q-mb-sm bg-grey-2" label="Properties" v-if="currentSettings.protocolVersion === 5">
             <div>
-              <q-input color="dark" v-model="currentSettings.properties.sessionExpiryInterval" type="number" float-label="Session expiry interval"/>
-              <q-input color="dark" v-model="currentSettings.properties.receiveMaximum" type="number" float-label="Receive maximum"/>
-              <q-input color="dark" v-model="currentSettings.properties.maximumPacketSize" type="number" float-label="Maximum packet size"/>
-              <q-input color="dark" v-model="currentSettings.properties.topicAliasMaximum" type="number" float-label="Topic alias maximum"/>
+              <q-input color="dark" v-model="currentSettings.properties.sessionExpiryInterval" type="number" :min="0" float-label="Session expiry interval" :error="!isNil(currentSettings.properties.sessionExpiryInterval) && currentSettings.properties.sessionExpiryInterval < 0"/>
+              <q-input color="dark" v-model="currentSettings.properties.receiveMaximum" type="number" float-label="Receive maximum" :error="!isNil(currentSettings.properties.receiveMaximum) && currentSettings.properties.receiveMaximum <= 0"/>
+              <q-input color="dark" v-model="currentSettings.properties.maximumPacketSize" type="number" float-label="Maximum packet size" :error="!isNil(currentSettings.properties.maximumPacketSize) && currentSettings.properties.maximumPacketSize <= 0"/>
+              <q-input color="dark" v-model="currentSettings.properties.topicAliasMaximum" type="number" float-label="Topic alias maximum" :error="!isNil(currentSettings.properties.topicAliasMaximum) && currentSettings.properties.topicAliasMaximum < 0"/>
               <q-checkbox style="display: flex;" color="dark" class="q-mt-sm q-mb-sm" v-model="currentSettings.properties.requestResponseInformation" label="Request-Response information"/>
               <q-checkbox style="display: flex;" color="dark" class="q-mt-sm q-mb-sm" v-model="currentSettings.properties.requestProblemInformation" label="Request problem information"/>
               <div>
@@ -209,6 +209,7 @@ import mqtt from '../plugins/async-mqtt.js'
 import VirtualList from 'vue-virtual-scroll-list'
 import merge from 'lodash/merge'
 import cloneDeep from 'lodash/cloneDeep'
+import isNil from 'lodash/isNil'
 import debounce from 'lodash/debounce'
 import { animate, LocalStorage, openURL } from 'quasar'
 import Vue from 'vue'
@@ -398,13 +399,18 @@ export default {
         (
           (!!this.currentSettings.will.topic && !!this.currentSettings.will.payload) ||
           (!this.currentSettings.will.topic && !this.currentSettings.will.payload)
-        )
+        ) &&
+        (isNil(this.currentSettings.properties.sessionExpiryInterval) || this.currentSettings.properties.sessionExpiryInterval >= 0) &&
+        (isNil(this.currentSettings.properties.receiveMaximum) || this.currentSettings.properties.receiveMaximum > 0) &&
+        (isNil(this.currentSettings.properties.maximumPacketSize) || this.currentSettings.properties.maximumPacketSize > 0) &&
+        (isNil(this.currentSettings.properties.topicAliasMaximum) || this.currentSettings.properties.topicAliasMaximum >= 0)
     },
     logsModel () {
       return !!this.activeClient && !!this.entities.filter(entity => entity.type === 'logs').length
     }
   },
   methods: {
+    isNil,
     openURL: openURL,
     /* settings modal handlers start */
     showSettingsModalHandler () {

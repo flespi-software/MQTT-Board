@@ -40,8 +40,8 @@
             <q-checkbox style="display: flex;" color="dark" class="q-mt-sm q-mb-sm" v-model="config.options.dup" label="Duplicate flag"/>
             <q-collapsible v-if="version === 5" class="q-mt-sm q-mb-sm bg-grey-4" label="Properties">
               <q-checkbox color="dark" class="q-mt-sm q-mb-sm" v-model="config.options.properties.payloadFormatIndicator" label="Payload format indicator"/>
-              <q-input color="dark" type="number" v-model="config.options.properties.messageExpiryInterval" float-label="Message expiry interval"/>
-              <q-input color="dark" type="number" v-model="config.options.properties.topicAlias" float-label="Topic alias"/>
+              <q-input color="dark" type="number" v-model="config.options.properties.messageExpiryInterval" float-label="Message expiry interval" :error="!isNil(config.options.properties.messageExpiryInterval) && config.options.properties.messageExpiryInterval < 0"/>
+              <q-input color="dark" type="number" v-model="config.options.properties.topicAlias" float-label="Topic alias" :error="!isNil(config.options.properties.topicAlias) && config.options.properties.topicAlias <= 0"/>
               <q-input color="dark" v-model="config.options.properties.responseTopic" float-label="Response topic"/>
               <q-input color="dark" type="textarea" :max-height="50" v-model="config.options.properties.correlationData" float-label="Correlation data"/>
               <div>
@@ -70,6 +70,7 @@
 <script>
 import Vue from 'vue'
 import validateTopic from '../mixins/validateTopic.js'
+import isNil from 'lodash/isNil'
 
 export default {
   name: 'Publisher',
@@ -88,10 +89,13 @@ export default {
   },
   computed: {
     isValidPublisher () {
-      return !!this.config.topic && this.validateTopic(this.config.topic)
+      return !!this.config.topic && this.validateTopic(this.config.topic) &&
+        (isNil(this.config.options.properties.messageExpiryInterval) || this.config.options.properties.messageExpiryInterval >= 0) &&
+        (isNil(this.config.options.properties.topicAlias) || this.config.options.properties.topicAlias > 0)
     }
   },
   methods: {
+    isNil,
     addPublishUserProperty () {
       if (!this.config.options.properties.userProperties) {
         Vue.set(this.config.options.properties, 'userProperties', {})
