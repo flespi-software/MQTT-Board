@@ -50,7 +50,7 @@
               </div>
             </div>
             <q-collapsible v-if="version === 5" class="q-mt-sm q-mb-sm bg-grey-4" label="Properties">
-              <q-input :disable="status" color="dark" type="number" v-model="config.options.properties.subscriptionIdentifier" float-label="Subscription identifier" :error="!isNil(config.options.properties.subscriptionIdentifier) && config.options.properties.subscriptionIdentifier <= 0"/>
+              <q-input :disable="status" color="dark" type="number" v-model="config.options.properties.subscriptionIdentifier" float-label="Subscription identifier" :error="!isNil(config.options.properties.subscriptionIdentifier) && (config.options.properties.subscriptionIdentifier <= 0 || config.options.properties.subscriptionIdentifier > 268435455)"/>
               <div v-if="!status || config.options.properties.userProperties">
                 <div class="q-mt-md">User Properties</div>
                 <q-checkbox style="display: flex;" color="dark" class="q-mt-sm q-mb-sm" v-model="needUseSubUserPropsToUnsub" label="Also use to unsubscribe"/>
@@ -228,7 +228,7 @@ export default {
     },
     isValidSubscriber () {
       return !!this.config.topic && this.validateTopic(this.config.topic) &&
-        (isNil(this.config.options.properties.subscriptionIdentifier) || this.config.options.properties.subscriptionIdentifier > 0)
+        (isNil(this.config.options.properties.subscriptionIdentifier) || (this.config.options.properties.subscriptionIdentifier > 0 && this.config.options.properties.subscriptionIdentifier <= 268435455))
     }
   },
   methods: {
