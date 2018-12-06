@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.2.3] - 2018-12-06
+[fix] unresolved messages logic
 ### [1.2.2] - 2018-11-29
 [fix] validation of all entities by higher values
 ### [1.2.1] - 2018-11-28

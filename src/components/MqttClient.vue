@@ -577,40 +577,50 @@ export default {
       client.once('connect', (connack) => {
         /* client connect logs push */
         clientObj.logs.push({type: 'connect', data: {...connack}, timestamp: Date.now()})
+        console.log(connack)
         client.on('message', (topic, message, packet) => {
-          let resolveFlag = false
-          clientObj.subscribers.forEach((sub, index, subs) => {
-            let isResolved = this.resolveSubscription(packet, sub)
-            resolveFlag = resolveFlag || isResolved
-            if (isResolved) {
-              if (this.activeClient && this.activeClient.id === clientObj.id) {
-                if (!this.subscribersMessagesBuffer[index]) {
-                  this.subscribersMessagesBuffer[index] = []
-                }
-                if (this.subscribersStatuses[index] && this.subscribersStatuses[index] !== 'paused') {
-                  this.subscribersMessagesBuffer[index].push(packet)
-                }
-              } else {
-                if (!clientObj.messages[index]) {
-                  clientObj.messages[index] = []
-                }
-                let count = clientObj.messages.reduce((count, arr) => { return count + arr.length }, 0)
-                if (count > this.messagesLimitCount) {
-                  clientObj.messages[index].splice(0, 1)
-                }
-                if (clientObj.subscribersStatuses[index] && clientObj.subscribersStatuses[index] !== 'paused') {
-                  clientObj.messages[index].push(packet)
-                }
-              }
-            }
-            if (subs.length - 1 === index && !resolveFlag) {
+          let resolveFlag = false,
+            uresolvedHandler = () => {
               clientObj.notResolvedMessages.push(packet)
               if (clientObj.notResolvedMessages.length === 1) {
                 clientObj.entities.push({type: 'unresolved'})
                 this.saveClientsToLocalStorage(this.clients)
               }
             }
-          })
+          if (this.subscribersStatuses.length || this.subscribersStatuses.includes(true)) {
+            clientObj.subscribers.forEach((sub, index, subs) => {
+              let isResolved = this.resolveSubscription(packet, sub)
+              resolveFlag = resolveFlag || isResolved
+              if (isResolved) {
+                if (this.activeClient && this.activeClient.id === clientObj.id) {
+                  /* write messages with buffering in entities */
+                  if (!this.subscribersMessagesBuffer[index]) {
+                    this.subscribersMessagesBuffer[index] = []
+                  }
+                  if (this.subscribersStatuses[index] && this.subscribersStatuses[index] !== 'paused') {
+                    this.subscribersMessagesBuffer[index].push(packet)
+                  }
+                } else {
+                  /* write messages straight forward in entities */
+                  if (!clientObj.messages[index]) {
+                    clientObj.messages[index] = []
+                  }
+                  let count = clientObj.messages.reduce((count, arr) => { return count + arr.length }, 0)
+                  if (count > this.messagesLimitCount) {
+                    clientObj.messages[index].splice(0, 1)
+                  }
+                  if (clientObj.subscribersStatuses[index] && clientObj.subscribersStatuses[index] !== 'paused') {
+                    clientObj.messages[index].push(packet)
+                  }
+                }
+              }
+              if (subs.length - 1 === index && !resolveFlag) {
+                uresolvedHandler()
+              }
+            })
+          } else {
+            uresolvedHandler()
+          }
         })
       })
       client.on('error', (error) => {
