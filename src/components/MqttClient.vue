@@ -81,7 +81,7 @@
           <q-toolbar-title>
           </q-toolbar-title>
           <q-btn flat dense v-close-overlay class="q-mr-sm" @click="revertSettings">Close</q-btn>
-          <q-btn flat dense :disable="!validateCurrentSettings" @click="saveSettingsHandler">Save</q-btn>
+          <q-btn flat dense :disable="!isCurrentSettingsValid" @click="saveSettingsHandler">Save</q-btn>
         </q-toolbar>
       </q-modal-layout>
     </q-modal>
@@ -221,16 +221,21 @@ import Logs from './Logs'
 import { version } from '../../package.json'
 import validateEntities from '../mixins/validateEntities.js'
 
-let saveClientsToLocalStorage = debounce((clients) => {
-  LocalStorage.set('clients', clients.map(client => ({
-    config: client.config,
-    publishers: client.publishers,
-    subscribers: client.subscribers,
-    entities: client.entities.filter(entity => entity.type !== 'unresolved')
-  })))
-}, 500, { trailing: true })
+let
+  makeExportClients = (clients) => {
+    return clients.map(client => ({
+      config: client.config,
+      publishers: client.publishers,
+      subscribers: client.subscribers,
+      entities: client.entities.filter(entity => entity.type !== 'unresolved')
+    }))
+  },
+  saveClientsToLocalStorage = debounce((clients) => {
+    LocalStorage.set(MQTT_BOARD_LOCALSTORAGE_NAME, makeExportClients(clients))
+  }, 500, { trailing: true })
 
 const
+  MQTT_BOARD_LOCALSTORAGE_NAME = 'clients',
   defaultSettings = {
     clientId: `mqtt-board-${Math.random().toString(16).substr(2, 8)}`,
     host: 'wss://mqtt.flespi.io',
@@ -354,6 +359,30 @@ export default {
           return result && true
         }, true)
       }
+    },
+    configuredClients: {
+      type: Array,
+      default () { return [] },
+      validator (clients) {
+        let result = true
+        clients.forEach(client => {
+          if (!client.config || !client.entities || !client.publishers || !client.subscribers) {
+            result = false
+            return false
+          }
+          result = result && validateEntities.methods.validateSettings(client.config)
+          client.entities.forEach(entity => {
+            result = result && validateEntities.methods.validateEntityRecord(entity)
+          })
+          client.publishers.forEach(publisher => {
+            result = result && validateEntities.methods.validatePublisher(publisher)
+          })
+          client.subscribers.forEach(subscriber => {
+            result = result && validateEntities.methods.validateSubscriber(subscriber)
+          })
+        })
+        return result
+      }
     }
   },
   data () {
@@ -383,7 +412,8 @@ export default {
       renderInterval: 0,
       messagesLimitCount: 1000,
       notResolvedMessages: [],
-      isNeedScroll: false
+      isNeedScroll: false,
+      isInited: false
     }
   },
   computed: {
@@ -393,17 +423,9 @@ export default {
         return result
       }, 0) > this.messagesLimitCount
     },
-    validateCurrentSettings () {
-      return !!this.currentSettings.clientId &&
-        (!!this.currentSettings.host && this.secure && !(this.currentSettings.host.indexOf('ws:') === 0)) &&
-        (
-          (!!this.currentSettings.will.topic && !!this.currentSettings.will.payload) ||
-          (!this.currentSettings.will.topic && !this.currentSettings.will.payload)
-        ) &&
-        (isNil(this.currentSettings.properties.sessionExpiryInterval) || (this.currentSettings.properties.sessionExpiryInterval >= 0 && this.currentSettings.properties.sessionExpiryInterval <= 0xffffffff)) &&
-        (isNil(this.currentSettings.properties.receiveMaximum) || (this.currentSettings.properties.receiveMaximum > 0 && this.currentSettings.properties.receiveMaximum <= 0xffff)) &&
-        (isNil(this.currentSettings.properties.maximumPacketSize) || (this.currentSettings.properties.maximumPacketSize > 0 && this.currentSettings.properties.maximumPacketSize <= 0xffffffff)) &&
-        (isNil(this.currentSettings.properties.topicAliasMaximum) || (this.currentSettings.properties.topicAliasMaximum >= 0 && this.currentSettings.properties.topicAliasMaximum <= 0xffff))
+    isCurrentSettingsValid () {
+      let settings = this.currentSettings
+      return this.validateSettings(this.currentSettings) && !!this.secure && !(settings.host.indexOf('ws:') === 0)
     },
     logsModel () {
       return !!this.activeClient && !!this.entities.filter(entity => entity.type === 'logs').length
@@ -535,7 +557,9 @@ export default {
         timeout: 2000
       })
     },
-    saveClientsToLocalStorage () {
+    saveClients () {
+      if (!this.isInited) { return false }
+      this.$emit('change', makeExportClients(this.clients))
       if (this.useLocalStorage) {
         saveClientsToLocalStorage(this.clients)
       }
@@ -577,14 +601,13 @@ export default {
       client.once('connect', (connack) => {
         /* client connect logs push */
         clientObj.logs.push({type: 'connect', data: {...connack}, timestamp: Date.now()})
-        console.log(connack)
         client.on('message', (topic, message, packet) => {
           let resolveFlag = false,
             uresolvedHandler = () => {
               clientObj.notResolvedMessages.push(packet)
               if (clientObj.notResolvedMessages.length === 1) {
                 clientObj.entities.push({type: 'unresolved'})
-                this.saveClientsToLocalStorage(this.clients)
+                this.saveClients(this.clients)
               }
             }
           if (this.subscribersStatuses.length || this.subscribersStatuses.includes(true)) {
@@ -664,9 +687,25 @@ export default {
         }
         clientObj.logs.push({type: 'updated', data: {...config}, timestamp: Date.now()})
       }
-      this.saveClientsToLocalStorage()
+      this.saveClients()
       this.initClient(key, config)
       this.clearCurrentSettings()
+    },
+    initExternalClients (savedClients) {
+      if (savedClients) {
+        savedClients.forEach(client => {
+          this.currentSettings = client.config
+          this.createClient()
+          let currentClient = this.clients[this.clients.length - 1]
+          currentClient.publishers = client.publishers
+          currentClient.subscribers = client.subscribers
+          currentClient.entities = client.entities
+          currentClient.messages = new Array(client.subscribers.length)
+          currentClient.messages.fill([])
+          currentClient.subscribersStatuses = new Array(client.subscribers.length)
+          currentClient.subscribersStatuses.fill(false)
+        })
+      }
     },
     createInitEntities (client) {
       let entities = this.initEntities
@@ -737,7 +776,7 @@ export default {
           this.statuses.splice(key, 1)
         }
         this.clients.splice(key, 1)
-        this.saveClientsToLocalStorage()
+        this.saveClients()
       })
         .catch(() => {})
     },
@@ -770,7 +809,7 @@ export default {
     addPublisher () {
       this.publishers.push(cloneDeep(defaultPublisher))
       this.entities.push({type: 'publisher', index: this.publishers.length - 1, id: Math.random().toString(16).substr(2, 8)})
-      this.saveClientsToLocalStorage()
+      this.saveClients()
       this.isNeedScroll = true
     },
     addSubscriber () {
@@ -778,7 +817,7 @@ export default {
       this.subscribersMessages.push([])
       this.subscribersStatuses.push(false)
       this.entities.push({type: 'subscriber', index: this.subscribers.length - 1, id: Math.random().toString(16).substr(2, 8)})
-      this.saveClientsToLocalStorage()
+      this.saveClients()
       this.isNeedScroll = true
     },
     removePublisher (key) {
@@ -789,7 +828,7 @@ export default {
           entity.index--
         }
       })
-      this.saveClientsToLocalStorage()
+      this.saveClients()
     },
     async removeSubscriber (subscriberIndex) {
       let status = this.subscribersStatuses[subscriberIndex]
@@ -808,15 +847,15 @@ export default {
           entity.index--
         }
       })
-      this.saveClientsToLocalStorage()
+      this.saveClients()
     },
     inputSubscriber (index, val) {
       Vue.set(this.subscribers, index, val)
-      this.saveClientsToLocalStorage()
+      this.saveClients()
     },
     inputPublisher (index, val) {
       Vue.set(this.publishers, index, val)
-      this.saveClientsToLocalStorage()
+      this.saveClients()
     },
     async publishMessageHandler (clientKey, publisherIndex) {
       let settings = this.clearObject(this.publishers[publisherIndex])
@@ -945,43 +984,18 @@ export default {
     }
   },
   created () {
-    if (this.needInitNewClient) {
+    if (this.needInitNewClient && !this.configuredClients.length) {
       this.currentSettings = cloneDeep(merge({}, defaultSettings, this.initSettings))
       this.createClient()
       this.setActiveClient(0)
     }
-    if (this.useLocalStorage) {
-      let savedClients = LocalStorage.get.item('clients')
-      if (savedClients) {
-        savedClients.forEach(client => {
-          this.currentSettings = client.config
-          this.createClient()
-          let currentClient = this.clients[this.clients.length - 1]
-          /* preserve for old clients start */
-          if (client.entities.length && !client.entities.filter(entity => entity.type === 'logs').length) {
-            client.entities.unshift({type: 'logs'})
-          }
-          client.entities.forEach((entity, index) => {
-            if (entity.type === 'subscriber' || entity.type === 'publisher') {
-              client.entities[index].id = Math.random().toString(16).substr(2, 8)
-            }
-          })
-          client.subscribers.forEach((subscriber, index) => {
-            if (!subscriber.unsubscribeProperties) {
-              client.subscribers[index].unsubscribeProperties = { userProperties: undefined }
-            }
-          })
-          /* preserve for old clients end */
-          currentClient.publishers = client.publishers
-          currentClient.subscribers = client.subscribers
-          currentClient.entities = client.entities
-          currentClient.messages = new Array(client.subscribers.length)
-          currentClient.messages.fill([])
-          currentClient.subscribersStatuses = new Array(client.subscribers.length)
-          currentClient.subscribersStatuses.fill(false)
-        })
-      }
+    if (this.configuredClients.length) {
+      this.initExternalClients(this.configuredClients)
+    } else if (this.useLocalStorage) {
+      let savedClients = LocalStorage.get.item(MQTT_BOARD_LOCALSTORAGE_NAME)
+      this.initExternalClients(savedClients)
     }
+    this.isInited = true
     if (window) {
       window.addEventListener('beforeunload', () => {
         this.clients.forEach((clientObj) => {

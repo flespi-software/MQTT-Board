@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.3.0] - 2018-12-19
+[feature] full integrate props
 ### [1.2.3] - 2018-12-06
 [fix] unresolved messages logic
 ### [1.2.2] - 2018-11-29
