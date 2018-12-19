@@ -603,14 +603,14 @@ export default {
         clientObj.logs.push({type: 'connect', data: {...connack}, timestamp: Date.now()})
         client.on('message', (topic, message, packet) => {
           let resolveFlag = false,
-            uresolvedHandler = () => {
+            unresolvedHandler = () => {
               clientObj.notResolvedMessages.push(packet)
               if (clientObj.notResolvedMessages.length === 1) {
                 clientObj.entities.push({type: 'unresolved'})
                 this.saveClients(this.clients)
               }
             }
-          if (this.subscribersStatuses.length || this.subscribersStatuses.includes(true)) {
+          if (this.subscribersStatuses.length && this.subscribersStatuses.includes(true)) {
             clientObj.subscribers.forEach((sub, index, subs) => {
               let isResolved = this.resolveSubscription(packet, sub)
               resolveFlag = resolveFlag || isResolved
@@ -638,11 +638,11 @@ export default {
                 }
               }
               if (subs.length - 1 === index && !resolveFlag) {
-                uresolvedHandler()
+                unresolvedHandler()
               }
             })
           } else {
-            uresolvedHandler()
+            unresolvedHandler()
           }
         })
       })
