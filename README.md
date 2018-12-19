@@ -99,9 +99,11 @@ export default {
 ```html
 <mqtt-client :initSettings="settings" whiteLabel="My MQTT"/>
 ```
+Props:
 | Name  | Description  | Default |
 |---|---|---|
 | initSettings | Init settings for clients | undefined |
+| configuredClients | Full configured clients | [] |
 | whiteLabel | Label in component | '' |
 | useLocalStorage | local storage usage flag | true |
 | needInitNewClient | Need create and init new client with default settings | false |
@@ -109,6 +111,11 @@ export default {
 | initEntities | Start-pack entities in new clients | [SUBSCRIBER, PUBLISHER] |
 | color | Color of bars by quasar color palette | 'dark' |
 | accentColor | Secondary color by quasar color palette | 'light-blue-7' |
+
+Events:
+| Name  | Description  | Payload |
+|---|---|---|
+| change | Any change in clients | [<client>] |
 
 settings structure:
 ```js
@@ -184,6 +191,24 @@ let publisher = {
       contentType: undefined
     }
   }
+}
+```
+entities structure:
+```js
+/* linked entity for sorting all entities */
+let entity = {
+  type: '', // publisher || subscriber required,
+  index: 1, // array index of current entity (subscriber, publisher) in array of full configured client
+  id: 's3rdsf' // unique generated id of entity
+}
+```
+client structure:
+```js
+let client = {
+  config: <settings>, // settings like structure
+  publishers: [<publisher>], // array of publisher like structures
+  subscribers: [<subscriber>], // array of subscriber like structures
+  entities: [<entity>] // array of entity like structure
 }
 ```
 
