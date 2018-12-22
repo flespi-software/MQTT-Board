@@ -152,7 +152,7 @@
         <q-btn v-if="!activeClient" @click.native="addClientHandler">Create client</q-btn>
       </div>
     </div>
-    <div ref="wrapper" v-touch-swipe.horizontal.noMouse="swipeHandler" class="no-wrap row" style="position: absolute; top: 50px; bottom: 0; left: 0; right: 0; overflow: auto;" v-else-if="entities.length">
+    <div ref="wrapper" v-touch-swipe.horizontal.noMouse="swipeHandler" class="no-wrap row" style="position: absolute; top: 50px; bottom: 0; left: 0; right: 0; overflow: auto;" v-else-if="statuses[activeClient.id] || logsModel">
       <template v-for="(entity, index) in entities">
         <publisher
           :class='[`col-xl-${entities.length < 4 ? 12 / entities.length : 3}`]'
@@ -194,7 +194,11 @@
         />
       </template>
     </div>
-    <div v-else class="text-center q-mt-lg text-dark text-weight-bold absolute" style="font-size: 2.5rem; top: 50px; bottom: 0; left: 0; right: 0;">No active entities</div>
+    <div v-else-if="!entities.length" class="text-center q-mt-lg text-dark text-weight-bold absolute" style="font-size: 2.5rem; top: 50px; bottom: 0; left: 0; right: 0;">No active entities</div>
+    <div v-else-if="!statuses[activeClient.id] && !logsModel" class="text-center q-mt-lg text-dark text-weight-bold absolute" style="font-size: 2.5rem; top: 50px; bottom: 0; left: 0; right: 0;">
+      <div>Сlient is disconnected</div>
+      <div class="q-mt-sm" style="font-size: 1.3rem">You can <q-btn dense color="dark" icon="mdi-script" label="activate logs" @click="changeLogsStatus(true)" /> for more information</div>
+    </div>
   </div>
 </template>
 
@@ -904,7 +908,7 @@ export default {
     },
     async subscribe (clientKey, subscriberIndex) {
       let clientObj = this.clients[clientKey],
-        settings = this.clearObject(this.subscribers[subscriberIndex])
+        settings = this.clearObject(clientObj.subscribers[subscriberIndex])
       try {
         Vue.set(this.subscribersStatuses, subscriberIndex, true)
         let grants = await clientObj.client.subscribe(settings.topic, settings.options)
@@ -928,8 +932,9 @@ export default {
       await this.unsubscribe(clientKey, subscriberIndex)
     },
     async unsubscribe (clientKey, subscriberIndex) {
+      console.log(clientKey, subscriberIndex, this.subscribers[subscriberIndex])
       let clientObj = this.clients[clientKey],
-        settings = this.clearObject(this.subscribers[subscriberIndex])
+        settings = this.clearObject(clientObj.subscribers[subscriberIndex])
       try {
         await clientObj.client.unsubscribe(settings.topic, { properties: settings.unsubscribeProperties })
         clientObj.logs.push({type: 'unsubscribe', data: this.clearObject(settings), timestamp: Date.now()})

@@ -1,5 +1,8 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.3.2] - 2018-12-22
+[fix] stop client
+[feature] global empty state page for active client
 ### [1.3.1] - 2018-12-19
 [fix] unresolved messages in selected client
 ### [1.3.0] - 2018-12-19
