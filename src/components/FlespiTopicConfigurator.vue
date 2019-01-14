@@ -23,7 +23,7 @@
           <span v-else>Choose API</span>
         </div>
         <q-input color="dark" v-model="id" float-label="Identifier" />
-        <q-input color="dark" v-model="postfix" float-label="Postfix" />
+        <q-input v-if="isNeedPostfix" color="dark" v-model="postfix" float-label="Postfix" />
       </div>
       <q-toolbar slot="footer" :color='color'>
         <q-toolbar-title>
@@ -101,9 +101,11 @@ export default {
       topic += this.entity || '+'
       topic += '/'
       topic += this.id || '+'
-      topic += this.postfix ? '/' : ''
-      topic += this.postfix
+      topic += this.postfix && this.isNeedPostfix ? `/${this.postfix}` : ''
       return topic
+    },
+    isNeedPostfix () {
+      return !(this.type === 'message' && this.api === 'gw' && this.entity === 'devices')
     }
   },
   methods: {

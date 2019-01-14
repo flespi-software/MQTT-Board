@@ -1,5 +1,8 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.3.3] - 2019-01-14
+[update] flespi topic generator postfix
+[fix] logs view
 ### [1.3.2] - 2018-12-22
 [fix] stop client
 [feature] global empty state page for active client

@@ -16,7 +16,7 @@
           </template>
           <template v-else-if="log.type === 'created' || log.type === 'updated'">
             <div class="log__payload q-px-sm q-pt-xs q-mr-xs q-ml-xs bg-grey-2" style="font-size: .75rem">
-              <pre class="q-ma-none scroll">{{log.data}}</pre>
+              <div class="q-ma-none" style="white-space: pre-wrap; word-break: break-all;">{{log.data}}</div>
             </div>
           </template>
           <template v-else-if="log.type === 'connect'">
@@ -27,7 +27,7 @@
           </template>
           <template v-else-if="log.type === 'error'">
             <div class="log__payload q-px-sm q-py-xs q-mr-xs q-ml-xs bg-grey-2" style="font-size: .75rem">
-              <pre class="q-ma-none scroll">{{log.data.error.message}}</pre>
+              <div class="q-ma-none" style="white-space: pre-wrap; word-break: break-all;">{{log.data.error.message}}</div>
             </div>
           </template>
           <template v-else-if="log.type === 'subscribe'">
@@ -61,7 +61,7 @@
           </template>
           <template v-else>
             <div class="log__payload q-pa-sm q-mr-xs q-ml-xs bg-grey-2" style="font-size: .75rem">
-              <pre>{{log.data}}</pre>
+              <div style="white-space: pre-wrap; word-break: break-all;">{{log.data}}</div>
             </div>
           </template>
           <div class="log__timestamp q-py-xs q-px-sm text-grey-7">{{date.formatDate(log.timestamp, 'DD/MM/YYYY HH:mm:ss')}}</div>
