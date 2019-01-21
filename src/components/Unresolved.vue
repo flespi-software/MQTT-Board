@@ -5,6 +5,16 @@
         <q-toolbar v-if="!filterMode" color="red-6" class="q-px-none">
           <q-toolbar-title>Unresolved messages</q-toolbar-title>
           <q-btn round flat icon="mdi-magnify" @click="filterMode = true"/>
+          <q-btn round flat icon="mdi-dots-vertical">
+            <q-popover anchor="bottom right" self="top right">
+              <q-list>
+                <q-item class="cursor-pointer" v-close-overlay highlight @click.native="clearMessagesHandler">
+                  <q-item-side icon="mdi-playlist-remove" />
+                  <q-item-main label="Clear messages"/>
+                </q-item>
+              </q-list>
+            </q-popover>
+          </q-btn>
         </q-toolbar>
         <q-input
           v-else
@@ -71,6 +81,9 @@ export default {
       } else {
         this.needAutoScroll = true
       }
+    },
+    clearMessagesHandler () {
+      this.$emit('clear')
     }
   },
   components: { VirtualList, Message },

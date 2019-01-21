@@ -185,12 +185,14 @@
           v-else-if="statuses[activeClient.id] && notResolvedMessages.length && entity.type === 'unresolved'"
           :key="`unresolved${index}`"
           :messages="notResolvedMessages"
+          @clear="clearUnresolvedMessages"
         />
         <logs
           :class='[`col-xl-${entities.length < 4 ? 12 / entities.length : 3}`]'
           v-else-if="entity.type === 'logs'"
           :key="`subs${index}`"
           :logs="activeClient.logs"
+          @clear="clearLogs"
         />
       </template>
     </div>
@@ -932,7 +934,6 @@ export default {
       await this.unsubscribe(clientKey, subscriberIndex)
     },
     async unsubscribe (clientKey, subscriberIndex) {
-      console.log(clientKey, subscriberIndex, this.subscribers[subscriberIndex])
       let clientObj = this.clients[clientKey],
         settings = this.clearObject(clientObj.subscribers[subscriberIndex])
       try {
@@ -966,6 +967,14 @@ export default {
           apply (pos) { el.scrollLeft = pos }
         })
       }
+    },
+    clearLogs () {
+      let logs = this.activeClient.logs
+      logs.splice(0, logs.length)
+    },
+    clearUnresolvedMessages () {
+      let messages = this.activeClient.notResolvedMessages
+      messages.splice(0, messages.length)
     },
     swipeHandler (data) {
       let el = this.$refs.wrapper,

@@ -4,9 +4,19 @@
       <q-card-title class="q-pa-none">
         <q-toolbar color="blue" class="q-px-none">
           <q-toolbar-title>Logs</q-toolbar-title>
+          <q-btn round flat icon="mdi-dots-vertical">
+            <q-popover anchor="bottom right" self="top right">
+              <q-list>
+                <q-item class="cursor-pointer" v-close-overlay highlight @click.native="clearLogsHandler">
+                  <q-item-side icon="mdi-playlist-remove" />
+                  <q-item-main label="Clear logs"/>
+                </q-item>
+              </q-list>
+            </q-popover>
+          </q-btn>
         </q-toolbar>
       </q-card-title>
-      <q-card-main class="scroll q-pa-md" style="height: calc(100% - 50px)">
+      <q-card-main ref="scroller" class="scroll q-pa-md" style="height: calc(100% - 50px)" @scroll.native="listScroll">
         <q-card class="log__item q-mt-md" :class="[`bg-${getColor(log)}-3`]" v-for="(log, index) in logs" :key="`log${index}`">
           <div class="log__title q-py-xs q-px-sm text-bold">
             {{log.type}}
@@ -80,6 +90,7 @@ export default {
   ],
   data () {
     return {
+      needAutoScroll: true,
       colors: {
         connect: 'green',
         error: 'red',
@@ -146,6 +157,32 @@ export default {
         return 'red'
       }
       return this.colors[log.type]
+    },
+    listScroll (e) {
+      let el = this.$refs.scroller.$el
+      if (el.scrollTop < el.scrollHeight - el.clientHeight) {
+        this.needAutoScroll = false
+      } else {
+        this.needAutoScroll = true
+      }
+    },
+    clearScrollParams () {
+      this.currentScrollTop = 0
+      this.allScrollTop = 0
+      this.needAutoScroll = true
+    },
+    clearLogsHandler () {
+      this.$emit('clear')
+    }
+  },
+  updated () {
+    if (this.logs && !this.logs.length) {
+      this.currentScrollTop = 0
+    } else {
+      if (this.needAutoScroll && this.$refs.scroller) {
+        let el = this.$refs.scroller.$el
+        el.scrollTop = el.scrollHeight - el.clientHeight
+      }
     }
   }
 }
