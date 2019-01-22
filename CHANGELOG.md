@@ -1,5 +1,8 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.3.5] - 2019-01-22
+[fix] play/stop client logic
+[fix] autoscroll logs logic
 ### [1.3.4] - 2019-01-21
 [feature] autoscroll for logs
 [feature] clear messages for logs and unresolved

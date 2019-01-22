@@ -175,6 +175,14 @@ export default {
       this.$emit('clear')
     }
   },
+  created () {
+    this.$nextTick(() => {
+      if (this.needAutoScroll && this.$refs.scroller) {
+        let el = this.$refs.scroller.$el
+        el.scrollTop = el.scrollHeight - el.clientHeight
+      }
+    })
+  },
   updated () {
     if (this.logs && !this.logs.length) {
       this.currentScrollTop = 0

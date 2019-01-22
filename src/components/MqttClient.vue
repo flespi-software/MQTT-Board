@@ -135,7 +135,7 @@
               </q-card-main>
             <q-card-separator />
             <q-card-actions align="end">
-              <q-btn round flat v-if="statuses[index]" icon="mdi-stop" @click.stop="disconnectClientHandler(index)">
+              <q-btn round flat v-if="client.client" icon="mdi-stop" @click.stop="disconnectClientHandler(index)">
                 <q-tooltip>Deactivate client</q-tooltip>
               </q-btn>
               <q-btn round flat v-else icon="mdi-play" @click.stop="connectClientHandler(index)">
