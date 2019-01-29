@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.3.6] - 2019-01-29
+[feature] added settings for deflate ws
 ### [1.3.5] - 2019-01-22
 [fix] play/stop client logic
 [fix] autoscroll logs logic

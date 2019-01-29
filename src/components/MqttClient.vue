@@ -244,6 +244,10 @@ const
   MQTT_BOARD_LOCALSTORAGE_NAME = 'clients',
   defaultSettings = {
     clientId: `mqtt-board-${Math.random().toString(16).substr(2, 8)}`,
+    wsOptions: {
+      objectMode: false,
+      perMessageDeflate: true
+    },
     host: 'wss://mqtt.flespi.io',
     keepalive: 60,
     protocolVersion: 5,
@@ -586,7 +590,6 @@ export default {
     initClient (key, config) {
       let clientObj = this.clients[key]
       let endHandler = () => { Vue.set(this.statuses, key, false) }
-
       let client = mqtt.connect(config.host, config)
       /* resubscribe to exists topics */
       client.once('connect', () => {
