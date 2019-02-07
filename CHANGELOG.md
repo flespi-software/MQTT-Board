@@ -1,5 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.4.0] - 2019-02-07
+[fix] optimization
+[fix] pause on subscriber
+[fix] autoscroll on entities
+[fix] unsubscribe on stop client
 ### [1.3.6] - 2019-01-29
 [feature] added settings for deflate ws
 ### [1.3.5] - 2019-01-22

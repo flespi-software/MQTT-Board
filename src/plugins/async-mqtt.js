@@ -1,10 +1,10 @@
 'use strict'
 /* todo: remove after accepting PR in mqtt package */
-let mqtt = require('mqtt')
+let mqtt = require('mqtt/dist/mqtt.min')
 
-let ASYNC_METHODS = ['publish',
+let ASYNC_METHODS = [
+  'publish',
   'subscribe',
-  'unsubscribe',
   'unsubscribe',
   'end'
 ]

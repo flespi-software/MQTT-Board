@@ -135,7 +135,7 @@ export default {
   .mqtt-client__publisher
     .publisher__item
       border 2px solid #3f51b5
-      height calc(100% - 32px)
+      height calc(100% - 16px)
       position relative
     .publisher__remove
       position absolute

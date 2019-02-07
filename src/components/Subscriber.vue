@@ -96,7 +96,11 @@
             <q-tooltip>{{config.topic}}</q-tooltip>
           </span>
         </q-toolbar-title>
-        <q-btn round flat :icon="isPlayed && status !== 'paused' ? 'mdi-pause' : 'mdi-play'" @click="playStopHandler"/>
+        <q-btn round flat :icon="isPlayed && status !== 'paused' ? 'mdi-pause' : 'mdi-play'" @click="playStopHandler">
+          <q-chip floating v-if="status === 'paused' && !!value.missedMessages" color="red">
+            {{value.missedMessages}}
+          </q-chip>
+        </q-btn>
         <q-btn round flat icon="mdi-magnify" @click="filterMode = true"/>
         <q-btn round flat icon="mdi-dots-vertical">
           <q-popover anchor="bottom right" self="top right">
@@ -145,6 +149,7 @@
       />
 
       <virtual-list
+        v-autoscroll="needAutoScroll"
         ref="scroller"
         :onscroll="listScroll"
         :debounce="10"
@@ -337,13 +342,19 @@ export default {
     }
   },
   components: { VirtualList, Message },
-  updated () {
-    if (this.messages && !this.messages.length) {
-      this.currentScrollTop = 0
-    } else {
-      if (this.needAutoScroll && this.$refs.scroller) {
-        let el = this.$refs.scroller.$el
-        el.scrollTop = el.scrollHeight - el.clientHeight
+  directives: {
+    autoscroll: {
+      inserted (el, {value}) {
+        if (value) {
+          el.scrollTop = el.scrollHeight - el.clientHeight
+        }
+      },
+      componentUpdated (el, {value}) {
+        setTimeout(() => {
+          if (value) {
+            el.scrollTop = el.scrollHeight - el.clientHeight
+          }
+        }, 50)
       }
     }
   },
@@ -355,7 +366,7 @@ export default {
   .mqtt-client__subscriber
     .subscriber__item
       border 2px solid orange
-      height calc(100% - 32px)
+      height calc(100% - 16px)
       position relative
       .item__main
         position relative

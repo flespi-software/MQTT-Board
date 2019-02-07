@@ -591,6 +591,12 @@ export default {
       let clientObj = this.clients[key]
       let endHandler = () => { Vue.set(this.statuses, key, false) }
       let client = mqtt.connect(config.host, config)
+      let unresolvedHandler = (packet) => {
+        clientObj.notResolvedMessages.push(packet)
+        if (clientObj.notResolvedMessages.length === 1 && !clientObj.entities.filter(entity => entity.type === 'unresolved').length) {
+          clientObj.entities.push({type: 'unresolved'})
+        }
+      }
       /* resubscribe to exists topics */
       client.once('connect', () => {
         let currentStatuses = clientObj.subscribersStatuses
@@ -611,15 +617,10 @@ export default {
         /* client connect logs push */
         clientObj.logs.push({type: 'connect', data: {...connack}, timestamp: Date.now()})
         client.on('message', (topic, message, packet) => {
-          let resolveFlag = false,
-            unresolvedHandler = () => {
-              clientObj.notResolvedMessages.push(packet)
-              if (clientObj.notResolvedMessages.length === 1) {
-                clientObj.entities.push({type: 'unresolved'})
-                this.saveClients(this.clients)
-              }
-            }
-          if (this.subscribersStatuses.length && this.subscribersStatuses.includes(true)) {
+          console.log(topic)
+          let resolveFlag = false
+          /* if subscribersStatuses contains true or paused statuses */
+          if (clientObj.subscribersStatuses.length && clientObj.subscribersStatuses.filter(status => !!status).length) {
             clientObj.subscribers.forEach((sub, index, subs) => {
               let isResolved = this.resolveSubscription(packet, sub)
               resolveFlag = resolveFlag || isResolved
@@ -631,6 +632,11 @@ export default {
                   }
                   if (this.subscribersStatuses[index] && this.subscribersStatuses[index] !== 'paused') {
                     this.subscribersMessagesBuffer[index].push(packet)
+                  } else {
+                    if (clientObj.subscribers[index].missedMessages === undefined) {
+                      clientObj.subscribers[index].missedMessages = 0
+                    }
+                    clientObj.subscribers[index].missedMessages++
                   }
                 } else {
                   /* write messages straight forward in entities */
@@ -643,15 +649,20 @@ export default {
                   }
                   if (clientObj.subscribersStatuses[index] && clientObj.subscribersStatuses[index] !== 'paused') {
                     clientObj.messages[index].push(packet)
+                  } else {
+                    if (clientObj.subscribers[index].missedMessages === undefined) {
+                      clientObj.subscribers[index].missedMessages = 0
+                    }
+                    clientObj.subscribers[index].missedMessages++
                   }
                 }
               }
               if (subs.length - 1 === index && !resolveFlag) {
-                unresolvedHandler()
+                unresolvedHandler(packet)
               }
             })
           } else {
-            unresolvedHandler()
+            unresolvedHandler(packet)
           }
         })
       })
@@ -691,7 +702,7 @@ export default {
       } else {
         let clientObj = this.clients[key]
         if (clientObj.client) {
-          await clientObj.client.end(true)
+          await clientObj.client.end()
           this.statuses[key] = false
         }
         clientObj.logs.push({type: 'updated', data: {...config}, timestamp: Date.now()})
@@ -754,20 +765,14 @@ export default {
     connectClientHandler (key) {
       let clientObj = this.clients[key]
       if (clientObj.client) {
-        clientObj.client.end(true)
+        clientObj.client.end()
         this.statuses[key] = false
       }
       this.initClient(key, clientObj.config)
     },
     async disconnectClientHandler (key) {
       let clientObj = this.clients[key]
-      for (let index = 0; index < clientObj.subscribers.length; index++) {
-        let status = clientObj.subscribersStatuses[index]
-        if (status) {
-          await this.unsubscribe(key, index)
-        }
-      }
-      await clientObj.client.end(true)
+      await clientObj.client.end()
       clientObj.client = null
       this.statuses[key] = false
     },
@@ -780,7 +785,7 @@ export default {
         ok: true
       }).then(async () => {
         if (clientObj.client) {
-          await clientObj.client.end(true)
+          await clientObj.client.end()
           this.statuses[key] = false
           this.statuses.splice(key, 1)
         }
@@ -788,6 +793,22 @@ export default {
         this.saveClients()
       })
         .catch(() => {})
+    },
+    activeteRender () {
+      if (!this.renderInterval) {
+        this.renderInterval = setInterval(() => {
+          this.subscribersMessagesBuffer.forEach((messages, index) => {
+            let savedMessages = this.subscribersMessages[index]
+            if (savedMessages) {
+              if (this.limitingEnabled) {
+                savedMessages.splice(0, messages.length)
+              }
+              savedMessages.splice(savedMessages.length, 0, ...messages)
+            }
+          })
+          this.subscribersMessagesBuffer = []
+        }, 500)
+      }
     },
     setActiveClient (key) {
       let client = this.clients[key]
@@ -895,20 +916,7 @@ export default {
       if (this.subscribersMessages && this.subscribersMessages.length) {
         Vue.set(this.subscribersMessages, subscriberIndex, [])
       }
-      if (!this.renderInterval) {
-        this.renderInterval = setInterval(() => {
-          this.subscribersMessagesBuffer.forEach((messages, index) => {
-            let savedMessages = this.subscribersMessages[index]
-            if (savedMessages) {
-              if (this.limitingEnabled) {
-                savedMessages.splice(0, messages.length)
-              }
-              savedMessages.splice(savedMessages.length, 0, ...messages)
-            }
-          })
-          this.subscribersMessagesBuffer = []
-        }, 500)
-      }
+      this.activeteRender()
       await this.subscribe(clientKey, subscriberIndex)
     },
     async subscribe (clientKey, subscriberIndex) {
@@ -924,9 +932,11 @@ export default {
       }
     },
     playSubscriberHandler (subscriberIndex) {
+      Vue.set(this.subscribers[subscriberIndex], 'missedMessages', undefined)
       Vue.set(this.subscribersStatuses, subscriberIndex, true)
     },
     pauseSubscriberHandler (subscriberIndex) {
+      Vue.set(this.subscribers[subscriberIndex], 'missedMessages', 0)
       Vue.set(this.subscribersStatuses, subscriberIndex, 'paused')
     },
     clearMessagesHandler (subscriberIndex) {
@@ -954,6 +964,7 @@ export default {
       } else {
         this.hideLogs()
       }
+      this.saveClients()
     },
     hideLogs () {
       let indexLogsEntity = this.entities.findIndex(entity => entity.type === 'logs')
@@ -1016,14 +1027,14 @@ export default {
     if (window) {
       window.addEventListener('beforeunload', () => {
         this.clients.forEach((clientObj) => {
-          clientObj.client.end(true)
+          clientObj.client.end()
         })
       })
     }
   },
   destroyed () {
     this.clients.forEach((clientObj) => {
-      clientObj.client.end(true)
+      clientObj.client.end()
     })
   },
   components: {

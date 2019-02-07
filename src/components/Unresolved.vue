@@ -42,6 +42,7 @@
         />
       </q-card-title>
       <virtual-list
+        v-autoscroll="needAutoScroll"
         :size="110"
         :remain="15"
         class="not-resolved-msgs__list"
@@ -87,13 +88,19 @@ export default {
     }
   },
   components: { VirtualList, Message },
-  updated () {
-    if (this.messages && !this.messages.length) {
-      this.currentScrollTop = 0
-    } else {
-      if (this.needAutoScroll && this.$refs.scroller) {
-        let el = this.$refs.scroller.$el
-        el.scrollTop = el.scrollHeight - el.clientHeight
+  directives: {
+    autoscroll: {
+      inserted (el, {value}) {
+        if (value) {
+          el.scrollTop = el.scrollHeight - el.clientHeight
+        }
+      },
+      componentUpdated (el, {value}) {
+        setTimeout(() => {
+          if (value) {
+            el.scrollTop = el.scrollHeight - el.clientHeight
+          }
+        }, 50)
       }
     }
   }
@@ -105,7 +112,7 @@ export default {
     .not-resolved-msgs__main
       position relative
       border 2px solid red
-      height calc(100% - 32px)
+      height calc(100% - 16px)
     .not-resolved-msgs__list
       position absolute
       top 50px

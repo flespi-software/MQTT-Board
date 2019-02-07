@@ -16,7 +16,7 @@
           </q-btn>
         </q-toolbar>
       </q-card-title>
-      <q-card-main ref="scroller" class="scroll q-pa-md" style="height: calc(100% - 50px)" @scroll.native="listScroll">
+      <q-card-main ref="scroller" class="scroll q-pa-md" style="height: calc(100% - 50px)" @scroll.native="listScroll" v-autoscroll="needAutoScroll">
         <q-card class="log__item q-mt-md" :class="[`bg-${getColor(log)}-3`]" v-for="(log, index) in logs" :key="`log${index}`">
           <div class="log__title q-py-xs q-px-sm text-bold">
             {{log.type}}
@@ -183,13 +183,19 @@ export default {
       }
     })
   },
-  updated () {
-    if (this.logs && !this.logs.length) {
-      this.currentScrollTop = 0
-    } else {
-      if (this.needAutoScroll && this.$refs.scroller) {
-        let el = this.$refs.scroller.$el
-        el.scrollTop = el.scrollHeight - el.clientHeight
+  directives: {
+    autoscroll: {
+      inserted (el, {value}) {
+        if (value) {
+          el.scrollTop = el.scrollHeight - el.clientHeight
+        }
+      },
+      componentUpdated (el, {value}) {
+        setTimeout(() => {
+          if (value) {
+            el.scrollTop = el.scrollHeight - el.clientHeight
+          }
+        }, 50)
       }
     }
   }
@@ -200,7 +206,7 @@ export default {
   .mqtt-client__logs
     .logs__wrapper
       border 2px solid #2196f3
-      height calc(100% - 32px)
+      height calc(100% - 16px)
       position relative
       overflow auto
 </style>

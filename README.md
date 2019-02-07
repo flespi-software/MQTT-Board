@@ -76,7 +76,8 @@ framework: {
     'QCollapsible',
     'QTooltip',
     'QBtnToggle',
-    'QPopover'
+    'QPopover',
+    'QChip'
   ],
   directives: [
     'CloseOverlay',
