@@ -242,6 +242,9 @@ let
 
 const
   MQTT_BOARD_LOCALSTORAGE_NAME = 'clients',
+  CLIENT_STATUS_ACTIVE = true,
+  CLIENT_STATUS_INACTIVE = false,
+  CLIENT_STATUS_USER_INACTIVE = null,
   defaultSettings = {
     clientId: `mqtt-board-${Math.random().toString(16).substr(2, 8)}`,
     wsOptions: {
@@ -589,7 +592,7 @@ export default {
     },
     initClient (key, config) {
       let clientObj = this.clients[key]
-      let endHandler = () => { Vue.set(this.statuses, key, false) }
+      let endHandler = () => { Vue.set(this.statuses, key, CLIENT_STATUS_INACTIVE) }
       let client = mqtt.connect(config.host, config)
       let unresolvedHandler = (packet) => {
         clientObj.notResolvedMessages.push(packet)
@@ -612,12 +615,13 @@ export default {
           })
         }
       })
-      client.on('connect', () => { Vue.set(this.statuses, key, true) })
-      client.once('connect', (connack) => {
+      client.on('connect', () => { Vue.set(this.statuses, key, CLIENT_STATUS_ACTIVE) })
+      client.on('connect', (connack) => {
         /* client connect logs push */
         clientObj.logs.push({type: 'connect', data: {...connack}, timestamp: Date.now()})
+      })
+      client.once('connect', (connack) => {
         client.on('message', (topic, message, packet) => {
-          console.log(topic)
           let resolveFlag = false
           /* if subscribersStatuses contains true or paused statuses */
           if (clientObj.subscribersStatuses.length && clientObj.subscribersStatuses.filter(status => !!status).length) {
@@ -703,12 +707,14 @@ export default {
         let clientObj = this.clients[key]
         if (clientObj.client) {
           await clientObj.client.end()
-          this.statuses[key] = false
+          Vue.set(this.statuses, key, CLIENT_STATUS_INACTIVE)
         }
         clientObj.logs.push({type: 'updated', data: {...config}, timestamp: Date.now()})
       }
       this.saveClients()
-      this.initClient(key, config)
+      if (this.statuses[key] !== CLIENT_STATUS_USER_INACTIVE) {
+        this.initClient(key, config)
+      }
       this.clearCurrentSettings()
     },
     initExternalClients (savedClients) {
@@ -766,7 +772,7 @@ export default {
       let clientObj = this.clients[key]
       if (clientObj.client) {
         clientObj.client.end()
-        this.statuses[key] = false
+        Vue.set(this.statuses, key, CLIENT_STATUS_INACTIVE)
       }
       this.initClient(key, clientObj.config)
     },
@@ -774,7 +780,7 @@ export default {
       let clientObj = this.clients[key]
       await clientObj.client.end()
       clientObj.client = null
-      this.statuses[key] = false
+      Vue.set(this.statuses, key, CLIENT_STATUS_USER_INACTIVE)
     },
     deleteClientHandler (key) {
       let clientObj = this.clients[key]
@@ -786,7 +792,7 @@ export default {
       }).then(async () => {
         if (clientObj.client) {
           await clientObj.client.end()
-          this.statuses[key] = false
+          Vue.set(this.statuses, key, CLIENT_STATUS_USER_INACTIVE)
           this.statuses.splice(key, 1)
         }
         this.clients.splice(key, 1)

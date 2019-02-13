@@ -1,5 +1,8 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.4.1] - 2019-02-13
+[fix] show log connect after reconnect
+[fix] autostart client after editing
 ### [1.4.0] - 2019-02-07
 [fix] optimization
 [fix] pause on subscriber
