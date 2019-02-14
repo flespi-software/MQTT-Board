@@ -230,6 +230,7 @@ import validateEntities from '../mixins/validateEntities.js'
 let
   makeExportClients = (clients) => {
     return clients.map(client => ({
+      status: client.status,
       config: client.config,
       publishers: client.publishers,
       subscribers: client.subscribers,
@@ -590,9 +591,15 @@ export default {
       }
       return config
     },
+    setClientStatus (key, status) {
+      Vue.set(this.statuses, key, status)
+      Vue.set(this.clients[key], 'status', status)
+    },
     initClient (key, config) {
       let clientObj = this.clients[key]
-      let endHandler = () => { Vue.set(this.statuses, key, CLIENT_STATUS_INACTIVE) }
+      let endHandler = () => {
+        this.setClientStatus(key, CLIENT_STATUS_INACTIVE)
+      }
       let client = mqtt.connect(config.host, config)
       let unresolvedHandler = (packet) => {
         clientObj.notResolvedMessages.push(packet)
@@ -615,7 +622,9 @@ export default {
           })
         }
       })
-      client.on('connect', () => { Vue.set(this.statuses, key, CLIENT_STATUS_ACTIVE) })
+      client.on('connect', () => {
+        this.setClientStatus(key, CLIENT_STATUS_ACTIVE)
+      })
       client.on('connect', (connack) => {
         /* client connect logs push */
         clientObj.logs.push({type: 'connect', data: {...connack}, timestamp: Date.now()})
@@ -689,7 +698,6 @@ export default {
         clientObj.logs.push({type: 'reconnect', timestamp: Date.now()})
       })
       Vue.set(this.clients[key], 'client', client)
-      Vue.set(this.clients[key], 'config', config)
     },
     async createClient (index) {
       let config = this.createConnectPacket(this.currentSettings),
@@ -707,7 +715,7 @@ export default {
         let clientObj = this.clients[key]
         if (clientObj.client) {
           await clientObj.client.end()
-          Vue.set(this.statuses, key, CLIENT_STATUS_INACTIVE)
+          this.setClientStatus(key, CLIENT_STATUS_INACTIVE)
         }
         clientObj.logs.push({type: 'updated', data: {...config}, timestamp: Date.now()})
       }
@@ -715,14 +723,18 @@ export default {
       if (this.statuses[key] !== CLIENT_STATUS_USER_INACTIVE) {
         this.initClient(key, config)
       }
+      Vue.set(this.clients[key], 'config', config)
       this.clearCurrentSettings()
     },
     initExternalClients (savedClients) {
       if (savedClients) {
         savedClients.forEach(client => {
-          this.currentSettings = client.config
-          this.createClient()
-          let currentClient = this.clients[this.clients.length - 1]
+          let key = this.clients.length
+          let currentClient = {}
+          currentClient.config = client.config
+          currentClient.id = key
+          currentClient.client = null
+          currentClient.status = client.status
           currentClient.publishers = client.publishers
           currentClient.subscribers = client.subscribers
           currentClient.entities = client.entities
@@ -730,6 +742,13 @@ export default {
           currentClient.messages.fill([])
           currentClient.subscribersStatuses = new Array(client.subscribers.length)
           currentClient.subscribersStatuses.fill(false)
+          currentClient.logs = [{type: 'created', data: {...client.config}, timestamp: Date.now()}]
+          currentClient.notResolvedMessages = []
+          this.statuses.push(client.status)
+          this.clients.push(currentClient)
+          if (client.status !== CLIENT_STATUS_USER_INACTIVE) {
+            this.initClient(key, this.createConnectPacket(client.config))
+          }
         })
       }
     },
@@ -772,15 +791,17 @@ export default {
       let clientObj = this.clients[key]
       if (clientObj.client) {
         clientObj.client.end()
-        Vue.set(this.statuses, key, CLIENT_STATUS_INACTIVE)
+        this.setClientStatus(key, CLIENT_STATUS_INACTIVE)
       }
       this.initClient(key, clientObj.config)
+      this.saveClients()
     },
     async disconnectClientHandler (key) {
       let clientObj = this.clients[key]
       await clientObj.client.end()
       clientObj.client = null
-      Vue.set(this.statuses, key, CLIENT_STATUS_USER_INACTIVE)
+      this.setClientStatus(key, CLIENT_STATUS_USER_INACTIVE)
+      this.saveClients()
     },
     deleteClientHandler (key) {
       let clientObj = this.clients[key]
@@ -792,7 +813,7 @@ export default {
       }).then(async () => {
         if (clientObj.client) {
           await clientObj.client.end()
-          Vue.set(this.statuses, key, CLIENT_STATUS_USER_INACTIVE)
+          this.setClientStatus(key, CLIENT_STATUS_INACTIVE)
           this.statuses.splice(key, 1)
         }
         this.clients.splice(key, 1)
@@ -1033,14 +1054,18 @@ export default {
     if (window) {
       window.addEventListener('beforeunload', () => {
         this.clients.forEach((clientObj) => {
-          clientObj.client.end()
+          if (clientObj.status) {
+            clientObj.client.end()
+          }
         })
       })
     }
   },
   destroyed () {
     this.clients.forEach((clientObj) => {
-      clientObj.client.end()
+      if (clientObj.status) {
+        clientObj.client.end()
+      }
     })
   },
   components: {

@@ -1,5 +1,8 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.4.2] - 2019-02-14
+[fix] edit settings while client stoped
+[feature] save clients statuses
 ### [1.4.1] - 2019-02-13
 [fix] show log connect after reconnect
 [fix] autostart client after editing
