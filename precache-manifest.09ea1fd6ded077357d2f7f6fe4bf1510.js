@@ -12,20 +12,20 @@ self.__precacheManifest = [
     "url": "js/4b47640d.21cfc388.js"
   },
   {
-    "revision": "338186833772d271c92c",
+    "revision": "feb6f39df225a07928e1",
     "url": "css/a218da24.db6ae559.css"
   },
   {
-    "revision": "338186833772d271c92c",
-    "url": "js/a218da24.ace6d1b2.js"
+    "revision": "feb6f39df225a07928e1",
+    "url": "js/a218da24.6458fb9c.js"
   },
   {
-    "revision": "91710b98767d73ebfb85",
+    "revision": "052f1466d9084757e3aa",
     "url": "css/app.4066ef7c.css"
   },
   {
-    "revision": "91710b98767d73ebfb85",
-    "url": "js/app.5ecc1add.js"
+    "revision": "052f1466d9084757e3aa",
+    "url": "js/app.11d8be10.js"
   },
   {
     "revision": "5e284c864ef703319eff",
@@ -104,7 +104,7 @@ self.__precacheManifest = [
     "url": "statics/mqttboard.png"
   },
   {
-    "revision": "93a55a4766ba2469637196c5dea4cf83",
+    "revision": "9ee56d067fd861157f08159cbe8ff660",
     "url": "index.html"
   }
 ];
