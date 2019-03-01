@@ -1,6 +1,6 @@
 {
   "name": "mqtt-board",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "Client based on MQTT.js and Vue.js",
   "productName": "MQTT Board",
   "author": "Sergei Buntsevich <scarry92@yandex.ru>",
@@ -12,9 +12,8 @@
   },
   "dependencies": {
     "lodash": "^4.17.11",
-    "mqtt": "git+https://github.com/mqttjs/MQTT.js.git",
+    "mqtt": "git+https://github.com/scarry1992/MQTT.js.git#cork-fix",
     "vue-virtual-scroll-list": "^1.3.0",
-    "websocket-stream": "git+https://github.com/scarry1992/websocket-stream.git#cork-logic-browser-fix",
     "workbox-webpack-plugin": "^4.0.0-rc.2"
   },
   "devDependencies": {

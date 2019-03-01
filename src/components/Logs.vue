@@ -42,7 +42,7 @@
           </template>
           <template v-else-if="log.type === 'subscribe'">
             <div class="log__payload q-pa-sm q-mr-xs q-ml-xs bg-grey-2 row" style="font-size: .75rem">
-              <div class="col-6 q-pr-xs">
+              <div class="col-6 q-pr-xs" v-if="!log.data.restored">
                 <div class="text-bold">Request</div>
                 <div style="word-break: break-all;"><span class="text-bold">Topic: </span>{{log.data.settings.topic}}</div>
                 <div><span class="text-bold">QoS: </span>{{log.data.settings.options.qos}}</div>
@@ -51,7 +51,8 @@
                 <div v-if="log.data.settings.options.rh !== undefined"><span class="text-bold">Retain handling: </span>{{log.data.settings.options.rh}}</div>
               </div>
               <div class="col-6 q-pl-xs">
-                <div class="col-6 q-pr-xs text-bold">Access</div>
+                <div class="col-6 q-pr-xs text-bold" v-if="log.data.restored">Access (restored by broker)</div>
+                <div class="col-6 q-pr-xs text-bold" v-else>Access</div>
                 <div style="word-break: break-all;"><span class="text-bold">Topic: </span>{{log.data.grants[0].topic}}</div>
                 <div><span class="text-bold">QoS: </span>{{log.data.grants[0].qos}}</div>
                 <div v-if="log.data.grants[0].nl !== undefined"><span class="text-bold">No Local: </span>{{log.data.grants[0].nl}}</div>
@@ -156,6 +157,7 @@ export default {
       if (log.type === 'connect' && (this.codes[log.data.returnCode] || this.codes[log.data.reasonCode])) {
         return 'red'
       }
+      if (log.type === 'subscribe' && log.data.restored) { return 'blue' }
       return this.colors[log.type]
     },
     listScroll (e) {

@@ -608,19 +608,53 @@ export default {
         }
       }
       /* resubscribe to exists topics */
-      client.once('connect', () => {
-        let currentStatuses = clientObj.subscribersStatuses
-        if (currentStatuses.includes(true)) {
-          currentStatuses.forEach((status, index) => {
-            if (status) {
-              let messages = clientObj.messages
-              messages.forEach((arr, index) => {
-                messages[index].splice(0, messages[index].length)
-              })
-              this.subscribe(key, index)
-            }
-          })
-        }
+      client.on('connect', (connack) => {
+        let currentStatuses = clientObj.subscribersStatuses,
+          subscribers = clientObj.subscribers,
+          /* flespi feature */
+          existedSubscriptionsInSession = connack.properties && connack.properties.userProperties && connack.properties.userProperties.subscriptions ? JSON.parse(connack.properties.userProperties.subscriptions) : []
+        subscribers.forEach((subscriber, index) => {
+          let status = currentStatuses[index],
+            exitedSubscriptionIndex = existedSubscriptionsInSession.findIndex(subscription => subscription.topic === subscriber.topic),
+            isSubscriptionExited = exitedSubscriptionIndex !== -1
+          if (isSubscriptionExited && !status) {
+            Vue.set(currentStatuses, index, true)
+          } else if (!isSubscriptionExited && status) {
+            clientObj.messages[index].splice(0, clientObj.messages[index].length)
+            this.subscribe(key, index)
+          }
+          if (isSubscriptionExited) {
+            existedSubscriptionsInSession.splice(exitedSubscriptionIndex, 1)
+          }
+        })
+        /* restore subscriptions by broker */
+        existedSubscriptionsInSession.forEach(subscription => {
+          this.addSubscriber(key)
+          let id = subscribers.length - 1,
+            subscriber = subscribers[id]
+          // update subscriber options by subscription
+          let options = {
+            nl: subscription.no_local,
+            rap: subscription.rap,
+            rh: subscription.retain_handling,
+            qos: subscription.qos,
+            properties: {}
+          }
+          if (subscription.subscription_id) {
+            options.subscriptionIdentifier = subscription.subscription_id
+          }
+          Vue.set(subscriber, 'options', options)
+          Vue.set(subscriber, 'topic', subscription.topic)
+          Vue.set(currentStatuses, id, true)
+          let grants = [{
+            nl: subscription.no_local,
+            rap: subscription.rap,
+            rh: subscription.retain_handling,
+            qos: subscription.qos,
+            topic: subscription.topic
+          }]
+          this.$nextTick(() => { clientObj.logs.push({type: 'subscribe', data: { grants, restored: true }, timestamp: Date.now()}) })
+        })
       })
       client.on('connect', () => {
         this.setClientStatus(key, CLIENT_STATUS_ACTIVE)
@@ -739,7 +773,9 @@ export default {
           currentClient.subscribers = client.subscribers
           currentClient.entities = client.entities
           currentClient.messages = new Array(client.subscribers.length)
-          currentClient.messages.fill([])
+          for (let i = 0; i < client.subscribers.length; i++) {
+            currentClient.messages[i] = []
+          }
           currentClient.subscribersStatuses = new Array(client.subscribers.length)
           currentClient.subscribersStatuses.fill(false)
           currentClient.logs = [{type: 'created', data: {...client.config}, timestamp: Date.now()}]
@@ -821,7 +857,7 @@ export default {
       })
         .catch(() => {})
     },
-    activeteRender () {
+    activateRender () {
       if (!this.renderInterval) {
         this.renderInterval = setInterval(() => {
           this.subscribersMessagesBuffer.forEach((messages, index) => {
@@ -869,13 +905,15 @@ export default {
       this.saveClients()
       this.isNeedScroll = true
     },
-    addSubscriber () {
-      this.subscribers.push(cloneDeep(defaultSubscriber))
-      this.subscribersMessages.push([])
-      this.subscribersStatuses.push(false)
-      this.entities.push({type: 'subscriber', index: this.subscribers.length - 1, id: Math.random().toString(16).substr(2, 8)})
+    addSubscriber (clientId) {
+      clientId = typeof clientId === 'number' ? clientId : this.activeClient.id
+      let clientObj = this.clients[clientId]
+      clientObj.subscribers.push(cloneDeep(defaultSubscriber))
+      clientObj.messages.push([])
+      clientObj.subscribersStatuses.push(false)
+      clientObj.entities.push({type: 'subscriber', index: clientObj.subscribers.length - 1, id: Math.random().toString(16).substr(2, 8)})
       this.saveClients()
-      this.isNeedScroll = true
+      if (this.activeClient) { this.isNeedScroll = true }
     },
     removePublisher (key) {
       this.publishers.splice(key, 1)
@@ -895,9 +933,6 @@ export default {
       this.subscribers.splice(subscriberIndex, 1)
       this.subscribersStatuses.splice(subscriberIndex, 1)
       this.subscribersMessages.splice(subscriberIndex, 1)
-      if (!this.subscribers) {
-        clearInterval(this.renderInterval)
-      }
       this.entities.splice(this.findEntity({type: 'subscriber', index: subscriberIndex}), 1)
       this.entities.forEach(entity => {
         if (entity.type === 'subscriber' && entity.index > subscriberIndex) {
@@ -943,7 +978,6 @@ export default {
       if (this.subscribersMessages && this.subscribersMessages.length) {
         Vue.set(this.subscribersMessages, subscriberIndex, [])
       }
-      this.activeteRender()
       await this.subscribe(clientKey, subscriberIndex)
     },
     async subscribe (clientKey, subscriberIndex) {
@@ -1035,6 +1069,16 @@ export default {
           duration: 200,
           apply (pos) { el.scrollLeft = pos }
         })
+      }
+    }
+  },
+  watch: {
+    subscribersStatuses (statuses) {
+      if (statuses.length && statuses.includes(true)) {
+        this.activateRender()
+      } else {
+        clearInterval(this.renderInterval)
+        this.renderInterval = 0
       }
     }
   },
