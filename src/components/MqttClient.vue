@@ -753,11 +753,11 @@ export default {
         }
         clientObj.logs.push({type: 'updated', data: {...config}, timestamp: Date.now()})
       }
-      this.saveClients()
       if (this.statuses[key] !== CLIENT_STATUS_USER_INACTIVE) {
         this.initClient(key, config)
       }
       Vue.set(this.clients[key], 'config', config)
+      this.saveClients()
       this.clearCurrentSettings()
     },
     initExternalClients (savedClients) {

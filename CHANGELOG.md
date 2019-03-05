@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.4.6] - 2019-03-05
+[fix] save clients
 ### [1.4.5] - 2019-03-05
 [fix] grants in logs
 [fix] modal class extend for integration
