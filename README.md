@@ -101,6 +101,7 @@ export default {
 <mqtt-client :initSettings="settings" whiteLabel="My MQTT"/>
 ```
 Props:
+
 | Name  | Description  | Default |
 |---|---|---|
 | initSettings | Init settings for clients | undefined |
@@ -114,6 +115,7 @@ Props:
 | accentColor | Secondary color by quasar color palette | 'light-blue-7' |
 
 Events:
+
 | Name  | Description  | Payload |
 |---|---|---|
 | change | Any change in clients | [<client>] |
