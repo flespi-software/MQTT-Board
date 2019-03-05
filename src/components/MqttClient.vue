@@ -1,7 +1,7 @@
 <template>
   <div style="position: absolute; bottom: 0; right: 0; top: 0; left: 0;">
     <flespi-topic ref="felspiModal" @topic="(topic) => { addSubscriber(); subscribers[subscribers.length - 1].topic = topic }"/>
-    <q-modal @show="showSettingsModalHandler" @hide="clearCurrentSettings" v-model='settingsModalModel' :color="color">
+    <q-modal @show="showSettingsModalHandler" @hide="clearCurrentSettings" v-model='settingsModalModel' :color="color" class="mqtt-board-modal mqtt-board-settings-modal">
       <q-modal-layout>
          <q-toolbar slot="header" :color='color'>
           <q-btn flat dense v-close-overlay icon="keyboard_arrow_left" @click="revertSettings"/>

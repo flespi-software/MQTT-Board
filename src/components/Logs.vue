@@ -50,7 +50,7 @@
                 <div v-if="log.data.settings.options.rap !== undefined"><span class="text-bold">Retain as Published: </span>{{log.data.settings.options.rap}}</div>
                 <div v-if="log.data.settings.options.rh !== undefined"><span class="text-bold">Retain handling: </span>{{log.data.settings.options.rh}}</div>
               </div>
-              <div class="col-6 q-pl-xs">
+              <div class="col-6 q-pl-xs" v-if="log.data.grants[0]">
                 <div class="col-6 q-pr-xs text-bold" v-if="log.data.restored">Access (restored by broker)</div>
                 <div class="col-6 q-pr-xs text-bold" v-else>Access</div>
                 <div style="word-break: break-all;"><span class="text-bold">Topic: </span>{{log.data.grants[0].topic}}</div>

@@ -1,5 +1,8 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.4.5] - 2019-03-05
+[fix] grants in logs
+[fix] modal class extend for integration
 ### [1.4.4] - 2019-03-01
 [feature] flespi subscribtions restore
 ### [1.4.3] - 2019-02-14

@@ -1,5 +1,5 @@
 <template>
-  <q-modal v-model='opened'>
+  <q-modal v-model='opened' class="mqtt-board-modal mqtt-board-topic-modal">
     <q-modal-layout>
       <q-toolbar slot="header" :color='color'>
         <q-btn flat dense v-close-overlay icon="keyboard_arrow_left" @click="clear"/>
