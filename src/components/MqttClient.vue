@@ -12,17 +12,17 @@
         <div style="margin: 20px;" :style="{ height: $q.platform.is.mobile ? 'calc(100% - 100px)' : '50vh', width: $q.platform.is.mobile ? 'calc(100% - 40px)' : '50vw'}">
           <q-input color="dark"  v-model="currentSettings.clientId" float-label="Client ID" :error="!currentSettings.clientId" :after="[{icon: 'mdi-refresh', handler () { currentSettings.clientId = `mqtt-board-${Math.random().toString(16).substr(2, 8)}` }}]"/>
           <q-input color="dark"  v-model="currentSettings.host" float-label="Host" :error="!currentSettings.host || (secure && currentSettings.host.indexOf('ws:') === 0)" :after="[{icon: 'mdi-alert-outline', handler: hostErrorHandler, error: true}]"/>
-          <q-input color="dark"  v-model="currentSettings.keepalive" type="number" float-label="Keep alive"/>
+          <q-input color="dark"  v-model="currentSettings.keepalive" type="number" float-label="Keep alive" :error="!isNil(currentSettings.keepalive) && (currentSettings.keepalive <= 0 || currentSettings.keepalive > 0xffff)"/>
           <q-select color="dark" v-model="currentSettings.protocolVersion" :options="[{label: '3.1.1', value: 4}, {label: '5.0', value: 5}]" float-label="Version of MQTT"/>
           <q-checkbox color="dark" class="q-mt-sm q-mb-sm" v-model="currentSettings.clean" :label="currentSettings.protocolVersion === 5 ? 'Clean start' : 'Clean session'"/>
-          <q-input color="dark" v-model="currentSettings.username" float-label="Username"/>
+          <q-input color="dark" v-model="currentSettings.username" float-label="Username" :after="[{icon: 'mdi-login', handler: flespiLoginHandler, condition: currentSettings.host.indexOf('flespi') !== -1}]"/>
           <q-input color="dark" v-model="currentSettings.password" float-label="Password"/>
           <q-collapsible class="q-mt-sm q-mb-sm bg-grey-2" label="Properties" v-if="currentSettings.protocolVersion === 5">
             <div>
-              <q-input color="dark" v-model="currentSettings.properties.sessionExpiryInterval" type="number" :min="0" float-label="Session expiry interval" :error="!isNil(currentSettings.properties.sessionExpiryInterval) && (currentSettings.properties.sessionExpiryInterval < 0 || currentSettings.properties.sessionExpiryInterval > 0xffffffff)"/>
-              <q-input color="dark" v-model="currentSettings.properties.receiveMaximum" type="number" float-label="Receive maximum" :error="!isNil(currentSettings.properties.receiveMaximum) && (currentSettings.properties.receiveMaximum <= 0 || currentSettings.properties.receiveMaximum > 0xffff)"/>
-              <q-input color="dark" v-model="currentSettings.properties.maximumPacketSize" type="number" float-label="Maximum packet size" :error="!isNil(currentSettings.properties.maximumPacketSize) && (currentSettings.properties.maximumPacketSize <= 0 || currentSettings.properties.maximumPacketSize > 0xffffffff)"/>
-              <q-input color="dark" v-model="currentSettings.properties.topicAliasMaximum" type="number" float-label="Topic alias maximum" :error="!isNil(currentSettings.properties.topicAliasMaximum) && (currentSettings.properties.topicAliasMaximum < 0 || currentSettings.properties.topicAliasMaximum > 0xffff)"/>
+              <q-input color="dark" v-model="currentSettings.properties.sessionExpiryInterval" type="number" :min="0" float-label="Session expiry interval" clearable :clear-value="undefined" :error="!isNil(currentSettings.properties.sessionExpiryInterval) && (currentSettings.properties.sessionExpiryInterval < 0 || currentSettings.properties.sessionExpiryInterval > 0xffffffff)"/>
+              <q-input color="dark" v-model="currentSettings.properties.receiveMaximum" type="number" float-label="Receive maximum" clearable :clear-value="undefined" :error="!isNil(currentSettings.properties.receiveMaximum) && (currentSettings.properties.receiveMaximum <= 0 || currentSettings.properties.receiveMaximum > 0xffff)"/>
+              <q-input color="dark" v-model="currentSettings.properties.maximumPacketSize" type="number" float-label="Maximum packet size" clearable :clear-value="undefined" :error="!isNil(currentSettings.properties.maximumPacketSize) && (currentSettings.properties.maximumPacketSize <= 0 || currentSettings.properties.maximumPacketSize > 0xffffffff)"/>
+              <q-input color="dark" v-model="currentSettings.properties.topicAliasMaximum" type="number" float-label="Topic alias maximum" clearable :clear-value="undefined" :error="!isNil(currentSettings.properties.topicAliasMaximum) && (currentSettings.properties.topicAliasMaximum < 0 || currentSettings.properties.topicAliasMaximum > 0xffff)"/>
               <q-checkbox style="display: flex;" color="dark" class="q-mt-sm q-mb-sm" v-model="currentSettings.properties.requestResponseInformation" label="Request-Response information"/>
               <q-checkbox style="display: flex;" color="dark" class="q-mt-sm q-mb-sm" v-model="currentSettings.properties.requestProblemInformation" label="Request problem information"/>
               <div>
@@ -53,9 +53,9 @@
               </div>
               <q-checkbox color="dark" class="q-mt-sm q-mb-sm" v-model="currentSettings.will.retain" label="Will retain"/>
               <q-collapsible class="bg-grey-4" label="Will properties" v-if="currentSettings.protocolVersion === 5">
-                <q-input color="dark" v-model="currentSettings.will.properties.willDelayInterval" type="number" float-label="Will delay interval"/>
+                <q-input color="dark" v-model="currentSettings.will.properties.willDelayInterval" type="number" float-label="Will delay interval" clearable :clear-value="undefined"/>
                 <q-checkbox color="dark" class="q-mt-sm q-mb-sm" v-model="currentSettings.will.properties.payloadFormatIndicator" label="Payload format indicator"/>
-                <q-input color="dark" v-model="currentSettings.will.properties.messageExpiryInterval" type="number" float-label="Message expiry interval"/>
+                <q-input color="dark" v-model="currentSettings.will.properties.messageExpiryInterval" type="number" float-label="Message expiry interval" clearable :clear-value="undefined"/>
                 <q-input color="dark" v-model="currentSettings.will.properties.contentType" float-label="Content type"/>
                 <q-input color="dark" v-model="currentSettings.will.properties.responseTopic" float-label="Response topic"/>
                 <q-input color="dark" v-model="currentSettings.will.properties.correlationData" type="textarea" float-label="Correlation data"/>
@@ -120,7 +120,7 @@
       <q-btn v-if="!activeClient && !whiteLabel" dense @click="openURL('https://github.com/flespi-software/MQTT-Board')" color="blue" icon="mdi-github-circle" style="margin-right: 90px" label="Fork me!"/>
     </q-toolbar>
     <div v-if="!activeClient" class="absolute scroll" style="top:50px; left: 0; right: 0; bottom: 0;">
-      <div v-if="clients.length" class="mqtt-clients row q-pt-md">
+      <div v-if="Object.keys(clients).length" class="mqtt-clients row q-pt-md">
         <div class="client__item q-pt-md q-px-md cursor-pointer col-xl-3 col-md-4 col-sm-6 col-xs-12" v-for="(client, index) in clients" :key="index">
           <q-card :class="{'bg-red-2': !statuses[index], 'bg-green-2': statuses[index]}" @click.native="setActiveClient(index)">
             <q-card-title>
@@ -152,7 +152,7 @@
         <q-btn v-if="!activeClient" @click.native="addClientHandler">Create client</q-btn>
       </div>
     </div>
-    <div ref="wrapper" v-touch-swipe.horizontal.noMouse="swipeHandler" class="no-wrap row" style="position: absolute; top: 50px; bottom: 0; left: 0; right: 0; overflow: auto;" v-else-if="statuses[activeClient.id] || logsModel">
+    <div ref="wrapper" v-touch-pan.horizontal.noMouse.mightPrevent="swipeHandler" class="no-wrap row" style="position: absolute; top: 50px; bottom: 0; left: 0; right: 0; overflow: auto;" v-else-if="statuses[activeClient.id] || logsModel">
       <template v-for="(entity, index) in entities">
         <publisher
           :class='[`col-xl-${entities.length < 4 ? 12 / entities.length : 3}`]'
@@ -182,7 +182,7 @@
         />
         <unresolved
           :class='[`col-xl-${entities.length < 4 ? 12 / entities.length : 3}`]'
-          v-else-if="statuses[activeClient.id] && notResolvedMessages.length && entity.type === 'unresolved'"
+          v-else-if="statuses[activeClient.id] && entity.type === 'unresolved'"
           :key="`unresolved${index}`"
           :messages="notResolvedMessages"
           @clear="clearUnresolvedMessages"
@@ -229,13 +229,17 @@ import validateEntities from '../mixins/validateEntities.js'
 
 let
   makeExportClients = (clients) => {
-    return clients.map(client => ({
-      status: client.status,
-      config: client.config,
-      publishers: client.publishers,
-      subscribers: client.subscribers,
-      entities: client.entities.filter(entity => entity.type !== 'unresolved')
-    }))
+    return Object.keys(clients).map(clientId => {
+      let client = clients[clientId]
+      return {
+        status: client.status,
+        config: client.config,
+        publishers: client.publishers,
+        subscribers: client.subscribers,
+        entities: client.entities.filter(entity => entity.type !== 'unresolved'),
+        subscribersStatuses: client.subscribersStatuses
+      }
+    })
   },
   saveClientsToLocalStorage = debounce((clients) => {
     LocalStorage.set(MQTT_BOARD_LOCALSTORAGE_NAME, makeExportClients(clients))
@@ -404,8 +408,8 @@ export default {
       version: version,
       currentSettings: cloneDeep(merge({}, defaultSettings, this.initSettings)),
       prevSettings: null,
-      clients: [],
-      statuses: [],
+      clients: {},
+      statuses: {},
       activeClient: null,
       entities: [],
       publishers: [],
@@ -735,7 +739,9 @@ export default {
     },
     async createClient (index) {
       let config = this.createConnectPacket(this.currentSettings),
-        key = typeof index === 'number' ? index : this.clients.length
+        key = typeof index === 'string' || typeof index === 'number'
+          ? index
+          : Object.keys(this.clients).reduce((result, id) => result > parseInt(id) ? result : parseInt(id), 0) + 1
       /* init new client */
       if (!this.clients[key]) {
         let client = {}
@@ -763,7 +769,7 @@ export default {
     initExternalClients (savedClients) {
       if (savedClients) {
         savedClients.forEach(client => {
-          let key = this.clients.length
+          let key = Object.keys(this.clients).length
           let currentClient = {}
           currentClient.config = client.config
           currentClient.id = key
@@ -776,12 +782,16 @@ export default {
           for (let i = 0; i < client.subscribers.length; i++) {
             currentClient.messages[i] = []
           }
-          currentClient.subscribersStatuses = new Array(client.subscribers.length)
-          currentClient.subscribersStatuses.fill(false)
+          if (client.subscribersStatuses) {
+            currentClient.subscribersStatuses = client.subscribersStatuses
+          } else {
+            currentClient.subscribersStatuses = new Array(client.subscribers.length)
+            currentClient.subscribersStatuses.fill(false)
+          }
           currentClient.logs = [{type: 'created', data: {...client.config}, timestamp: Date.now()}]
           currentClient.notResolvedMessages = []
-          this.statuses.push(client.status)
-          this.clients.push(currentClient)
+          Vue.set(this.statuses, key, client.status)
+          Vue.set(this.clients, key, currentClient)
           if (client.status !== CLIENT_STATUS_USER_INACTIVE) {
             this.initClient(key, this.createConnectPacket(client.config))
           }
@@ -846,14 +856,19 @@ export default {
         message: `Do you really want to delete client for ${clientObj.config.clientId}?`,
         cancel: true,
         ok: true
-      }).then(async () => {
+      }).then(() => {
         if (clientObj.client) {
-          await clientObj.client.end()
-          this.setClientStatus(key, CLIENT_STATUS_INACTIVE)
-          this.statuses.splice(key, 1)
+          clientObj.client.end()
+            .then(() => {
+              Vue.delete(this.statuses, key)
+              Vue.delete(this.clients, key)
+              this.saveClients()
+            })
+        } else {
+          Vue.delete(this.statuses, key)
+          Vue.delete(this.clients, key)
+          this.saveClients()
         }
-        this.clients.splice(key, 1)
-        this.saveClients()
       })
         .catch(() => {})
     },
@@ -906,7 +921,9 @@ export default {
       this.isNeedScroll = true
     },
     addSubscriber (clientId) {
-      clientId = typeof clientId === 'number' ? clientId : this.activeClient.id
+      clientId = typeof clientId === 'number' || typeof clientId === 'string'
+        ? clientId
+        : this.activeClient.id
       let clientObj = this.clients[clientId]
       clientObj.subscribers.push(cloneDeep(defaultSubscriber))
       clientObj.messages.push([])
@@ -1054,7 +1071,12 @@ export default {
     swipeHandler (data) {
       let el = this.$refs.wrapper,
         elementOffsetWidth = el && el.offsetWidth,
-        { direction } = data
+        { direction, isFinal, evt, distance, duration } = data
+      if (evt.cancelable && (!isFinal || distance.x < elementOffsetWidth / 5 || duration > 500)) {
+        evt.stopPropagation()
+        evt.preventDefault()
+        return false
+      }
       if (el && direction === 'left') {
         animate.start({
           from: el.scrollLeft,
@@ -1070,6 +1092,34 @@ export default {
           apply (pos) { el.scrollLeft = pos }
         })
       }
+    },
+    flespiLoginHandler () {
+      let tokenHandler = (event) => {
+        if (typeof event.data === 'string' && ~event.data.indexOf('FlespiToken')) {
+          this.currentSettings.username = event.data
+          window.removeEventListener('message', tokenHandler)
+        }
+      }
+      window.addEventListener('message', tokenHandler)
+      this.openWindow(`https://flespi.io/login/#/providers`)
+    },
+    openWindow (url, title) {
+      title = title || 'auth'
+      let w = 500, h = 600
+      let dualScreenLeft = window.screenLeft !== undefined ? window.screenLeft : screen.left
+      let dualScreenTop = window.screenTop !== undefined ? window.screenTop : screen.top
+
+      let width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width
+      let height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height
+
+      let left = ((width / 2) - (w / 2)) + dualScreenLeft
+      let top = ((height / 2) - (h / 2)) + dualScreenTop
+      let newWindow = window.open(url, title, 'toolbar=no,location=no,status=yes,resizable=yes,scrollbars=yes, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left)
+
+      // Puts focus on the newWindow
+      if (window.focus) {
+        newWindow.focus()
+      }
     }
   },
   watch: {
@@ -1080,6 +1130,7 @@ export default {
         clearInterval(this.renderInterval)
         this.renderInterval = 0
       }
+      this.saveClients()
     }
   },
   created () {
@@ -1097,20 +1148,22 @@ export default {
     this.isInited = true
     if (window) {
       window.addEventListener('beforeunload', () => {
-        this.clients.forEach((clientObj) => {
+        for (let clientObjKey in this.clients) {
+          let clientObj = this.clients[clientObjKey]
           if (clientObj.status) {
             clientObj.client.end()
           }
-        })
+        }
       })
     }
   },
   destroyed () {
-    this.clients.forEach((clientObj) => {
+    for (let clientObjKey in this.clients) {
+      let clientObj = this.clients[clientObjKey]
       if (clientObj.status) {
         clientObj.client.end()
       }
-    })
+    }
   },
   components: {
     VirtualList, FlespiTopic, Subscriber, Publisher, Unresolved, Logs

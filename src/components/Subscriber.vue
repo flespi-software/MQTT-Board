@@ -4,7 +4,7 @@
       <q-card-title class="q-pa-none">
         <q-toolbar color="orange" class="q-px-none">
           <q-toolbar-title>Subscriber</q-toolbar-title>
-          <q-btn round flat :disable="!isValidSubscriber" icon="mdi-arrow-right-bold-circle-outline" @click="subscribeMessageHandler">
+          <q-btn round flat :disable="!isValidSubscriber" icon="mdi-play" @click="subscribeMessageHandler">
             <q-tooltip>Subscribe</q-tooltip>
           </q-btn>
           <q-btn round flat icon="mdi-dots-vertical">
@@ -50,7 +50,7 @@
               </div>
             </div>
             <q-collapsible v-if="version === 5" class="q-mt-sm q-mb-sm bg-grey-4" label="Properties">
-              <q-input :disable="status" color="dark" type="number" v-model="config.options.properties.subscriptionIdentifier" float-label="Subscription identifier" :error="!isNil(config.options.properties.subscriptionIdentifier) && (config.options.properties.subscriptionIdentifier <= 0 || config.options.properties.subscriptionIdentifier > 268435455)"/>
+              <q-input :disable="status" color="dark" type="number" v-model="config.options.properties.subscriptionIdentifier" clearable :clear-value="undefined" float-label="Subscription identifier" :error="!isNil(config.options.properties.subscriptionIdentifier) && (config.options.properties.subscriptionIdentifier <= 0 || config.options.properties.subscriptionIdentifier > 268435455)"/>
               <div v-if="!status || config.options.properties.userProperties">
                 <div class="q-mt-md">User Properties</div>
                 <q-checkbox style="display: flex;" color="dark" class="q-mt-sm q-mb-sm" v-model="needUseSubUserPropsToUnsub" label="Also use to unsubscribe"/>
@@ -89,19 +89,19 @@
     </q-card>
     <q-card v-else class="subscriber__item q-ma-sm">
       <q-toolbar v-if="!filterMode" color="orange" class="q-px-none" style="border-top-right-radius: 0; border-top-left-radius: 0;">
-        <q-btn round flat icon="mdi-close" @click="unsubscribeMessageHandler()" />
         <q-toolbar-title style="width: calc(100% - 150px)">
           <span>
             {{config.topic}}
             <q-tooltip>{{config.topic}}</q-tooltip>
           </span>
         </q-toolbar-title>
-        <q-btn round flat :icon="isPlayed && status !== 'paused' ? 'mdi-pause' : 'mdi-play'" @click="playStopHandler">
+        <q-btn round flat icon="mdi-magnify" @click="filterMode = true"/>
+        <q-btn round flat icon="mdi-stop" @click="unsubscribeMessageHandler()" title="Unsubscribe"/>
+        <q-btn round flat :icon="isPlayed && status !== 'paused' ? 'mdi-pause' : 'mdi-play'" @click="playStopHandler" :title="isPlayed && status !== 'paused' ? 'Pause' : 'Resume'">
           <q-chip floating v-if="status === 'paused' && !!value.missedMessages" color="red">
             {{value.missedMessages}}
           </q-chip>
         </q-btn>
-        <q-btn round flat icon="mdi-magnify" @click="filterMode = true"/>
         <q-btn round flat icon="mdi-dots-vertical">
           <q-popover anchor="bottom right" self="top right">
             <q-list>
@@ -224,7 +224,11 @@ export default {
         }
         case UNIQUE_MODE: {
           let obj = messages.reduce((obj, message, index) => {
-            obj[message.topic] = message
+            if (message.payload.length) {
+              obj[message.topic] = message
+            } else {
+              delete obj[message.topic]
+            }
             return obj
           }, {})
           return obj

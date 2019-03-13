@@ -1,5 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.5.0] - 2019-03-13
+[feature] login button for flespi host
+[feature] restore subscribers statuses
+[feature] messages with empty payload not showed in unique mode of subscribers
+[fix] unset props
+[fix] long tap on mobile
+[fix] UX on panels
+[fix] validation on keep alive field
+[fix] delete client
 ### [1.4.6] - 2019-03-05
 [fix] save clients
 ### [1.4.5] - 2019-03-05

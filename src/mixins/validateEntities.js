@@ -109,6 +109,10 @@ export default {
         !!settings.clientId &&
         !!settings.host &&
         (
+          isNil(settings.keepalive) ||
+          (settings.keepalive >= 0 && settings.keepalive <= 0xffff)
+        ) &&
+        (
           !settings.will || (!!settings.will && (
             (!!settings.will.topic && !!settings.will.payload) ||
             (!settings.will.topic && !settings.will.payload)

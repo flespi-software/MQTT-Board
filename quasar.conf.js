@@ -78,7 +78,7 @@ module.exports = function (ctx) {
         'Ripple',
 
         'CloseOverlay',
-        'TouchSwipe'
+        'TouchPan'
       ],
       // Quasar plugins
       plugins: [
