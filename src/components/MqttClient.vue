@@ -741,7 +741,7 @@ export default {
       let config = this.createConnectPacket(this.currentSettings),
         key = typeof index === 'string' || typeof index === 'number'
           ? index
-          : Object.keys(this.clients).reduce((result, id) => result > parseInt(id) ? result : parseInt(id), 0) + 1
+          : Object.keys(this.clients).reduce((result, id) => result > parseInt(id) ? result : parseInt(id), -1) + 1
       /* init new client */
       if (!this.clients[key]) {
         let client = {}

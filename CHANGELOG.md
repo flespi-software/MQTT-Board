@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.5.1] - 2019-03-19
+[fix] index new client
 ### [1.5.0] - 2019-03-13
 [feature] login button for flespi host
 [feature] restore subscribers statuses
