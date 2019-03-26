@@ -1,5 +1,8 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.6.0] - 2019-03-26
+[feature] rebased uniq mode for tree view
+[feature] server side disconnect packet processing
 ### [1.5.1] - 2019-03-19
 [fix] index new client
 ### [1.5.0] - 2019-03-13

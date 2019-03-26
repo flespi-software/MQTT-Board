@@ -152,7 +152,7 @@
         <q-btn v-if="!activeClient" @click.native="addClientHandler">Create client</q-btn>
       </div>
     </div>
-    <div ref="wrapper" v-touch-pan.horizontal.noMouse.mightPrevent="swipeHandler" class="no-wrap row" style="position: absolute; top: 50px; bottom: 0; left: 0; right: 0; overflow: auto;" v-else-if="statuses[activeClient.id] || logsModel">
+    <div ref="wrapper" v-touch-pan.horizontal.noMouse.mightPrevent="swipeHandler" class="no-wrap row client__wrapper" v-else-if="statuses[activeClient.id] || logsModel">
       <template v-for="(entity, index) in entities">
         <publisher
           :class='[`col-xl-${entities.length < 4 ? 12 / entities.length : 3}`]'
@@ -207,7 +207,13 @@
 <style lang="stylus">
   .client__item:last-child
     margin-bottom 16px
-
+  .client__wrapper
+    position absolute
+    top 50px
+    bottom 0
+    left 0
+    right 0
+    overflow auto
 </style>
 
 <script>
@@ -428,7 +434,7 @@ export default {
       settingsModalModel: false,
       activeClientSettings: null,
       renderInterval: 0,
-      messagesLimitCount: 1000,
+      messagesLimitCount: 3000,
       notResolvedMessages: [],
       isNeedScroll: false,
       isInited: false
@@ -720,8 +726,13 @@ export default {
       client.on('error', (error) => {
         this.errorHandler(key, error, false)
       })
-      client.on('close', () => {
-        clientObj.logs.push({type: 'disconnect', timestamp: Date.now()})
+      client.on('close', (closePacket) => {
+        if (closePacket) {
+          clientObj.logs.push({type: 'disconnect', data: {...closePacket}, timestamp: Date.now()})
+          clientObj.client = null
+        } else {
+          clientObj.logs.push({type: 'disconnect', timestamp: Date.now()})
+        }
         endHandler()
       })
       client.on('offline', () => {

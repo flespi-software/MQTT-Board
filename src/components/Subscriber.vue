@@ -153,13 +153,21 @@
         ref="scroller"
         :onscroll="listScroll"
         :debounce="10"
-        v-if="messages && messages.length && (config.mode === 0 || config.mode === 1)"
+        v-if="messages && messages.length && config.mode === 0"
         :size="110"
         :remain="15"
         class="subscriber__list"
       >
         <message :message="message" v-for="(message, msgIndex) in renderedMessages" :key="`subMsg$${msgIndex}`"/>
       </virtual-list>
+      <div class="subscriber__list subscriber__list--uniq" v-else-if="config.mode === 1">
+        <div :style="{height: uniqModeValue ? '60%' : '100%'}" class="scroll">
+          <uniq-tree :topic="uniqSelectedTopic" :data="renderedMessages" @change="uniqValueChangeHandler"/>
+        </div>
+        <div style="height: 40%" v-if="uniqModeValue">
+          <uniq-message :message="uniqModeValue"/>
+        </div>
+      </div>
       <div v-else class="subscriber__list--empty">No messages</div>
     </q-card>
   </div>
@@ -167,14 +175,44 @@
 
 <script>
 import Vue from 'vue'
+import UniqTree from './UniqTree'
 import VirtualList from 'vue-virtual-scroll-list'
 import Message from './Message'
+import UniqMessage from './UniqMessage'
 import validateTopic from '../mixins/validateTopic.js'
 import isNil from 'lodash/isNil'
 
 const
   HISTORY_MODE = 0,
   UNIQUE_MODE = 1
+
+function jsonTreeByMessages (messages) {
+  return messages.reduce((result, message) => {
+    if (!message.payload.length) {
+      return result
+    }
+    let path = message.topic.split('/')
+    let currentNesting = result
+    let currentTopic = ''
+    path.forEach((pathElement, pathIndex, path) => {
+      if (!currentNesting[pathElement]) {
+        currentNesting[pathElement] = { children: undefined, topic: '' }
+      }
+      if (pathIndex !== 0) {
+        currentTopic += '/'
+      }
+      currentTopic += `${pathElement}`
+      currentNesting[pathElement].topic = currentTopic
+      if (pathIndex !== path.length - 1) {
+        if (!currentNesting[pathElement].children) {
+          currentNesting[pathElement].children = {}
+        }
+        currentNesting = currentNesting[pathElement].children
+      }
+    })
+    return result
+  }, {})
+}
 
 export default {
   name: 'Subscriber',
@@ -210,7 +248,8 @@ export default {
       ],
       needAutoScroll: true,
       isPlayed: this.status || null,
-      filter: ''
+      filter: '',
+      uniqSelectedTopic: ''
     }
   },
   computed: {
@@ -223,17 +262,24 @@ export default {
           return messages
         }
         case UNIQUE_MODE: {
-          let obj = messages.reduce((obj, message, index) => {
-            if (message.payload.length) {
-              obj[message.topic] = message
-            } else {
-              delete obj[message.topic]
-            }
-            return obj
-          }, {})
-          return obj
+          return jsonTreeByMessages(messages)
         }
       }
+    },
+    uniqModeValue () {
+      let messages = this.filter
+        ? this.messages.filter(message => message.topic.indexOf(this.filter) !== -1)
+        : this.messages
+      let result = null
+      if (this.config.mode === UNIQUE_MODE) {
+        result = messages.reduceRight((result, message) => {
+          if (result) { return result }
+          if (this.uniqSelectedTopic && message.topic === this.uniqSelectedTopic) {
+            return message
+          }
+        }, undefined)
+      }
+      return result
     },
     isValidSubscriber () {
       return !!this.config.topic && this.validateTopic(this.config.topic) &&
@@ -323,6 +369,9 @@ export default {
     },
     clearMessagesHandler () {
       this.$emit('clear')
+    },
+    uniqValueChangeHandler (value) {
+      this.uniqSelectedTopic = value
     }
   },
   watch: {
@@ -345,7 +394,7 @@ export default {
       }
     }
   },
-  components: { VirtualList, Message },
+  components: { VirtualList, Message, UniqTree, UniqMessage },
   directives: {
     autoscroll: {
       inserted (el, {value}) {

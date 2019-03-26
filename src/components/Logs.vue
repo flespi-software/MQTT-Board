@@ -21,8 +21,14 @@
           <div class="log__title q-py-xs q-px-sm text-bold">
             {{log.type}}
           </div>
-          <template v-if="log.type === 'offline' || log.type === 'reconnect' || log.type === 'end' || log.type === 'disconnect'">
+          <template v-if="log.type === 'offline' || log.type === 'reconnect' || log.type === 'end'">
             <div class="log__payload q-mr-xs q-ml-xs bg-grey-2" style="font-size: .75rem"></div>
+          </template>
+          <template v-else-if="log.type === 'disconnect'">
+            <div v-if="log.data" class="log__payload q-mr-xs q-ml-xs bg-grey-2" style="font-size: .75rem">
+              disconnected by broker:
+              <div>{{`${log.data.reasonCode}: ${codes[log.data.reasonCode]}`}}</div>
+            </div>
           </template>
           <template v-else-if="log.type === 'created' || log.type === 'updated'">
             <div class="log__payload q-px-sm q-pt-xs q-mr-xs q-ml-xs bg-grey-2" style="font-size: .75rem">
@@ -158,6 +164,9 @@ export default {
         return 'red'
       }
       if (log.type === 'subscribe' && log.data.restored) { return 'blue' }
+      if (log.type === 'disconnect' && log.data) {
+        return 'brown'
+      }
       return this.colors[log.type]
     },
     listScroll (e) {
