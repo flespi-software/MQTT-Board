@@ -232,6 +232,8 @@ import Unresolved from './Unresolved'
 import Logs from './Logs'
 import { version } from '../../package.json'
 import validateEntities from '../mixins/validateEntities.js'
+import {defaultSettings, defaultSubscriber, defaultPublisher} from '../mixins/defaults.js'
+import jsonTreeByMessages from '../mixins/jsonTreeByMessages.js'
 
 let
   makeExportClients = (clients) => {
@@ -255,81 +257,7 @@ const
   MQTT_BOARD_LOCALSTORAGE_NAME = 'clients',
   CLIENT_STATUS_ACTIVE = true,
   CLIENT_STATUS_INACTIVE = false,
-  CLIENT_STATUS_USER_INACTIVE = null,
-  defaultSettings = {
-    clientId: `mqtt-board-${Math.random().toString(16).substr(2, 8)}`,
-    wsOptions: {
-      objectMode: false,
-      perMessageDeflate: true
-    },
-    host: 'wss://mqtt.flespi.io',
-    keepalive: 60,
-    protocolVersion: 5,
-    clean: true,
-    username: 'FlespiToken XXXXXXXXXXXXXXXXXXX',
-    password: '',
-    properties: {
-      sessionExpiryInterval: undefined,
-      receiveMaximum: undefined,
-      maximumPacketSize: undefined,
-      topicAliasMaximum: undefined,
-      requestResponseInformation: false,
-      requestProblemInformation: false,
-      userProperties: undefined,
-      authenticationMethod: undefined,
-      authenticationData: undefined
-    },
-    will: {
-      topic: undefined,
-      payload: undefined,
-      qos: 0,
-      retain: false,
-      properties: {
-        willDelayInterval: undefined,
-        payloadFormatIndicator: false,
-        messageExpiryInterval: undefined,
-        contentType: undefined,
-        responseTopic: undefined,
-        correlationData: undefined,
-        userProperties: undefined
-      }
-    }
-  },
-  defaultSubscriber = {
-    topic: '#',
-    mode: 0,
-    options: {
-      qos: 0,
-      nl: false,
-      rap: false,
-      rh: 0,
-      properties: {
-        subscriptionIdentifier: undefined,
-        userProperties: undefined
-      }
-    },
-    unsubscribeProperties: {
-      userProperties: undefined
-    }
-  },
-  defaultPublisher = {
-    topic: 'my/topic',
-    payload: '{"hello": "world"}',
-    options: {
-      qos: 0,
-      retain: false,
-      dup: false,
-      properties: {
-        payloadFormatIndicator: undefined,
-        messageExpiryInterval: undefined,
-        topicAlias: undefined,
-        responseTopic: undefined,
-        correlationData: undefined,
-        userProperties: undefined,
-        contentType: undefined
-      }
-    }
-  }
+  CLIENT_STATUS_USER_INACTIVE = null
 
 export default {
   name: 'MqttClient',
@@ -443,6 +371,7 @@ export default {
   computed: {
     limitingEnabled () {
       return this.subscribersMessages.reduce((result, messages) => {
+        if (!Array.isArray(messages)) { return result }
         result += messages.length
         return result
       }, 0) > this.messagesLimitCount
@@ -630,7 +559,15 @@ export default {
           if (isSubscriptionExited && !status) {
             Vue.set(currentStatuses, index, true)
           } else if (!isSubscriptionExited && status) {
-            clientObj.messages[index].splice(0, clientObj.messages[index].length)
+            if (subscriber.mode === 0) {
+              clientObj.messages[index].splice(0, clientObj.messages[index].length)
+            } else {
+              let tree = clientObj.messages[index]
+              let treeKeys = Object.keys(tree)
+              treeKeys.forEach(key => {
+                Vue.delete(tree, key)
+              })
+            }
             this.subscribe(key, index)
           }
           if (isSubscriptionExited) {
@@ -700,12 +637,18 @@ export default {
                   if (!clientObj.messages[index]) {
                     clientObj.messages[index] = []
                   }
-                  let count = clientObj.messages.reduce((count, arr) => { return count + arr.length }, 0)
-                  if (count > this.messagesLimitCount) {
-                    clientObj.messages[index].splice(0, 1)
+                  if (sub.mode === 0) {
+                    let count = clientObj.messages.reduce((count, arr) => { return count + arr.length }, 0)
+                    if (count > this.messagesLimitCount) {
+                      clientObj.messages[index].splice(0, 1)
+                    }
                   }
                   if (clientObj.subscribersStatuses[index] && clientObj.subscribersStatuses[index] !== 'paused') {
-                    clientObj.messages[index].push(packet)
+                    if (sub.mode === 0) {
+                      clientObj.messages[index].push(packet)
+                    } else if (sub.mode === 1) {
+                      jsonTreeByMessages(packet, clientObj.config.protocolVersion === 5 && sub.treeField ? sub.treeField : '', clientObj.messages[index])
+                    }
                   } else {
                     if (clientObj.subscribers[index].missedMessages === undefined) {
                       clientObj.subscribers[index].missedMessages = 0
@@ -791,7 +734,7 @@ export default {
           currentClient.entities = client.entities
           currentClient.messages = new Array(client.subscribers.length)
           for (let i = 0; i < client.subscribers.length; i++) {
-            currentClient.messages[i] = []
+            currentClient.messages[i] = client.subscribers[i].mode ? {} : []
           }
           if (client.subscribersStatuses) {
             currentClient.subscribersStatuses = client.subscribersStatuses
@@ -820,7 +763,7 @@ export default {
         switch (entity.type) {
           case 'subscriber': {
             client.subscribers.push(cloneDeep(merge({}, defaultSubscriber, entity.settings)))
-            client.messages.push([])
+            client.messages.push(entity.settings.mode ? {} : [])
             client.subscribersStatuses.push(false)
             client.entities.push({type: 'subscriber', index: client.subscribers.length - 1, id: Math.random().toString(16).substr(2, 8)})
             break
@@ -887,12 +830,17 @@ export default {
       if (!this.renderInterval) {
         this.renderInterval = setInterval(() => {
           this.subscribersMessagesBuffer.forEach((messages, index) => {
+            let subscriber = this.subscribers[index]
             let savedMessages = this.subscribersMessages[index]
-            if (savedMessages) {
-              if (this.limitingEnabled) {
-                savedMessages.splice(0, messages.length)
+            if (subscriber.mode === 0) {
+              if (savedMessages) {
+                if (this.limitingEnabled) {
+                  savedMessages.splice(0, messages.length)
+                }
+                savedMessages.splice(savedMessages.length, 0, ...messages)
               }
-              savedMessages.splice(savedMessages.length, 0, ...messages)
+            } else {
+              jsonTreeByMessages(messages, this.activeClient.config.protocolVersion === 5 && subscriber.treeField ? subscriber.treeField : '', savedMessages)
             }
           })
           this.subscribersMessagesBuffer = []
@@ -1004,7 +952,7 @@ export default {
         return false
       }
       if (this.subscribersMessages && this.subscribersMessages.length) {
-        Vue.set(this.subscribersMessages, subscriberIndex, [])
+        Vue.set(this.subscribersMessages, subscriberIndex, settings.mode === 1 ? {} : [])
       }
       await this.subscribe(clientKey, subscriberIndex)
     },
@@ -1012,11 +960,11 @@ export default {
       let clientObj = this.clients[clientKey],
         settings = this.clearObject(clientObj.subscribers[subscriberIndex])
       try {
-        Vue.set(this.subscribersStatuses, subscriberIndex, true)
+        Vue.set(this.clients[clientKey].subscribersStatuses, subscriberIndex, true)
         let grants = await clientObj.client.subscribe(settings.topic, settings.options)
         clientObj.logs.push({type: 'subscribe', data: { settings, grants }, timestamp: Date.now()})
       } catch (e) {
-        Vue.set(this.subscribersStatuses, subscriberIndex, false)
+        Vue.set(this.clients[clientKey].subscribersStatuses, subscriberIndex, false)
         this.errorHandler(clientKey, e, true)
       }
     },

@@ -72,7 +72,8 @@ module.exports = function (ctx) {
         'QTooltip',
         'QBtnToggle',
         'QPopover',
-        'QChip'
+        'QChip',
+        'QField'
       ],
       directives: [
         'Ripple',

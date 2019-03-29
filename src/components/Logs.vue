@@ -32,14 +32,18 @@
           </template>
           <template v-else-if="log.type === 'created' || log.type === 'updated'">
             <div class="log__payload q-px-sm q-pt-xs q-mr-xs q-ml-xs bg-grey-2" style="font-size: .75rem">
-              <div class="q-ma-none" style="white-space: pre-wrap; word-break: break-all;">{{log.data}}</div>
+              <div class="q-ma-none" style="white-space: pre-wrap; word-break: break-all;">
+                <json-tree :data="log.data"/>
+              </div>
             </div>
           </template>
           <template v-else-if="log.type === 'connect'">
             <div class="log__payload q-px-sm q-py-xs q-mr-xs q-ml-xs bg-grey-2" v-if="codes[log.data.returnCode] || codes[log.data.reasonCode]">
               {{codes[log.data.returnCode] || codes[log.data.reasonCode]}}
             </div>
-            <div v-if="log.data.properties" class="log__properties q-pt-xs q-mr-xs q-ml-xs text-grey-7" style="font-size: .75rem; word-break: break-all;">{{JSON.stringify(log.data.properties)}}</div>
+            <div v-if="log.data.properties" class="log__properties q-pt-xs q-mr-xs q-ml-xs text-grey-7 bg-green-1" style="font-size: .75rem; word-break: break-all;">
+              <json-tree :data="log.data.properties"/>
+            </div>
           </template>
           <template v-else-if="log.type === 'error'">
             <div class="log__payload q-px-sm q-py-xs q-mr-xs q-ml-xs bg-grey-2" style="font-size: .75rem">
@@ -90,6 +94,7 @@
 
 <script>
 import { date } from 'quasar'
+import JsonTree from './JsonTree'
 export default {
   name: 'Logs',
   props: [
@@ -209,7 +214,8 @@ export default {
         }, 50)
       }
     }
-  }
+  },
+  components: { JsonTree }
 }
 </script>
 

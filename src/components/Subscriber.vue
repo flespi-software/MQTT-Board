@@ -36,6 +36,10 @@
             ]"
             :warning="config.topic.indexOf('$share') === 0"
           />
+          <q-btn-toggle v-close-overlay flat rounded toggle-text-color="dark" text-color="grey-6" v-model="config.mode" :options="modeSelectOptions" @input="changeModeHandler" style="width: 100%" class="q-mt-sm"/>
+          <q-field helper="User properties field name by which messages will be grouped." v-if="config.mode === 1 && version === 5">
+            <q-input color="dark" v-model="config.treeField" float-label="Field to group by"/>
+          </q-field>
           <q-collapsible opened class="q-mt-sm q-mb-sm bg-grey-2" label="Options">
             <div>
               QoS
@@ -105,16 +109,11 @@
         <q-btn round flat icon="mdi-dots-vertical">
           <q-popover anchor="bottom right" self="top right">
             <q-list>
-              <q-item>
-                <q-item-main>
-                  <q-btn-toggle v-close-overlay flat rounded toggle-text-color="dark" text-color="grey-6" v-model="config.mode" :options="modeSelectOptions"/>
-                </q-item-main>
-              </q-item>
-              <q-item class="cursor-pointer" v-close-overlay highlight @click.native="clearMessagesHandler">
+              <q-item class="cursor-pointer" v-if="config.mode === 0" v-close-overlay highlight @click.native="clearMessagesHandler">
                 <q-item-side icon="mdi-playlist-remove" />
                 <q-item-main label="Clear messages"/>
               </q-item>
-              <q-item-separator/>
+              <q-item-separator v-if="config.mode === 0"/>
               <q-item class="cursor-pointer" v-close-overlay highlight @click.native="removeSubscriber()">
                 <q-item-side color="red" icon="mdi-delete-outline" />
                 <q-item-main label="Remove"/>
@@ -160,12 +159,19 @@
       >
         <message :message="message" v-for="(message, msgIndex) in renderedMessages" :key="`subMsg$${msgIndex}`"/>
       </virtual-list>
-      <div class="subscriber__list subscriber__list--uniq" v-else-if="config.mode === 1">
-        <div :style="{height: uniqModeValue ? '60%' : '100%'}" class="scroll">
-          <uniq-tree :topic="uniqSelectedTopic" :data="renderedMessages" @change="uniqValueChangeHandler"/>
+      <div class="subscriber__list subscriber__list--tree" v-else-if="config.mode === 1 && Object.keys(renderedMessages).length">
+        <div style="height: 60%" class="scroll">
+          <tree :topic="treeSelectedTopic" :data="renderedMessages" @change="treeValueChangeHandler"/>
         </div>
-        <div style="height: 40%" v-if="uniqModeValue">
-          <uniq-message :message="uniqModeValue"/>
+        <div class="scroll tree__message">
+          <template v-for="(message, key, index) in treeModeValue">
+            <message :key="`tree-message-${key}-${index}`" :message="message" v-if="message.payload" />
+            <div :key="`tree-message-empty-${index}`" v-else style="height: 100%" class='text-center'>
+              <div style="font-size: 1.5rem;" class="q-pt-sm text-dark">No messages</div>
+              <div class="text-grey-8">{{message.topic}}</div>
+              <q-icon color="red" name="mail" size="5rem"/>
+            </div>
+          </template>
         </div>
       </div>
       <div v-else class="subscriber__list--empty">No messages</div>
@@ -175,44 +181,15 @@
 
 <script>
 import Vue from 'vue'
-import UniqTree from './UniqTree'
+import Tree from './TreeModeView'
 import VirtualList from 'vue-virtual-scroll-list'
 import Message from './Message'
-import UniqMessage from './UniqMessage'
 import validateTopic from '../mixins/validateTopic.js'
 import isNil from 'lodash/isNil'
 
 const
   HISTORY_MODE = 0,
-  UNIQUE_MODE = 1
-
-function jsonTreeByMessages (messages) {
-  return messages.reduce((result, message) => {
-    if (!message.payload.length) {
-      return result
-    }
-    let path = message.topic.split('/')
-    let currentNesting = result
-    let currentTopic = ''
-    path.forEach((pathElement, pathIndex, path) => {
-      if (!currentNesting[pathElement]) {
-        currentNesting[pathElement] = { children: undefined, topic: '' }
-      }
-      if (pathIndex !== 0) {
-        currentTopic += '/'
-      }
-      currentTopic += `${pathElement}`
-      currentNesting[pathElement].topic = currentTopic
-      if (pathIndex !== path.length - 1) {
-        if (!currentNesting[pathElement].children) {
-          currentNesting[pathElement].children = {}
-        }
-        currentNesting = currentNesting[pathElement].children
-      }
-    })
-    return result
-  }, {})
-}
+  TREE_MODE = 1
 
 export default {
   name: 'Subscriber',
@@ -242,42 +219,43 @@ export default {
           value: HISTORY_MODE
         },
         {
-          label: 'Unique',
-          value: UNIQUE_MODE
+          label: 'Tree',
+          value: TREE_MODE
         }
       ],
       needAutoScroll: true,
       isPlayed: this.status || null,
       filter: '',
-      uniqSelectedTopic: ''
+      treeSelectedTopic: ''
     }
   },
   computed: {
     renderedMessages () {
-      let messages = this.filter
-        ? this.messages.filter(message => message.topic.indexOf(this.filter) !== -1)
-        : this.messages
       switch (this.config.mode) {
         case HISTORY_MODE: {
-          return messages
+          return this.filter
+            ? this.messages.filter(message => message.topic.indexOf(this.filter) !== -1)
+            : this.messages
         }
-        case UNIQUE_MODE: {
-          return jsonTreeByMessages(messages)
+        case TREE_MODE: {
+          return this.messages
         }
       }
     },
-    uniqModeValue () {
-      let messages = this.filter
-        ? this.messages.filter(message => message.topic.indexOf(this.filter) !== -1)
-        : this.messages
+    treeModeValue () {
       let result = null
-      if (this.config.mode === UNIQUE_MODE) {
-        result = messages.reduceRight((result, message) => {
-          if (result) { return result }
-          if (this.uniqSelectedTopic && message.topic === this.uniqSelectedTopic) {
-            return message
+      if (this.config.mode === TREE_MODE) {
+        let path = this.treeSelectedTopic.split('/')
+        if (!path[0]) { return { '': { topic: '*empty*' } } }
+        result = path.reduce((result, pathElement, pathIndex) => {
+          if (pathIndex === path.length - 1) {
+            return result[pathElement].value
           }
-        }, undefined)
+          return result[pathElement].children
+        }, this.messages)
+        if (!result || !Object.keys(result).length) {
+          result = { '': { topic: this.treeSelectedTopic } }
+        }
       }
       return result
     },
@@ -305,6 +283,7 @@ export default {
     },
     unsubscribeMessageHandler (key, settings) {
       this.isPlayed = null
+      this.treeSelectedTopic = ''
       this.clearScrollParams()
       this.$emit('unsubscribe')
     },
@@ -370,8 +349,11 @@ export default {
     clearMessagesHandler () {
       this.$emit('clear')
     },
-    uniqValueChangeHandler (value) {
-      this.uniqSelectedTopic = value
+    treeValueChangeHandler (value) {
+      this.treeSelectedTopic = value
+    },
+    changeModeHandler () {
+      this.treeSelectedTopic = ''
     }
   },
   watch: {
@@ -394,7 +376,7 @@ export default {
       }
     }
   },
-  components: { VirtualList, Message, UniqTree, UniqMessage },
+  components: { VirtualList, Message, Tree },
   directives: {
     autoscroll: {
       inserted (el, {value}) {
@@ -416,6 +398,7 @@ export default {
 </script>
 
 <style lang="stylus">
+  @import '~variables'
   .mqtt-client__subscriber
     .subscriber__item
       border 2px solid orange
@@ -432,6 +415,9 @@ export default {
       right 0
       left 0
       height auto!important
+      .tree__message
+        height: 40%
+        box-shadow 0 1px 5px rgba(0,0,0,0.2), 0 2px 2px rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12)
     .subscriber__list--empty
       text-align center
       margin-top 10px
