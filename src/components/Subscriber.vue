@@ -36,10 +36,11 @@
             ]"
             :warning="config.topic.indexOf('$share') === 0"
           />
-          <q-btn-toggle v-close-overlay flat rounded toggle-text-color="dark" text-color="grey-6" v-model="config.mode" :options="modeSelectOptions" @input="changeModeHandler" style="width: 100%" class="q-mt-sm"/>
+          <q-btn-toggle v-close-overlay flat rounded toggle-text-color="dark" text-color="grey-6" v-model="config.mode" :options="modeSelectOptions" @input="changeModeHandler" style="width: 100%" class="q-mt-md"/>
           <q-field helper="User properties field name by which messages will be grouped." v-if="config.mode === 1 && version === 5">
             <q-input color="dark" v-model="config.treeField" float-label="Field to group by"/>
           </q-field>
+          <q-toggle v-model="config.highlight" color="dark" label="Highlight messages content" class="q-my-md" />
           <q-collapsible opened class="q-mt-sm q-mb-sm bg-grey-2" label="Options">
             <div>
               QoS
@@ -157,7 +158,7 @@
         :remain="15"
         class="subscriber__list"
       >
-        <message :message="message" v-for="(message, msgIndex) in renderedMessages" :key="`subMsg$${msgIndex}`"/>
+        <message :message="message" :highlight="config.highlight" v-for="(message, msgIndex) in renderedMessages" :key="`subMsg$${msgIndex}`" />
       </virtual-list>
       <div class="subscriber__list subscriber__list--tree" v-else-if="config.mode === 1 && Object.keys(renderedMessages).length">
         <div style="height: 60%" class="scroll">
@@ -165,7 +166,7 @@
         </div>
         <div class="scroll tree__message">
           <template v-for="(message, key, index) in treeModeValue">
-            <message :key="`tree-message-${key}-${index}`" :message="message" v-if="message.payload" />
+            <message :key="`tree-message-${key}-${index}`" :message="message" v-if="message.payload" :highlight="config.highlight" />
             <div :key="`tree-message-empty-${index}`" v-else style="height: 100%" class='text-center'>
               <div style="font-size: 1.5rem;" class="q-pt-sm text-dark">No messages</div>
               <div class="text-grey-8">{{message.topic}}</div>

@@ -9,7 +9,8 @@
       </div>
     </div>
     <div class="message__payload q-pa-sm q-mr-xs q-ml-xs bg-grey-2">
-      <json-tree v-if="message.payload" :data="payload"/>
+      <json-tree v-if="message.payload && highlight" :data="payload"/>
+      <div v-else-if="message.payload && !highlight" class="message__payload q-pa-sm q-mr-xs q-ml-xs bg-grey-2">{{message.payload.toString()}}</div>
       <div v-else>No message</div>
     </div>
     <div class="message__properties q-pa-sm text-grey-7">{{JSON.stringify(message.properties)}}</div>
@@ -21,7 +22,7 @@ import { date } from 'quasar'
 import JsonTree from './JsonTree'
 export default {
   name: 'Message',
-  props: ['message'],
+  props: ['message', 'highlight'],
   computed: {
     payload () {
       let payload = this.message.payload.toString()

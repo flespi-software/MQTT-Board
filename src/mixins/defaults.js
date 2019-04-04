@@ -41,6 +41,7 @@ let defaultSettings = {
     topic: '#',
     mode: 0,
     treeField: '',
+    highlight: true,
     options: {
       qos: 0,
       nl: false,
