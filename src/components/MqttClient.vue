@@ -963,6 +963,7 @@ export default {
         Vue.set(this.clients[clientKey].subscribersStatuses, subscriberIndex, true)
         let grants = await clientObj.client.subscribe(settings.topic, settings.options)
         clientObj.logs.push({type: 'subscribe', data: { settings, grants }, timestamp: Date.now()})
+        if ((grants[0].qos & 0x80) > 0) { Vue.set(this.clients[clientKey].subscribersStatuses, subscriberIndex, false) }
       } catch (e) {
         Vue.set(this.clients[clientKey].subscribersStatuses, subscriberIndex, false)
         this.errorHandler(clientKey, e, true)

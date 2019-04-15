@@ -368,6 +368,8 @@ export default {
       if (val && this.loadingStatus) {
         this.loadingStatus = false
         this.isPlayed = true
+      } else {
+        this.isPlayed = null
       }
     },
     value: {

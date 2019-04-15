@@ -60,7 +60,7 @@
                 <div v-if="log.data.settings.options.rap !== undefined"><span class="text-bold">Retain as Published: </span>{{log.data.settings.options.rap}}</div>
                 <div v-if="log.data.settings.options.rh !== undefined"><span class="text-bold">Retain handling: </span>{{log.data.settings.options.rh}}</div>
               </div>
-              <div class="col-6 q-pl-xs" v-if="log.data.grants[0]">
+              <div class="col-6 q-pl-xs" v-if="log.data.grants[0] && (log.data.grants[0].qos & 0x80) === 0">
                 <div class="col-6 q-pr-xs text-bold" v-if="log.data.restored">Access (restored by broker)</div>
                 <div class="col-6 q-pr-xs text-bold" v-else>Access</div>
                 <div style="word-break: break-all;"><span class="text-bold">Topic: </span>{{log.data.grants[0].topic}}</div>
@@ -68,6 +68,11 @@
                 <div v-if="log.data.grants[0].nl !== undefined"><span class="text-bold">No Local: </span>{{log.data.grants[0].nl}}</div>
                 <div v-if="log.data.grants[0].rap !== undefined"><span class="text-bold">Retain as Published: </span>{{log.data.grants[0].rap}}</div>
                 <div v-if="log.data.grants[0].rh !== undefined"><span class="text-bold">Retain handling: </span>{{log.data.grants[0].rh}}</div>
+              </div>
+              <div v-if="log.data.grants[0] && (log.data.grants[0].qos & 0x80) > 0">
+                <div class="col-6 q-pr-xs text-bold">Error</div>
+                <div style="word-break: break-all;"><span class="text-bold">Topic: </span>{{log.data.grants[0].topic}}</div>
+                <div style="word-break: break-all;"><span class="text-bold">Message: </span>{{codes[log.data.grants[0].qos]}}</div>
               </div>
             </div>
           </template>
@@ -169,6 +174,7 @@ export default {
         return 'red'
       }
       if (log.type === 'subscribe' && log.data.restored) { return 'blue' }
+      if (log.type === 'subscribe' && log.data.grants && (log.data.grants[0].qos & 0x80) > 0) { return 'red' }
       if (log.type === 'disconnect' && log.data) {
         return 'brown'
       }

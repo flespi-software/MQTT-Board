@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.6.3] - 2019-04-15
+[feature] processing errors in suback + view in logs
 ### [1.6.2] - 2019-04-04
 [feature] highlight messages content setting
 ### [1.6.1] - 2019-03-29
