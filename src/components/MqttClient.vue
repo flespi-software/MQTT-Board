@@ -369,13 +369,6 @@ export default {
     }
   },
   computed: {
-    limitingEnabled () {
-      return this.subscribersMessages.reduce((result, messages) => {
-        if (!Array.isArray(messages)) { return result }
-        result += messages.length
-        return result
-      }, 0) > this.messagesLimitCount
-    },
     isCurrentSettingsValid () {
       let settings = this.currentSettings
       return this.validateSettings(this.currentSettings) && !!this.secure && !(settings.host.indexOf('ws:') === 0)
@@ -640,7 +633,7 @@ export default {
                   if (sub.mode === 0) {
                     let count = clientObj.messages.reduce((count, arr) => { return count + arr.length }, 0)
                     if (count > this.messagesLimitCount) {
-                      clientObj.messages[index].splice(0, 1)
+                      clientObj.messages[index].shift()
                     }
                   }
                   if (clientObj.subscribersStatuses[index] && clientObj.subscribersStatuses[index] !== 'paused') {
@@ -827,16 +820,18 @@ export default {
         .catch(() => {})
     },
     activateRender () {
+      console.log('render')
       if (!this.renderInterval) {
         this.renderInterval = setInterval(() => {
           this.subscribersMessagesBuffer.forEach((messages, index) => {
             let subscriber = this.subscribers[index]
             let savedMessages = this.subscribersMessages[index]
             if (subscriber.mode === 0) {
+              console.log(`buffer size: ${messages.length}`)
               if (savedMessages) {
-                if (this.limitingEnabled) {
-                  savedMessages.splice(0, messages.length)
-                }
+                messages = messages.splice(-this.messagesLimitCount)
+                savedMessages.splice(0, messages.length)
+                console.log(`buffer size after limiting: ${messages.length}`)
                 savedMessages.splice(savedMessages.length, 0, ...messages)
               }
             } else {
@@ -961,7 +956,9 @@ export default {
         settings = this.clearObject(clientObj.subscribers[subscriberIndex])
       try {
         Vue.set(this.clients[clientKey].subscribersStatuses, subscriberIndex, true)
+        console.log('started')
         let grants = await clientObj.client.subscribe(settings.topic, settings.options)
+        console.log('subscribed')
         clientObj.logs.push({type: 'subscribe', data: { settings, grants }, timestamp: Date.now()})
         if ((grants[0].qos & 0x80) > 0) { Vue.set(this.clients[clientKey].subscribersStatuses, subscriberIndex, false) }
       } catch (e) {

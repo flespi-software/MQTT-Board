@@ -1,6 +1,6 @@
 <template>
   <div :style="$q.platform.is.desktop ? {'display': 'inline-block', minWidth: '100%'} : []" style="user-select: none;">
-    <template v-for="(key, index) in keys">
+    <template v-for="(key, index) in limitedKeys">
       <div
         :key="`${key}`"
         :style="{
@@ -20,8 +20,26 @@
       </div>
       <tree-mode-view :key="`nest-${key}`" :nesting="nesting + 1" :topic="topic" v-if="showObj[key] && data[key].children" :data='data[key].children' @change="(value) => { $emit('change', value) }"/>
     </template>
+    <div
+      @click="limit += 1000"
+      v-if="keys.length > limitedKeys.length"
+      class="more-button cursor-pointer text-bold"
+      style="display: inline-block;"
+      :style="{
+        marginLeft: `${10 * nesting + 14}px`
+      }"
+    >
+      more {{keys.length - limit >= 1000 ? 1000 : keys.length - limit}}
+    </div>
   </div>
 </template>
+
+<style lang="stylus">
+  @import '~variables'
+  .more-button
+    &:hover
+      background-color $grey-3
+</style>
 
 <script>
 import Vue from 'vue'
@@ -43,12 +61,16 @@ export default {
       showObj[keys[i]] = false
     }
     return {
-      showObj: showObj
+      showObj: showObj,
+      limit: 10000
     }
   },
   computed: {
     keys () {
       return Object.keys(this.data).sort()
+    },
+    limitedKeys () {
+      return this.keys.slice(0, this.limit)
     }
   },
   methods: {

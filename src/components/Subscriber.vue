@@ -100,7 +100,7 @@
             <q-tooltip>{{config.topic}}</q-tooltip>
           </span>
         </q-toolbar-title>
-        <q-btn round flat icon="mdi-magnify" @click="filterMode = true"/>
+        <q-btn round flat icon="mdi-magnify" @click="filterMode = true" v-if="config.mode === 0"/>
         <q-btn round flat icon="mdi-stop" @click="unsubscribeMessageHandler()" title="Unsubscribe"/>
         <q-btn round flat :icon="isPlayed && status !== 'paused' ? 'mdi-pause' : 'mdi-play'" @click="playStopHandler" :title="isPlayed && status !== 'paused' ? 'Pause' : 'Resume'">
           <q-chip floating v-if="status === 'paused' && !!value.missedMessages" color="red">

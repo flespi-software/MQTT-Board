@@ -1,5 +1,8 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.6.4] - 2019-04-26
+[fix] limiting
+[fix] limiting for tree
 ### [1.6.3] - 2019-04-15
 [feature] processing errors in suback + view in logs
 ### [1.6.2] - 2019-04-04
