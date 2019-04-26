@@ -820,18 +820,15 @@ export default {
         .catch(() => {})
     },
     activateRender () {
-      console.log('render')
       if (!this.renderInterval) {
         this.renderInterval = setInterval(() => {
           this.subscribersMessagesBuffer.forEach((messages, index) => {
             let subscriber = this.subscribers[index]
             let savedMessages = this.subscribersMessages[index]
             if (subscriber.mode === 0) {
-              console.log(`buffer size: ${messages.length}`)
               if (savedMessages) {
                 messages = messages.splice(-this.messagesLimitCount)
                 savedMessages.splice(0, messages.length)
-                console.log(`buffer size after limiting: ${messages.length}`)
                 savedMessages.splice(savedMessages.length, 0, ...messages)
               }
             } else {
@@ -956,9 +953,7 @@ export default {
         settings = this.clearObject(clientObj.subscribers[subscriberIndex])
       try {
         Vue.set(this.clients[clientKey].subscribersStatuses, subscriberIndex, true)
-        console.log('started')
         let grants = await clientObj.client.subscribe(settings.topic, settings.options)
-        console.log('subscribed')
         clientObj.logs.push({type: 'subscribe', data: { settings, grants }, timestamp: Date.now()})
         if ((grants[0].qos & 0x80) > 0) { Vue.set(this.clients[clientKey].subscribersStatuses, subscriberIndex, false) }
       } catch (e) {
