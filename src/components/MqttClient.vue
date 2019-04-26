@@ -828,8 +828,8 @@ export default {
             if (subscriber.mode === 0) {
               if (savedMessages) {
                 messages = messages.splice(-this.messagesLimitCount)
-                savedMessages.splice(0, messages.length)
                 savedMessages.splice(savedMessages.length, 0, ...messages)
+                savedMessages.splice(0, savedMessages.length - this.messagesLimitCount)
               }
             } else {
               jsonTreeByMessages(messages, this.activeClient.config.protocolVersion === 5 && subscriber.treeField ? subscriber.treeField : '', savedMessages)
