@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.6.6] - 2019-05-02
+[fix] reconnects after disconnect packet from broker
 ### [1.6.5] - 2019-04-26
 [fix] clear messages logic
 ### [1.6.4] - 2019-04-26

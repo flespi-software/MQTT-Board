@@ -662,13 +662,12 @@ export default {
       client.on('error', (error) => {
         this.errorHandler(key, error, false)
       })
-      client.on('close', (closePacket) => {
-        if (closePacket) {
-          clientObj.logs.push({type: 'disconnect', data: {...closePacket}, timestamp: Date.now()})
-          clientObj.client = null
-        } else {
-          clientObj.logs.push({type: 'disconnect', timestamp: Date.now()})
-        }
+      client.on('disconnect', (closePacket) => {
+        clientObj.logs.push({type: 'disconnect', data: {...closePacket}, timestamp: Date.now()})
+        endHandler()
+      })
+      client.on('close', () => {
+        clientObj.logs.push({type: 'disconnect', timestamp: Date.now()})
         endHandler()
       })
       client.on('offline', () => {
