@@ -1,11 +1,11 @@
 self.__precacheManifest = [
   {
-    "revision": "857dca3ce0542ebc538a",
+    "revision": "091b12bcb0fcef06c82c",
     "url": "css/2259d775.ccca52d0.css"
   },
   {
-    "revision": "857dca3ce0542ebc538a",
-    "url": "js/2259d775.21e76274.js"
+    "revision": "091b12bcb0fcef06c82c",
+    "url": "js/2259d775.fcfee990.js"
   },
   {
     "revision": "0fd5aaa4dc262d608eb7",
@@ -20,12 +20,12 @@ self.__precacheManifest = [
     "url": "js/4b47640d.21cfc388.js"
   },
   {
-    "revision": "bd1d9358121e89ee18e1",
+    "revision": "75e85d8dbe0fc2c80ba2",
     "url": "css/app.84aa3979.css"
   },
   {
-    "revision": "bd1d9358121e89ee18e1",
-    "url": "js/app.2b726221.js"
+    "revision": "75e85d8dbe0fc2c80ba2",
+    "url": "js/app.c13e31a8.js"
   },
   {
     "revision": "d6f2885c7ba22269093e",
@@ -40,10 +40,6 @@ self.__precacheManifest = [
     "url": "fonts/mdi.5d43a6f5.woff"
   },
   {
-    "revision": "bafb105baeb22d965c70fe52ba6b49d9",
-    "url": "fonts/KFOmCnqEu92Fr1Mu4mxM.bafb105b.woff"
-  },
-  {
     "revision": "e9dbbe8a693dd275c16d32feb101f1c1",
     "url": "fonts/KFOkCnqEu92Fr1MmgVxIIzQ.e9dbbe8a.woff"
   },
@@ -54,6 +50,10 @@ self.__precacheManifest = [
   {
     "revision": "de8b7431b74642e830af4d4f4b513ec9",
     "url": "fonts/KFOlCnqEu92Fr1MmEU9fBBc-.de8b7431.woff"
+  },
+  {
+    "revision": "bafb105baeb22d965c70fe52ba6b49d9",
+    "url": "fonts/KFOmCnqEu92Fr1Mu4mxM.bafb105b.woff"
   },
   {
     "revision": "cf6613d1adf490972c557a8e318e0868",
@@ -72,12 +72,12 @@ self.__precacheManifest = [
     "url": "fonts/flUhRq6tzZclQEJ-Vdg-IuiaDsNa.c38ebd3c.woff"
   },
   {
-    "revision": "550ee5f57ea96e4a311f918ae2f6e48c",
-    "url": "statics/icons/favicon-32x32.png"
-  },
-  {
     "revision": "6134322248dd299877006292ee663416",
     "url": "statics/icons/favicon-16x16.png"
+  },
+  {
+    "revision": "550ee5f57ea96e4a311f918ae2f6e48c",
+    "url": "statics/icons/favicon-32x32.png"
   },
   {
     "revision": "665b8886ae2cb2135a9ed8dc7a4a2828",
@@ -96,15 +96,15 @@ self.__precacheManifest = [
     "url": "statics/icons/icon-192x192.png"
   },
   {
-    "revision": "81463c75bc15a1879fcd66065271a2f4",
-    "url": "statics/icons/ms-icon-310x310.png"
-  },
-  {
     "revision": "e8e7a69f36941e4205dbd10ff20da23d",
     "url": "statics/mqttboard.png"
   },
   {
-    "revision": "0f60cbb098d219a48911e0a50022e94c",
+    "revision": "81463c75bc15a1879fcd66065271a2f4",
+    "url": "statics/icons/ms-icon-310x310.png"
+  },
+  {
+    "revision": "ecbd3e6ad97090fdda33b08c76b58bed",
     "url": "index.html"
   }
 ];
