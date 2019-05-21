@@ -7,7 +7,9 @@
       <div class="message__sys text-grey-7">
         {{`qos: ${message.qos}, dup: ${message.dup ? '+' : '-'}, retain: ${message.retain ? '+' : '-'}${timestamp}`}}
       </div>
-      <q-btn color="indigo-4" size="sm" @click="$emit('action:send', message)" flat icon="mdi-send" round class="absolute-top-right" style="top: 10px; right: 5px; transform: rotate(-45deg);"/>
+      <q-btn color="indigo-4" size="sm" @click="$emit('action:send', message)" flat icon="mdi-send" round class="absolute-top-right" style="top: 10px; right: 5px; transform: rotate(-45deg);">
+        <q-tooltip>Resend message</q-tooltip>
+      </q-btn>
     </div>
     <div class="message__payload q-pa-sm q-mr-xs q-ml-xs bg-grey-2">
       <json-tree v-if="message.payload && highlight" :data="payload"/>

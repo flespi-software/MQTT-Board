@@ -1,5 +1,8 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.6.9] - 2019-05-21
+[fix] resend button tooltip added
+[fix] resend 3.1.1
 ### [1.6.8] - 2019-05-21
 [feature] resend any message from view
 ### [1.6.7] - 2019-05-03

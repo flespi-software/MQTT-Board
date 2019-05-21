@@ -89,8 +89,10 @@ export default {
   computed: {
     isValidPublisher () {
       return !!this.config.topic && this.validateTopic(this.config.topic) &&
-        (isNil(this.config.options.properties.messageExpiryInterval) || (this.config.options.properties.messageExpiryInterval >= 0 && this.config.options.properties.messageExpiryInterval <= 0xffffffff)) &&
-        (isNil(this.config.options.properties.topicAlias) || (this.config.options.properties.topicAlias > 0 && this.config.options.properties.topicAlias <= 0xffff))
+        (this.version === 4 || (this.version === 5 &&
+          (isNil(this.config.options.properties.messageExpiryInterval) || (this.config.options.properties.messageExpiryInterval >= 0 && this.config.options.properties.messageExpiryInterval <= 0xffffffff)) &&
+          (isNil(this.config.options.properties.topicAlias) || (this.config.options.properties.topicAlias > 0 && this.config.options.properties.topicAlias <= 0xffff))
+        ))
     }
   },
   methods: {
