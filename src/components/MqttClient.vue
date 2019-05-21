@@ -1,6 +1,14 @@
 <template>
   <div style="position: absolute; bottom: 0; right: 0; top: 0; left: 0;">
     <flespi-topic ref="felspiModal" @topic="(topic) => { addSubscriber(); subscribers[subscribers.length - 1].topic = topic }"/>
+    <publisher-modal
+      v-if="republishMessage"
+      ref="publisherModal"
+      :message="republishMessage"
+      :version="activeClient.config.protocolVersion"
+      @publish="publishFreeMessage"
+      @hide="republishMessage = null"
+    />
     <q-modal @show="showSettingsModalHandler" @hide="clearCurrentSettings" v-model='settingsModalModel' :color="color" class="mqtt-board-modal mqtt-board-settings-modal">
       <q-modal-layout>
          <q-toolbar slot="header" :color='color'>
@@ -179,6 +187,7 @@
           @play="playSubscriberHandler(entity.index)"
           @pause="pauseSubscriberHandler(entity.index)"
           @clear="clearMessagesHandler(entity.index)"
+          @action:send="sendFromSubscriberHandler"
         />
         <unresolved
           :class='[`col-xl-${entities.length < 4 ? 12 / entities.length : 3}`]'
@@ -230,6 +239,7 @@ import Subscriber from './Subscriber'
 import Publisher from './Publisher'
 import Unresolved from './Unresolved'
 import Logs from './Logs'
+import PublisherModal from './PublisherModal'
 import { version } from '../../package.json'
 import validateEntities from '../mixins/validateEntities.js'
 import {defaultSettings, defaultSubscriber, defaultPublisher} from '../mixins/defaults.js'
@@ -365,7 +375,8 @@ export default {
       messagesLimitCount: 3000,
       notResolvedMessages: [],
       isNeedScroll: false,
-      isInited: false
+      isInited: false,
+      republishMessage: null
     }
   },
   computed: {
@@ -917,7 +928,10 @@ export default {
       this.saveClients()
     },
     async publishMessageHandler (clientKey, publisherIndex) {
-      let settings = this.clearObject(this.publishers[publisherIndex])
+      await this.publishFreeMessage(this.publishers[publisherIndex])
+    },
+    async publishFreeMessage (settings) {
+      settings = this.clearObject(settings)
       try {
         await this.activeClient.client.publish(settings.topic, settings.payload, settings.options)
         this.$q.notify({
@@ -926,7 +940,7 @@ export default {
           color: 'positive',
           timeout: 700
         })
-      } catch (e) { this.errorHandler(clientKey, e, true) }
+      } catch (e) { this.errorHandler(this.activeClient.id, e, true) }
     },
     async subscribeMessageHandler (clientKey, subscriberIndex) {
       let settings = this.clearObject(this.subscribers[subscriberIndex])
@@ -987,6 +1001,10 @@ export default {
       } catch (e) {
         this.errorHandler(clientKey, e, true)
       }
+    },
+    sendFromSubscriberHandler (message) {
+      this.republishMessage = cloneDeep(message)
+      this.$nextTick(() => { this.$refs.publisherModal.show() })
     },
     /* pub/sub logic end */
     changeLogsStatus (status) {
@@ -1119,7 +1137,7 @@ export default {
     }
   },
   components: {
-    VirtualList, FlespiTopic, Subscriber, Publisher, Unresolved, Logs
+    VirtualList, FlespiTopic, Subscriber, Publisher, Unresolved, Logs, PublisherModal
   },
   updated () {
     if (this.isNeedScroll) {

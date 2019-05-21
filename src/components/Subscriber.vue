@@ -158,7 +158,7 @@
         :remain="15"
         class="subscriber__list"
       >
-        <message :message="message" :highlight="config.highlight" v-for="(message, msgIndex) in renderedMessages" :key="`subMsg$${msgIndex}`" />
+        <message :message="message" :highlight="config.highlight" v-for="(message, msgIndex) in renderedMessages" :key="`subMsg$${msgIndex}`" @action:send="(message) => { $emit('action:send', message) }" />
       </virtual-list>
       <div class="subscriber__list subscriber__list--tree" v-else-if="config.mode === 1 && Object.keys(renderedMessages).length">
         <div style="height: 60%" class="scroll">
@@ -166,7 +166,7 @@
         </div>
         <div class="scroll tree__message">
           <template v-for="(message, key, index) in treeModeValue">
-            <message :key="`tree-message-${key}-${index}`" :message="message" v-if="message.payload" :highlight="config.highlight" />
+            <message :key="`tree-message-${key}-${index}`" :message="message" v-if="message.payload" :highlight="config.highlight" @action:send="(message) => { $emit('action:send', message) }" />
             <div :key="`tree-message-empty-${index}`" v-else style="height: 100%" class='text-center'>
               <div style="font-size: 1.5rem;" class="q-pt-sm text-dark">No messages</div>
               <div class="text-grey-8">{{message.topic}}</div>
