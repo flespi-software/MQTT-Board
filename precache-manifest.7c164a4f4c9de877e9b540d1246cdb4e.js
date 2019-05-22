@@ -4,7 +4,7 @@ self.__precacheManifest = [
     "url": "fonts/KFOlCnqEu92Fr1MmEU9fBBc-.de8b7431.woff"
   },
   {
-    "revision": "8c74cf255ae70675c85c54168fc33d70",
+    "revision": "7a1bf2bd4804885f0a8d751c53a433f2",
     "url": "index.html"
   },
   {
@@ -16,16 +16,16 @@ self.__precacheManifest = [
     "url": "statics/mqttboard.png"
   },
   {
-    "revision": "9807f5e5c830671cd2d8",
-    "url": "js/8cc9168a.50aca182.js"
+    "revision": "621e3b3bf78f4583e68f",
+    "url": "js/8cc9168a.7097a0b3.js"
   },
   {
     "revision": "81463c75bc15a1879fcd66065271a2f4",
     "url": "statics/icons/ms-icon-310x310.png"
   },
   {
-    "revision": "becd6af8cf806da5e78b",
-    "url": "js/app.c0cb9ac3.js"
+    "revision": "64d05fac5412244c9ef9",
+    "url": "js/app.4e89130b.js"
   },
   {
     "revision": "d6f2885c7ba22269093e",
@@ -64,20 +64,20 @@ self.__precacheManifest = [
     "url": "fonts/KFOkCnqEu92Fr1MmgVxIIzQ.e9dbbe8a.woff"
   },
   {
-    "revision": "cf6613d1adf490972c557a8e318e0868",
-    "url": "fonts/KFOlCnqEu92Fr1MmWUlfBBc-.cf6613d1.woff"
+    "revision": "8c2ade503b34e31430d6c98aa29a52a3",
+    "url": "fonts/KFOlCnqEu92Fr1MmYUtfBBc-.8c2ade50.woff"
   },
   {
     "revision": "c38ebd3cd38c98fbd16bf31d1d24ce64",
     "url": "fonts/flUhRq6tzZclQEJ-Vdg-IuiaDsNa.c38ebd3c.woff"
   },
   {
-    "revision": "8c2ade503b34e31430d6c98aa29a52a3",
-    "url": "fonts/KFOlCnqEu92Fr1MmYUtfBBc-.8c2ade50.woff"
-  },
-  {
     "revision": "6536e4067e72c89cd3f1530d83e9888c",
     "url": "fonts/mdi.6536e406.woff2"
+  },
+  {
+    "revision": "5d43a6f507961589ab369ccc6f6d301b",
+    "url": "fonts/mdi.5d43a6f5.woff"
   },
   {
     "revision": "bafb105baeb22d965c70fe52ba6b49d9",
@@ -88,19 +88,19 @@ self.__precacheManifest = [
     "url": "fonts/flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.8a9a261c.woff2"
   },
   {
-    "revision": "5d43a6f507961589ab369ccc6f6d301b",
-    "url": "fonts/mdi.5d43a6f5.woff"
+    "revision": "cf6613d1adf490972c557a8e318e0868",
+    "url": "fonts/KFOlCnqEu92Fr1MmWUlfBBc-.cf6613d1.woff"
   },
   {
     "revision": "a1471d1d6431c893582a5f6a250db3f9",
     "url": "fonts/KFOlCnqEu92Fr1MmSU5fBBc-.a1471d1d.woff"
   },
   {
-    "revision": "becd6af8cf806da5e78b",
+    "revision": "64d05fac5412244c9ef9",
     "url": "css/app.e510cccd.css"
   },
   {
-    "revision": "9807f5e5c830671cd2d8",
+    "revision": "621e3b3bf78f4583e68f",
     "url": "css/8cc9168a.b77ba164.css"
   },
   {
