@@ -16,7 +16,7 @@
           <q-icon color="dark" v-if="showObj[key]" name="mdi-menu-down" style="vertical-align: baseline" />
           <q-icon color="dark" v-else name="mdi-menu-right" style="vertical-align: baseline" />
         </template>
-        <span>{{key}}</span>
+        <span :class="{'text-grey-6': !key, 'text-italic': !key}">{{key || '*Empty*'}}</span>
       </div>
       <tree-mode-view :key="`nest-${key}`" :nesting="nesting + 1" :topic="topic" v-if="showObj[key] && data[key].children" :data='data[key].children' @change="(value) => { $emit('change', value) }"/>
     </template>

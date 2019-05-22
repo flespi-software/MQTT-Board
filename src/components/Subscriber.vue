@@ -247,7 +247,6 @@ export default {
       let result = null
       if (this.config.mode === TREE_MODE) {
         let path = this.treeSelectedTopic.split('/')
-        if (!path[0]) { return { '': { topic: '*empty*' } } }
         result = path.reduce((result, pathElement, pathIndex) => {
           if (pathIndex === path.length - 1) {
             return result[pathElement].value
