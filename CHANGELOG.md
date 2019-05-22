@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.6.11] - 2019-05-22
+[fix] reconnects after disconnect from broker with error code 143(invalid topic)
 ### [1.6.10] - 2019-05-22
 [fix] validation topics
 ### [1.6.9] - 2019-05-21

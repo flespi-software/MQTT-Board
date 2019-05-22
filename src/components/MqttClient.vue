@@ -674,6 +674,14 @@ export default {
         this.errorHandler(key, error, false)
       })
       client.on('disconnect', (closePacket) => {
+        if (closePacket.reasonCode === 143) {
+          clientObj.subscribersStatuses.forEach((status, index) => {
+            if (status) {
+              this.$delete(clientObj.client._client._resubscribeTopics, clientObj.subscribers[index].topic)
+              this.$set(clientObj.subscribersStatuses, index, false)
+            }
+          })
+        }
         clientObj.logs.push({type: 'disconnect', data: {...closePacket}, timestamp: Date.now()})
         endHandler()
       })
@@ -997,7 +1005,7 @@ export default {
       try {
         await clientObj.client.unsubscribe(settings.topic, { properties: settings.unsubscribeProperties })
         clientObj.logs.push({type: 'unsubscribe', data: this.clearObject(settings), timestamp: Date.now()})
-        Vue.set(this.subscribersStatuses, subscriberIndex, false)
+        Vue.set(clientObj.subscribersStatuses, subscriberIndex, false)
       } catch (e) {
         this.errorHandler(clientKey, e, true)
       }
