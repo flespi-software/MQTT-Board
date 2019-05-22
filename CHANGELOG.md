@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.6.10] - 2019-05-22
+[fix] validation topics
 ### [1.6.9] - 2019-05-21
 [fix] resend button tooltip added
 [fix] resend 3.1.1

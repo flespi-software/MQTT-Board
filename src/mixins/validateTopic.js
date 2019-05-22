@@ -4,6 +4,10 @@ export default {
       let parts = topic.split('/')
 
       for (let i = 0; i < parts.length; i++) {
+        if (!parts[i]) {
+          return false
+        }
+
         if (parts[i] === '+') {
           continue
         }
