@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.6.13] - 2019-05-23
+[fix] tree mode
 ### [1.6.12] - 2019-05-22
 [fix] tree view for empty parts of topic
 ### [1.6.11] - 2019-05-22

@@ -227,7 +227,7 @@ export default {
       needAutoScroll: true,
       isPlayed: this.status || null,
       filter: '',
-      treeSelectedTopic: ''
+      treeSelectedTopic: null
     }
   },
   computed: {
@@ -246,6 +246,7 @@ export default {
     treeModeValue () {
       let result = null
       if (this.config.mode === TREE_MODE) {
+        if (this.treeSelectedTopic === null) { return {'': {topic: '*Empty*'}} }
         let path = this.treeSelectedTopic.split('/')
         result = path.reduce((result, pathElement, pathIndex) => {
           if (pathIndex === path.length - 1) {
@@ -283,7 +284,7 @@ export default {
     },
     unsubscribeMessageHandler (key, settings) {
       this.isPlayed = null
-      this.treeSelectedTopic = ''
+      this.treeSelectedTopic = null
       this.clearScrollParams()
       this.$emit('unsubscribe')
     },
@@ -353,7 +354,7 @@ export default {
       this.treeSelectedTopic = value
     },
     changeModeHandler () {
-      this.treeSelectedTopic = ''
+      this.treeSelectedTopic = null
     }
   },
   watch: {
