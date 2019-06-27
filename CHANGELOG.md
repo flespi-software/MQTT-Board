@@ -1,5 +1,8 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.6.14] - 2019-06-27
+[fix] tree-view
+[fix] message view
 ### [1.6.13] - 2019-05-23
 [fix] tree mode
 ### [1.6.12] - 2019-05-22

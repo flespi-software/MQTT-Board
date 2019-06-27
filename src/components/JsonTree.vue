@@ -1,5 +1,5 @@
 <template>
-  <div v-if="Array.isArray(data) || typeof data === 'object'">
+  <div v-if="data && (Array.isArray(data) || typeof data === 'object')">
     <span :class="{'text-white': inverted !== undefined}">{{Array.isArray(data) ? '[' : '{'}}</span>
     <div class="margin-left" v-for="(value, key, index) in data" :key="`${key}-${index}`">
       <div v-if="value && typeof value === 'object'">
@@ -18,12 +18,11 @@
     <span :class="{'text-white': inverted !== undefined}">{{Array.isArray(data) ? ']' : '}'}}</span>
   </div>
   <div v-else>
-    <span style="font-size: 1rem;" :class="{[theme.typeNumberOrBool]: typeof data === 'number' || typeof data === 'boolean', [theme.typeString]: typeof data === 'string', [theme.typeEmpty]: typeof data === 'undefined' || data === null }">{{data}}</span>
+    <span style="font-size: 1rem;" :class="{[theme.typeNumberOrBool]: typeof data === 'number' || typeof data === 'boolean', [theme.typeString]: typeof data === 'string', [theme.typeEmpty]: typeof data === 'undefined' || data === null }">{{`${data}`}}</span>
   </div>
 </template>
 
 <script>
-import Vue from 'vue'
 export default {
   name: 'JsonTree',
   props: {
@@ -32,7 +31,7 @@ export default {
   },
   data () {
     const showObj = []
-    const len = Object.keys(this.data).length
+    const len = this.data ? Object.keys(this.data).length : 0
     for (let i = 0, l = len; i < l; i++) {
       showObj.push(true)
     }
@@ -59,7 +58,7 @@ export default {
   },
   methods: {
     toggle (index) {
-      Vue.set(this.showObj, index, !this.showObj[index])
+      this.$set(this.showObj, index, !this.showObj[index])
     }
   }
 }

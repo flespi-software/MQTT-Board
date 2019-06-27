@@ -250,6 +250,10 @@ export default {
         let path = this.treeSelectedTopic.split('/')
         result = path.reduce((result, pathElement, pathIndex) => {
           if (pathIndex === path.length - 1) {
+            if (!result[pathElement]) {
+              this.treeValueChangeHandler(null)
+              return {'': {topic: '*Empty*'}}
+            }
             return result[pathElement].value
           }
           return result[pathElement].children
