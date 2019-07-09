@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.7.0] - 2019-07-09
+[fix] optimizations
 ### [1.6.14] - 2019-06-27
 [fix] tree-view
 [fix] message view

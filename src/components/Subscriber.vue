@@ -147,35 +147,39 @@
           }
         ]"
       />
-
-      <virtual-list
-        v-autoscroll="needAutoScroll"
-        ref="scroller"
-        :onscroll="listScroll"
-        :debounce="10"
-        v-if="messages && messages.length && config.mode === 0"
-        :size="110"
-        :remain="15"
-        class="subscriber__list"
-      >
-        <message :message="message" :highlight="config.highlight" v-for="(message, msgIndex) in renderedMessages" :key="`subMsg$${msgIndex}`" @action:send="(message) => { $emit('action:send', message) }" />
-      </virtual-list>
-      <div class="subscriber__list subscriber__list--tree" v-else-if="config.mode === 1 && Object.keys(renderedMessages).length">
-        <div style="height: 60%" class="scroll">
-          <tree :topic="treeSelectedTopic" :data="renderedMessages" @change="treeValueChangeHandler"/>
+      <div style="position: relative; height: calc(100% - 50px)">
+        <virtual-list
+          v-autoscroll="needAutoScroll"
+          ref="scroller"
+          :onscroll="listScroll"
+          :debounce="10"
+          v-if="messages && messages.length && config.mode === 0"
+          :size="110"
+          :remain="15"
+          class="subscriber__list"
+        >
+          <message :message="message" :highlight="config.highlight" v-for="(message, msgIndex) in renderedMessages" :key="`subMsg$${msgIndex}`" @action:send="(message) => { $emit('action:send', message) }" />
+        </virtual-list>
+        <div class="subscriber__list subscriber__list--tree" v-else-if="config.mode === 1 && Object.keys(renderedMessages).length && subscribed">
+          <div style="height: 60%" class="scroll">
+            <tree :topic="treeSelectedTopic" :data="renderedMessages" @change="treeValueChangeHandler"/>
+          </div>
+          <div class="scroll tree__message">
+            <template v-for="(message, key, index) in treeModeValue">
+              <message :key="`tree-message-${key}-${index}`" :message="message" v-if="typeof message.payload !== 'undefined'" :highlight="config.highlight" @action:send="(message) => { $emit('action:send', message) }" />
+              <div :key="`tree-message-empty-${index}`" v-else style="height: 100%" class='text-center'>
+                <div style="font-size: 1.5rem;" class="q-pt-sm text-dark">No messages</div>
+                <div class="text-grey-8">{{message.topic}}</div>
+                <q-icon color="red" name="mail" size="5rem"/>
+              </div>
+            </template>
+          </div>
         </div>
-        <div class="scroll tree__message">
-          <template v-for="(message, key, index) in treeModeValue">
-            <message :key="`tree-message-${key}-${index}`" :message="message" v-if="message.payload" :highlight="config.highlight" @action:send="(message) => { $emit('action:send', message) }" />
-            <div :key="`tree-message-empty-${index}`" v-else style="height: 100%" class='text-center'>
-              <div style="font-size: 1.5rem;" class="q-pt-sm text-dark">No messages</div>
-              <div class="text-grey-8">{{message.topic}}</div>
-              <q-icon color="red" name="mail" size="5rem"/>
-            </div>
-          </template>
-        </div>
+        <div v-else-if="status && subscribed && !processingFlag" class="subscriber__list--empty">No messages</div>
+        <q-inner-loading :visible="isNeedLoading">
+          <q-spinner-gears size="150px" color="orange"></q-spinner-gears>
+        </q-inner-loading>
       </div>
-      <div v-else class="subscriber__list--empty">No messages</div>
     </q-card>
   </div>
 </template>
@@ -198,7 +202,8 @@ export default {
     'value',
     'messages',
     'status',
-    'version'
+    'version',
+    'subscribed'
   ],
   data () {
     return {
@@ -227,7 +232,8 @@ export default {
       needAutoScroll: true,
       isPlayed: this.status || null,
       filter: '',
-      treeSelectedTopic: null
+      treeSelectedTopic: null,
+      processingFlag: null
     }
   },
   computed: {
@@ -254,7 +260,10 @@ export default {
               this.treeValueChangeHandler(null)
               return {'': {topic: '*Empty*'}}
             }
-            return result[pathElement].value
+            return result[pathElement].value && Object.keys(result[pathElement].value).reduce((res, key) => {
+              res[key] = JSON.parse(result[pathElement].value[key])
+              return res
+            }, {})
           }
           return result[pathElement].children
         }, this.messages)
@@ -267,10 +276,22 @@ export default {
     isValidSubscriber () {
       return !!this.config.topic && this.validateTopic(this.config.topic) &&
         (isNil(this.config.options.properties.subscriptionIdentifier) || (this.config.options.properties.subscriptionIdentifier > 0 && this.config.options.properties.subscriptionIdentifier <= 268435455))
+    },
+    isNeedLoading () {
+      if (this.config.mode === 1 && this.status && this.subscribed && this.processingFlag === null) {
+        this.checkProcessing()
+      }
+      return this.config.mode === 1 && this.status && (!this.subscribed || !!this.processingFlag)
     }
   },
   methods: {
     isNil,
+    checkProcessing () {
+      if (!Object.keys(this.messages).length) {
+        this.processingFlag = true
+        setTimeout(() => { this.processingFlag = false }, 500)
+      }
+    },
     playStopHandler () {
       if (this.isPlayed) {
         this.$emit('pause')
@@ -291,6 +312,7 @@ export default {
       this.treeSelectedTopic = null
       this.clearScrollParams()
       this.$emit('unsubscribe')
+      this.processingFlag = null
     },
     removeSubscriber (key) {
       this.$emit('remove')
@@ -338,7 +360,8 @@ export default {
     },
     listScroll (e) {
       if (this.status) {
-        let el = this.$refs.scroller.$el
+        let el = this.$refs.scroller && this.$refs.scroller.$el
+        if (!el) { return false }
         if (el.scrollTop < el.scrollHeight - el.clientHeight) {
           this.needAutoScroll = false
         } else {
@@ -417,7 +440,7 @@ export default {
         overflow auto
     .subscriber__list
       position absolute
-      top 50px
+      top 0
       bottom 0
       right 0
       left 0

@@ -77,7 +77,10 @@ framework: {
     'QTooltip',
     'QBtnToggle',
     'QPopover',
-    'QChip'
+    'QChip',
+    'QField',
+    'QInnerLoading',
+    'QSpinnerGears'
   ],
   directives: [
     'CloseOverlay',

@@ -99,8 +99,12 @@
       <q-toolbar-title>
         <img v-if="!activeClient && whiteLabel === ''" src="statics/mqttboard.png" alt="MQTT Board" style="height: 30px">
         {{activeClient ? `${activeClient.config.clientId}` : (whiteLabel || 'MQTT Board')}}
+        <sup v-if="activeClient" style="border-radius: 5px;font-size: .6rem; padding: 2px;" :class="[`bg-${activeClient.status ? 'green': 'red'}`]">{{activeClient.status ? 'online': 'offline'}}</sup>
         <sup v-if="!activeClient && whiteLabel === ''" style="position: relative; font-size: .9rem; padding-left: 4px">{{version}}</sup>
       </q-toolbar-title>
+      <q-checkbox class="q-mr-md" v-if="activeClient && !!activeClient.notResolvedFlagInit" :value="unresolvedModel" @change="changeUnresolvedStatus" checked-icon="mdi-alert-circle" unchecked-icon="mdi-alert-circle-outline" dark color="white">
+        <q-tooltip>Unresolved</q-tooltip>
+      </q-checkbox>
       <div style="display: inline-flex">
         <q-tooltip class="gt-sm">Logs</q-tooltip>
         <q-toggle class="q-mr-sm" v-if="activeClient" :value="logsModel" @change="changeLogsStatus" icon="mdi-script" dark />
@@ -143,7 +147,7 @@
               </q-card-main>
             <q-card-separator />
             <q-card-actions align="end">
-              <q-btn round flat v-if="client.client" icon="mdi-stop" @click.stop="disconnectClientHandler(index)">
+              <q-btn round flat v-if="client.client" icon="mdi-stop" :loading="!!client.client && !statuses[index] && client.inited" @click.stop="disconnectClientHandler(index)">
                 <q-tooltip>Deactivate client</q-tooltip>
               </q-btn>
               <q-btn round flat v-else icon="mdi-play" @click.stop="connectClientHandler(index)">
@@ -160,11 +164,11 @@
         <q-btn v-if="!activeClient" @click.native="addClientHandler">Create client</q-btn>
       </div>
     </div>
-    <div ref="wrapper" v-touch-pan.horizontal.noMouse.mightPrevent="swipeHandler" class="no-wrap row client__wrapper" v-else-if="statuses[activeClient.id] || logsModel">
+    <div ref="wrapper" v-touch-pan.horizontal.noMouse.mightPrevent="swipeHandler" class="no-wrap row client__wrapper" v-else-if="entities.length">
       <template v-for="(entity, index) in entities">
         <publisher
           :class='[`col-xl-${entities.length < 4 ? 12 / entities.length : 3}`]'
-          v-if="statuses[activeClient.id] && entity.type === 'publisher'"
+          v-if="entity.type === 'publisher'"
           :key="`publ${entity.id}`"
           :value="publishers[entity.index]"
           @input="(val) => { inputPublisher(entity.index, val) }"
@@ -174,11 +178,12 @@
         />
         <subscriber
           :class='[`col-xl-${entities.length < 4 ? 12 / entities.length : 3}`]'
-          v-else-if="statuses[activeClient.id] && entity.type === 'subscriber'"
+          v-else-if="entity.type === 'subscriber'"
           :key="`subs${entity.id}`"
           :value="subscribers[entity.index]"
           @input="(val) => { inputSubscriber(entity.index, val) }"
           :status="subscribersStatuses[entity.index]"
+          :subscribed="subscribersConnectivityStatuses[entity.index]"
           :messages="subscribersMessages[entity.index]"
           :version="activeClient.config.protocolVersion"
           @remove="removeSubscriber(entity.index)"
@@ -191,7 +196,7 @@
         />
         <unresolved
           :class='[`col-xl-${entities.length < 4 ? 12 / entities.length : 3}`]'
-          v-else-if="statuses[activeClient.id] && entity.type === 'unresolved'"
+          v-else-if="entity.type === 'unresolved'"
           :key="`unresolved${index}`"
           :messages="notResolvedMessages"
           @clear="clearUnresolvedMessages"
@@ -206,7 +211,7 @@
       </template>
     </div>
     <div v-else-if="!entities.length" class="text-center q-mt-lg text-dark text-weight-bold absolute" style="font-size: 2.5rem; top: 50px; bottom: 0; left: 0; right: 0;">No active entities</div>
-    <div v-else-if="!statuses[activeClient.id] && !logsModel" class="text-center q-mt-lg text-dark text-weight-bold absolute" style="font-size: 2.5rem; top: 50px; bottom: 0; left: 0; right: 0;">
+    <div v-else-if="!statuses[activeClient.id] && !logsModel && !entities.length" class="text-center q-mt-lg text-dark text-weight-bold absolute" style="font-size: 2.5rem; top: 50px; bottom: 0; left: 0; right: 0;">
       <div>Сlient is disconnected</div>
       <div class="q-mt-sm" style="font-size: 1.3rem">You can <q-btn dense color="dark" icon="mdi-script" label="activate logs" @click="changeLogsStatus(true)" /> for more information</div>
     </div>
@@ -233,7 +238,6 @@ import cloneDeep from 'lodash/cloneDeep'
 import isNil from 'lodash/isNil'
 import debounce from 'lodash/debounce'
 import { animate, LocalStorage, openURL } from 'quasar'
-import Vue from 'vue'
 import FlespiTopic from './FlespiTopicConfigurator'
 import Subscriber from './Subscriber'
 import Publisher from './Publisher'
@@ -255,7 +259,8 @@ let
         publishers: client.publishers,
         subscribers: client.subscribers,
         entities: client.entities.filter(entity => entity.type !== 'unresolved'),
-        subscribersStatuses: client.subscribersStatuses
+        subscribersStatuses: client.subscribersStatuses,
+        subscribersConnectivityStatuses: client.subscribersConnectivityStatuses
       }
     })
   },
@@ -359,6 +364,7 @@ export default {
       publishers: [],
       subscribers: [],
       subscribersStatuses: [false],
+      subscribersConnectivityStatuses: [false],
       subscribersMessages: [[]],
       subscribersMessagesBuffer: [[]],
       connectUserProperty: {
@@ -386,6 +392,9 @@ export default {
     },
     logsModel () {
       return !!this.activeClient && !!this.entities.filter(entity => entity.type === 'logs').length
+    },
+    unresolvedModel () {
+      return !!this.activeClient && !!this.entities.filter(entity => entity.type === 'unresolved').length
     }
   },
   methods: {
@@ -430,13 +439,13 @@ export default {
       }
     },
     removeConnectUserProperty (name) {
-      Vue.delete(this.currentSettings.properties.userProperties, name)
+      this.$delete(this.currentSettings.properties.userProperties, name)
       if (!Object.keys(this.currentSettings.properties.userProperties).length) {
         this.currentSettings.properties.userProperties = null
       }
     },
     removeWillConnectUserProperty (name) {
-      Vue.delete(this.currentSettings.will.properties.userProperties, name)
+      this.$delete(this.currentSettings.will.properties.userProperties, name)
       if (!Object.keys(this.currentSettings.will.properties.userProperties).length) {
         this.currentSettings.will.properties.userProperties = null
       }
@@ -470,13 +479,24 @@ export default {
         if (
           packet.properties && packet.properties.subscriptionIdentifier &&
           subscription.options && subscription.options.properties && subscription.options.properties.subscriptionIdentifier &&
-          packet.properties.subscriptionIdentifier !== subscription.options.properties.subscriptionIdentifier
+          (
+            (typeof packet.properties.subscriptionIdentifier === 'number' && packet.properties.subscriptionIdentifier !== subscription.options.properties.subscriptionIdentifier) ||
+            (Array.isArray(packet.properties.subscriptionIdentifier) && !packet.properties.subscriptionIdentifier.includes(subscription.options.properties.subscriptionIdentifier))
+          )
         ) {
           return false
         }
         return true
       }
       return false
+    },
+    resolveSubscriptions (packet, subscriptions, statuses) {
+      return subscriptions.reduce((res, subscription, index) => {
+        if (statuses[index] && this.resolveSubscription(packet, subscription)) {
+          res.push(index)
+        }
+        return res
+      }, [])
     },
     getSharedTopicFilter (topic) {
       return topic.replace(/^\$share\/[^/]+\//, '')
@@ -535,8 +555,46 @@ export default {
       return config
     },
     setClientStatus (key, status) {
-      Vue.set(this.statuses, key, status)
-      Vue.set(this.clients[key], 'status', status)
+      this.$set(this.statuses, key, status)
+      this.$set(this.clients[key], 'status', status)
+    },
+    messageProcessing (packet, clientId) {
+      packet.payload = packet.payload.toString()
+      try {
+        packet.payload = JSON.parse(packet.payload)
+      } catch (e) {}
+      let clientObj = this.clients[clientId]
+      /* if subscribersStatuses contains true or paused statuses */
+      if (clientObj.subscribersStatuses.length && clientObj.subscribersStatuses.filter(status => !!status).length) {
+        let activeSubscriptionsIndexes = this.resolveSubscriptions(packet, clientObj.subscribers, clientObj.subscribersStatuses),
+          isResolved = !!activeSubscriptionsIndexes.length
+        if (isResolved) {
+          activeSubscriptionsIndexes.forEach((index) => {
+            if (clientObj.subscribersStatuses[index] === true) {
+              clientObj.subscribersMessagesBuffer[index].push(packet)
+            } else if (clientObj.subscribersStatuses[index] === 'paused') {
+              if (clientObj.subscribers[index].missedMessages === undefined) {
+                clientObj.subscribers[index].missedMessages = 0
+              }
+              clientObj.subscribers[index].missedMessages++
+            }
+          })
+        } else {
+          if (!clientObj.notResolvedFlagInit) {
+            this.$set(clientObj, 'notResolvedFlagInit', true)
+          }
+          clientObj.notResolvedMessages.push(packet)
+        }
+      } else {
+        clientObj.subscribers.filter((sub, index) => {
+          if (this.resolveSubscription(packet, sub) && !clientObj.subscribersConnectivityStatuses[index]) {
+            if (!clientObj.notResolvedFlagInit) {
+              this.$set(clientObj, 'notResolvedFlagInit', true)
+            }
+            clientObj.notResolvedMessages.push(packet)
+          }
+        })
+      }
     },
     initClient (key, config) {
       let clientObj = this.clients[key]
@@ -544,12 +602,7 @@ export default {
         this.setClientStatus(key, CLIENT_STATUS_INACTIVE)
       }
       let client = mqtt.connect(config.host, config)
-      let unresolvedHandler = (packet) => {
-        clientObj.notResolvedMessages.push(packet)
-        if (clientObj.notResolvedMessages.length === 1 && !clientObj.entities.filter(entity => entity.type === 'unresolved').length) {
-          clientObj.entities.push({type: 'unresolved'})
-        }
-      }
+
       /* resubscribe to exists topics */
       client.on('connect', (connack) => {
         let currentStatuses = clientObj.subscribersStatuses,
@@ -561,7 +614,7 @@ export default {
             exitedSubscriptionIndex = existedSubscriptionsInSession.findIndex(subscription => subscription.topic === subscriber.topic),
             isSubscriptionExited = exitedSubscriptionIndex !== -1
           if (isSubscriptionExited && !status) {
-            Vue.set(currentStatuses, index, true)
+            this.$set(currentStatuses, index, true)
           } else if (!isSubscriptionExited && status) {
             if (subscriber.mode === 0) {
               clientObj.messages[index].splice(0, clientObj.messages[index].length)
@@ -569,9 +622,10 @@ export default {
               let tree = clientObj.messages[index]
               let treeKeys = Object.keys(tree)
               treeKeys.forEach(key => {
-                Vue.delete(tree, key)
+                this.$delete(tree, key)
               })
             }
+            clientObj.subscribersMessagesBuffer[index] = []
             this.subscribe(key, index)
           }
           if (isSubscriptionExited) {
@@ -594,9 +648,9 @@ export default {
           if (subscription.subscription_id) {
             options.subscriptionIdentifier = subscription.subscription_id
           }
-          Vue.set(subscriber, 'options', options)
-          Vue.set(subscriber, 'topic', subscription.topic)
-          Vue.set(currentStatuses, id, true)
+          this.$set(subscriber, 'options', options)
+          this.$set(subscriber, 'topic', subscription.topic)
+          this.$set(currentStatuses, id, true)
           let grants = [{
             nl: subscription.no_local,
             rap: subscription.rap,
@@ -615,59 +669,15 @@ export default {
         clientObj.logs.push({type: 'connect', data: {...connack}, timestamp: Date.now()})
       })
       client.once('connect', (connack) => {
+        this.$set(clientObj, 'inited', true)
+        this.activateRender()
+        let messageBuffer = []
+        clientObj.processTimer = setInterval(() => {
+          messageBuffer.forEach((message) => { this.messageProcessing(message, key) })
+          messageBuffer = []
+        }, 500)
         client.on('message', (topic, message, packet) => {
-          let resolveFlag = false
-          /* if subscribersStatuses contains true or paused statuses */
-          if (clientObj.subscribersStatuses.length && clientObj.subscribersStatuses.filter(status => !!status).length) {
-            clientObj.subscribers.forEach((sub, index, subs) => {
-              let isResolved = this.resolveSubscription(packet, sub)
-              resolveFlag = resolveFlag || isResolved
-              if (isResolved) {
-                if (this.activeClient && this.activeClient.id === clientObj.id) {
-                  /* write messages with buffering in entities */
-                  if (!this.subscribersMessagesBuffer[index]) {
-                    this.subscribersMessagesBuffer[index] = []
-                  }
-                  if (this.subscribersStatuses[index] && this.subscribersStatuses[index] !== 'paused') {
-                    this.subscribersMessagesBuffer[index].push(packet)
-                  } else {
-                    if (clientObj.subscribers[index].missedMessages === undefined) {
-                      clientObj.subscribers[index].missedMessages = 0
-                    }
-                    clientObj.subscribers[index].missedMessages++
-                  }
-                } else {
-                  /* write messages straight forward in entities */
-                  if (!clientObj.messages[index]) {
-                    clientObj.messages[index] = []
-                  }
-                  if (sub.mode === 0) {
-                    let count = clientObj.messages.reduce((count, arr) => { return count + arr.length }, 0)
-                    if (count > this.messagesLimitCount) {
-                      clientObj.messages[index].shift()
-                    }
-                  }
-                  if (clientObj.subscribersStatuses[index] && clientObj.subscribersStatuses[index] !== 'paused') {
-                    if (sub.mode === 0) {
-                      clientObj.messages[index].push(packet)
-                    } else if (sub.mode === 1) {
-                      jsonTreeByMessages(packet, clientObj.config.protocolVersion === 5 && sub.treeField ? sub.treeField : '', clientObj.messages[index])
-                    }
-                  } else {
-                    if (clientObj.subscribers[index].missedMessages === undefined) {
-                      clientObj.subscribers[index].missedMessages = 0
-                    }
-                    clientObj.subscribers[index].missedMessages++
-                  }
-                }
-              }
-              if (subs.length - 1 === index && !resolveFlag) {
-                unresolvedHandler(packet)
-              }
-            })
-          } else {
-            unresolvedHandler(packet)
-          }
+          messageBuffer.push(packet)
         })
       })
       client.on('error', (error) => {
@@ -679,6 +689,7 @@ export default {
             if (status) {
               this.$delete(clientObj.client._client._resubscribeTopics, clientObj.subscribers[index].topic)
               this.$set(clientObj.subscribersStatuses, index, false)
+              this.$set(clientObj.subscribersConnectivityStatuses, index, false)
             }
           })
         }
@@ -690,6 +701,7 @@ export default {
         endHandler()
       })
       client.on('offline', () => {
+        this.$set(clientObj, 'inited', false)
         clientObj.logs.push({type: 'offline', timestamp: Date.now()})
         endHandler()
       })
@@ -698,13 +710,15 @@ export default {
         endHandler()
       })
       client.on('reconnect', () => {
+        this.$set(clientObj, 'inited', true)
         clientObj.logs.push({type: 'reconnect', timestamp: Date.now()})
       })
-      Vue.set(this.clients[key], 'client', client)
+      this.$set(this.clients[key], 'client', client)
     },
     async createClient (index) {
       let config = this.createConnectPacket(this.currentSettings),
-        key = typeof index === 'string' || typeof index === 'number'
+        isClientExists = typeof index === 'string' || typeof index === 'number',
+        key = isClientExists
           ? index
           : Object.keys(this.clients).reduce((result, id) => result > parseInt(id) ? result : parseInt(id), -1) + 1
       /* init new client */
@@ -719,6 +733,9 @@ export default {
       } else {
         let clientObj = this.clients[key]
         if (clientObj.client) {
+          if (clientObj.processTimer) {
+            clearInterval(clientObj.processTimer)
+          }
           await clientObj.client.end()
           this.setClientStatus(key, CLIENT_STATUS_INACTIVE)
         }
@@ -727,7 +744,7 @@ export default {
       if (this.statuses[key] !== CLIENT_STATUS_USER_INACTIVE) {
         this.initClient(key, config)
       }
-      Vue.set(this.clients[key], 'config', config)
+      this.$set(this.clients[key], 'config', config)
       this.saveClients()
       this.clearCurrentSettings()
     },
@@ -744,8 +761,10 @@ export default {
           currentClient.subscribers = client.subscribers
           currentClient.entities = client.entities
           currentClient.messages = new Array(client.subscribers.length)
+          currentClient.subscribersMessagesBuffer = new Array(client.subscribers.length)
           for (let i = 0; i < client.subscribers.length; i++) {
             currentClient.messages[i] = client.subscribers[i].mode ? {} : []
+            currentClient.subscribersMessagesBuffer[i] = []
           }
           if (client.subscribersStatuses) {
             currentClient.subscribersStatuses = client.subscribersStatuses
@@ -753,10 +772,16 @@ export default {
             currentClient.subscribersStatuses = new Array(client.subscribers.length)
             currentClient.subscribersStatuses.fill(false)
           }
+          if (client.subscribersConnectivityStatuses) {
+            currentClient.subscribersConnectivityStatuses = client.subscribersConnectivityStatuses
+          } else {
+            currentClient.subscribersConnectivityStatuses = new Array(client.subscribers.length)
+            currentClient.subscribersConnectivityStatuses.fill(false)
+          }
           currentClient.logs = [{type: 'created', data: {...client.config}, timestamp: Date.now()}]
           currentClient.notResolvedMessages = []
-          Vue.set(this.statuses, key, client.status)
-          Vue.set(this.clients, key, currentClient)
+          this.$set(this.statuses, key, client.status)
+          this.$set(this.clients, key, currentClient)
           if (client.status !== CLIENT_STATUS_USER_INACTIVE) {
             this.initClient(key, this.createConnectPacket(client.config))
           }
@@ -769,13 +794,17 @@ export default {
       client.publishers = []
       client.entities = []
       client.messages = []
+      client.subscribersMessagesBuffer = []
       client.subscribersStatuses = []
+      client.subscribersConnectivityStatuses = []
       entities.forEach((entity, index) => {
         switch (entity.type) {
           case 'subscriber': {
             client.subscribers.push(cloneDeep(merge({}, defaultSubscriber, entity.settings)))
             client.messages.push(entity.settings.mode ? {} : [])
+            client.subscribersMessagesBuffer.push([])
             client.subscribersStatuses.push(false)
+            client.subscribersConnectivityStatuses.push(false)
             client.entities.push({type: 'subscriber', index: client.subscribers.length - 1, id: Math.random().toString(16).substr(2, 8)})
             break
           }
@@ -801,6 +830,7 @@ export default {
     connectClientHandler (key) {
       let clientObj = this.clients[key]
       if (clientObj.client) {
+        clientObj.processTimer && clearInterval(clientObj.processTimer)
         clientObj.client.end()
         this.setClientStatus(key, CLIENT_STATUS_INACTIVE)
       }
@@ -809,9 +839,10 @@ export default {
     },
     async disconnectClientHandler (key) {
       let clientObj = this.clients[key]
+      clientObj.processTimer && clearInterval(clientObj.processTimer)
+      this.setClientStatus(key, CLIENT_STATUS_USER_INACTIVE)
       await clientObj.client.end()
       clientObj.client = null
-      this.setClientStatus(key, CLIENT_STATUS_USER_INACTIVE)
       this.saveClients()
     },
     deleteClientHandler (key) {
@@ -822,16 +853,17 @@ export default {
         cancel: true,
         ok: true
       }).then(() => {
+        clientObj.processTimer && clearInterval(clientObj.processTimer)
         if (clientObj.client) {
           clientObj.client.end()
             .then(() => {
-              Vue.delete(this.statuses, key)
-              Vue.delete(this.clients, key)
+              this.$delete(this.statuses, key)
+              this.$delete(this.clients, key)
               this.saveClients()
             })
         } else {
-          Vue.delete(this.statuses, key)
-          Vue.delete(this.clients, key)
+          this.$delete(this.statuses, key)
+          this.$delete(this.clients, key)
           this.saveClients()
         }
       })
@@ -840,20 +872,26 @@ export default {
     activateRender () {
       if (!this.renderInterval) {
         this.renderInterval = setInterval(() => {
-          this.subscribersMessagesBuffer.forEach((messages, index) => {
-            let subscriber = this.subscribers[index]
-            let savedMessages = this.subscribersMessages[index]
-            if (subscriber.mode === 0) {
-              if (savedMessages) {
-                messages = messages.splice(-this.messagesLimitCount)
-                savedMessages.splice(savedMessages.length, 0, ...messages)
-                savedMessages.splice(0, savedMessages.length - this.messagesLimitCount)
+          Object.values(this.clients).forEach((client) => {
+            client.subscribersMessagesBuffer.forEach((messages, index) => {
+              if (!messages.length) { return false }
+              let subscriber = client.subscribers[index]
+              let savedMessages = client.messages[index]
+              if (subscriber.mode === 0) {
+                if (savedMessages) {
+                  messages = messages.splice(-this.messagesLimitCount)
+                  savedMessages.splice(savedMessages.length, 0, ...messages)
+                  savedMessages.splice(0, savedMessages.length - this.messagesLimitCount)
+                }
+                client.subscribersMessagesBuffer[index] = []
+              } else {
+                if (client.subscribersStatuses[index] && client.subscribersConnectivityStatuses[index]) {
+                  jsonTreeByMessages(messages, client.config.protocolVersion === 5 && subscriber.treeField ? subscriber.treeField : '', savedMessages)
+                  client.subscribersMessagesBuffer[index] = []
+                }
               }
-            } else {
-              jsonTreeByMessages(messages, this.activeClient.config.protocolVersion === 5 && subscriber.treeField ? subscriber.treeField : '', savedMessages)
-            }
+            })
           })
-          this.subscribersMessagesBuffer = []
         }, 500)
       }
     },
@@ -863,8 +901,10 @@ export default {
       this.subscribers = client.subscribers
       this.publishers = client.publishers
       this.subscribersMessages = client.messages
+      this.subscribersMessagesBuffer = client.subscribersMessagesBuffer
       this.notResolvedMessages = client.notResolvedMessages
       this.subscribersStatuses = client.subscribersStatuses
+      this.subscribersConnectivityStatuses = client.subscribersConnectivityStatuses
       this.activeClient = client
     },
     clearActiveClient () {
@@ -875,6 +915,7 @@ export default {
       this.subscribersMessagesBuffer = []
       this.notResolvedMessages = []
       this.subscribersStatuses = []
+      this.subscribersConnectivityStatuses = []
     },
     /* client logic end */
     /* pub/sub logic start */
@@ -896,7 +937,9 @@ export default {
       let clientObj = this.clients[clientId]
       clientObj.subscribers.push(cloneDeep(defaultSubscriber))
       clientObj.messages.push([])
+      clientObj.subscribersMessagesBuffer.push([])
       clientObj.subscribersStatuses.push(false)
+      clientObj.subscribersConnectivityStatuses.push(false)
       clientObj.entities.push({type: 'subscriber', index: clientObj.subscribers.length - 1, id: Math.random().toString(16).substr(2, 8)})
       this.saveClients()
       if (this.activeClient) { this.isNeedScroll = true }
@@ -917,7 +960,8 @@ export default {
         await this.unsubscribeMessageHandler(this.activeClient.id, subscriberIndex)
       }
       this.subscribers.splice(subscriberIndex, 1)
-      this.subscribersStatuses.splice(subscriberIndex, 1)
+      this.clients[this.activeClient.id].subscribersStatuses.splice(subscriberIndex, 1)
+      this.subscribersConnectivityStatuses.splice(subscriberIndex, 1)
       this.subscribersMessages.splice(subscriberIndex, 1)
       this.entities.splice(this.findEntity({type: 'subscriber', index: subscriberIndex}), 1)
       this.entities.forEach(entity => {
@@ -928,11 +972,11 @@ export default {
       this.saveClients()
     },
     inputSubscriber (index, val) {
-      Vue.set(this.subscribers, index, val)
+      this.$set(this.subscribers, index, val)
       this.saveClients()
     },
     inputPublisher (index, val) {
-      Vue.set(this.publishers, index, val)
+      this.$set(this.publishers, index, val)
       this.saveClients()
     },
     async publishMessageHandler (clientKey, publisherIndex) {
@@ -948,7 +992,13 @@ export default {
           color: 'positive',
           timeout: 700
         })
-      } catch (e) { this.errorHandler(this.activeClient.id, e, true) }
+      } catch (e) {
+        if (this.activeClient.status) {
+          this.errorHandler(this.activeClient.id, e, true)
+        } else {
+          this.errorHandler(this.activeClient.id, new Error('Client disconnected'), true)
+        }
+      }
     },
     async subscribeMessageHandler (clientKey, subscriberIndex) {
       let settings = this.clearObject(this.subscribers[subscriberIndex])
@@ -965,7 +1015,7 @@ export default {
         return false
       }
       if (this.subscribersMessages && this.subscribersMessages.length) {
-        Vue.set(this.subscribersMessages, subscriberIndex, settings.mode === 1 ? {} : [])
+        this.$set(this.subscribersMessages, subscriberIndex, settings.mode === 1 ? {} : [])
       }
       await this.subscribe(clientKey, subscriberIndex)
     },
@@ -973,24 +1023,34 @@ export default {
       let clientObj = this.clients[clientKey],
         settings = this.clearObject(clientObj.subscribers[subscriberIndex])
       try {
-        Vue.set(this.clients[clientKey].subscribersStatuses, subscriberIndex, true)
+        this.$set(this.clients[clientKey].subscribersStatuses, subscriberIndex, true)
+        this.$set(this.clients[clientKey].subscribersConnectivityStatuses, subscriberIndex, false)
         let grants = await clientObj.client.subscribe(settings.topic, settings.options)
+        this.$set(this.clients[clientKey].subscribersConnectivityStatuses, subscriberIndex, true)
         if (grants.length) {
           clientObj.logs.push({type: 'subscribe', data: { settings, grants }, timestamp: Date.now()})
-          if ((grants[0].qos & 0x80) > 0) { Vue.set(this.clients[clientKey].subscribersStatuses, subscriberIndex, false) }
+          if ((grants[0].qos & 0x80) > 0) {
+            throw new Error(`Subscription error ${grants[0].qos}`)
+          }
         }
       } catch (e) {
-        Vue.set(this.clients[clientKey].subscribersStatuses, subscriberIndex, false)
-        this.errorHandler(clientKey, e, true)
+        this.$set(this.clients[clientKey].subscribersStatuses, subscriberIndex, false)
+        this.$set(this.clients[clientKey].subscribersConnectivityStatuses, subscriberIndex, false)
+        if (clientObj.status) {
+          this.errorHandler(clientKey, e, true)
+        } else {
+          this.errorHandler(clientKey, new Error('Client disconnected'), true)
+        }
       }
+      this.saveClients()
     },
     playSubscriberHandler (subscriberIndex) {
-      Vue.set(this.subscribers[subscriberIndex], 'missedMessages', undefined)
-      Vue.set(this.subscribersStatuses, subscriberIndex, true)
+      this.$set(this.subscribers[subscriberIndex], 'missedMessages', undefined)
+      this.$set(this.subscribersStatuses, subscriberIndex, true)
     },
     pauseSubscriberHandler (subscriberIndex) {
-      Vue.set(this.subscribers[subscriberIndex], 'missedMessages', 0)
-      Vue.set(this.subscribersStatuses, subscriberIndex, 'paused')
+      this.$set(this.subscribers[subscriberIndex], 'missedMessages', 0)
+      this.$set(this.subscribersStatuses, subscriberIndex, 'paused')
     },
     clearMessagesHandler (subscriberIndex) {
       let messages = this.subscribersMessages[subscriberIndex]
@@ -1003,11 +1063,20 @@ export default {
       let clientObj = this.clients[clientKey],
         settings = this.clearObject(clientObj.subscribers[subscriberIndex])
       try {
+        if (!clientObj.subscribersConnectivityStatuses[subscriberIndex]) {
+          this.$set(clientObj.subscribersConnectivityStatuses, subscriberIndex, true)
+        }
+        this.$set(clientObj.subscribersStatuses, subscriberIndex, false)
+        this.$set(clientObj.messages, subscriberIndex, settings.mode === 1 ? {} : [])
         await clientObj.client.unsubscribe(settings.topic, { properties: settings.unsubscribeProperties })
         clientObj.logs.push({type: 'unsubscribe', data: this.clearObject(settings), timestamp: Date.now()})
-        Vue.set(clientObj.subscribersStatuses, subscriberIndex, false)
+        this.$set(clientObj.subscribersConnectivityStatuses, subscriberIndex, false)
       } catch (e) {
-        this.errorHandler(clientKey, e, true)
+        if (clientObj.status) {
+          this.errorHandler(clientKey, e, true)
+        } else {
+          this.errorHandler(clientKey, new Error('Client disconnected'), true)
+        }
       }
     },
     sendFromSubscriberHandler (message) {
@@ -1042,6 +1111,29 @@ export default {
     clearLogs () {
       let logs = this.activeClient.logs
       logs.splice(0, logs.length)
+    },
+    changeUnresolvedStatus (status) {
+      if (status) {
+        this.showUnresolved()
+      } else {
+        this.hideUnresolved()
+      }
+    },
+    hideUnresolved () {
+      let indexLogsEntity = this.entities.findIndex(entity => entity.type === 'unresolved')
+      this.entities.splice(indexLogsEntity, 1)
+    },
+    showUnresolved () {
+      this.entities.push({type: 'unresolved'})
+      let el = this.$refs.wrapper
+      if (el) {
+        animate.start({
+          from: el.scrollLeft,
+          to: el.offsetWidth,
+          duration: 200,
+          apply (pos) { el.scrollLeft = pos }
+        })
+      }
     },
     clearUnresolvedMessages () {
       let messages = this.activeClient.notResolvedMessages
@@ -1103,12 +1195,6 @@ export default {
   },
   watch: {
     subscribersStatuses (statuses) {
-      if (statuses.length && statuses.includes(true)) {
-        this.activateRender()
-      } else {
-        clearInterval(this.renderInterval)
-        this.renderInterval = 0
-      }
       this.saveClients()
     }
   },
@@ -1130,6 +1216,7 @@ export default {
         for (let clientObjKey in this.clients) {
           let clientObj = this.clients[clientObjKey]
           if (clientObj.status) {
+            clientObj.processTimer && clearInterval(clientObj.processTimer)
             clientObj.client.end()
           }
         }
@@ -1140,6 +1227,7 @@ export default {
     for (let clientObjKey in this.clients) {
       let clientObj = this.clients[clientObjKey]
       if (clientObj.status) {
+        clientObj.processTimer && clearInterval(clientObj.processTimer)
         clientObj.client.end()
       }
     }

@@ -5,8 +5,9 @@ let defaultSettings = {
       perMessageDeflate: true
     },
     host: 'wss://mqtt.flespi.io',
-    keepalive: 60,
+    keepalive: 420,
     protocolVersion: 5,
+    resubscribe: false,
     clean: true,
     username: 'FlespiToken XXXXXXXXXXXXXXXXXXX',
     password: '',

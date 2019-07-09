@@ -12,9 +12,9 @@
       </q-btn>
     </div>
     <div class="message__payload q-pa-sm q-mr-xs q-ml-xs bg-grey-2">
-      <json-tree v-if="message.payload && highlight" :data="payload"/>
-      <div v-else-if="message.payload && !highlight" class="message__payload q-pa-sm q-mr-xs q-ml-xs bg-grey-2">{{message.payload.toString()}}</div>
-      <div v-else>No message</div>
+      <div v-if="typeof payload === 'string' && !payload.length">No message</div>
+      <json-tree v-else-if="highlight" :data="payload"/>
+      <div v-else-if="!highlight" class="message__payload q-pa-sm q-mr-xs q-ml-xs bg-grey-2">{{message.payload}}</div>
     </div>
     <div class="message__properties q-pa-sm text-grey-7">{{JSON.stringify(message.properties)}}</div>
   </q-card>
@@ -28,11 +28,7 @@ export default {
   props: ['message', 'highlight'],
   computed: {
     payload () {
-      let payload = this.message.payload.toString()
-      try {
-        payload = JSON.parse(payload)
-      } catch (e) {}
-      return payload
+      return this.message.payload
     },
     timestamp () {
       return this.message.properties && this.message.properties.userProperties && this.message.properties.userProperties.timestamp

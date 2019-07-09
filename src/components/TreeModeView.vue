@@ -67,7 +67,19 @@ export default {
   },
   computed: {
     keys () {
-      return Object.keys(this.data).sort()
+      return Object.keys(this.data).sort((a, b) => {
+        a = a.toLowerCase()
+        b = b.toLowerCase()
+        if (a !== b) {
+          let na = Number(a),
+            ba = Number(b)
+          if (na + '' === a && ba + '' === b) {
+            return na - ba
+          } else {
+            return (a > b) ? 1 : -1
+          }
+        }
+      })
     },
     limitedKeys () {
       return this.keys.slice(0, this.limit)

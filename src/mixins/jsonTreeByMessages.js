@@ -25,7 +25,7 @@ function jsonTreeByMessages (messages, treeField, dest) {
         let valueByTreeField = payload.properties && payload.properties.userProperties && payload.properties.userProperties[treeField]
           ? payload.properties.userProperties[treeField]
           : ''
-        Vue.set(currentNesting[pathElement].value, valueByTreeField, payload)
+        Vue.set(currentNesting[pathElement].value, valueByTreeField, JSON.stringify(payload))
       }
     })
   }
@@ -67,12 +67,15 @@ function jsonTreeByMessages (messages, treeField, dest) {
       }
     })
   }
+  function getAction (message) {
+    return typeof message.payload === 'string' && !message.payload.length ? clear : write
+  }
   if (Array.isArray(messages)) {
     messages.forEach(message => {
-      message.payload.length ? write(message.topic, message, dest) : clear(message.topic, message, dest)
+      getAction(message)(message.topic, message, dest)
     })
   } else {
-    messages.payload.length ? write(messages.topic, messages, dest) : clear(messages.topic, messages, dest)
+    getAction(messages)(messages.topic, messages, dest)
   }
 }
 

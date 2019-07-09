@@ -72,7 +72,7 @@ export default {
     return {
       config: {
         topic: this.message.topic,
-        payload: this.message.payload.toString(),
+        payload: JSON.stringify(this.message.payload),
         options: {
           qos: this.message.qos,
           retain: this.message.retain,
