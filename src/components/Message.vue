@@ -11,10 +11,11 @@
         <q-tooltip>Resend message</q-tooltip>
       </q-btn>
     </div>
-    <div class="message__payload q-pa-sm q-mr-xs q-ml-xs bg-grey-2">
+    <div class="message__payload q-pa-sm q-mr-xs q-ml-xs bg-grey-2 relative-position">
       <div v-if="typeof payload === 'string' && !payload.length">No message</div>
       <json-tree v-else-if="highlight" :data="payload"/>
       <div v-else-if="!highlight" class="message__payload q-pa-sm q-mr-xs q-ml-xs bg-grey-2">{{message.payload}}</div>
+      <q-btn v-if="!(typeof payload === 'string' && !payload.length)" icon="content_copy" @click="copyPayloadHandler" size="0.7rem" flat color="orange" style="position: absolute; right: 0; bottom: 2px;"/>
     </div>
     <div class="message__properties q-pa-sm text-grey-7">{{JSON.stringify(message.properties)}}</div>
   </q-card>
@@ -34,6 +35,25 @@ export default {
       return this.message.properties && this.message.properties.userProperties && this.message.properties.userProperties.timestamp
         ? `, ${date.formatDate(this.message.properties.userProperties.timestamp * 1000, 'DD/MM/YYYY HH:mm:ss')}`
         : ''
+    }
+  },
+  methods: {
+    copyPayloadHandler () {
+      this.$copyText(typeof this.payload === 'string' ? this.payload : JSON.stringify(this.payload)).then((e) => {
+        this.$q.notify({
+          type: 'positive',
+          icon: 'content_copy',
+          message: `Payload copied`,
+          timeout: 1000
+        })
+      }, (e) => {
+        this.$q.notify({
+          type: 'negative',
+          icon: 'content_copy',
+          message: `Coping error`,
+          timeout: 1000
+        })
+      })
     }
   },
   components: { JsonTree }

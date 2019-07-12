@@ -4,6 +4,7 @@ module.exports = function (ctx) {
   return {
     // app plugins (/src/plugins)
     plugins: [
+      'clipboard'
     ],
     css: [
       'app.styl'
