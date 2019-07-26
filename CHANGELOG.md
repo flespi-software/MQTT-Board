@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.7.2] - 2019-07-26
+[remove] service-worker
 ### [1.7.1] - 2019-07-12
 [feature] copy message payload
 ### [1.7.0] - 2019-07-09
