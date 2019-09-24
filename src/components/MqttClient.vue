@@ -236,6 +236,7 @@ import VirtualList from 'vue-virtual-scroll-list'
 import merge from 'lodash/merge'
 import cloneDeep from 'lodash/cloneDeep'
 import isNil from 'lodash/isNil'
+import get from 'lodash/get'
 import debounce from 'lodash/debounce'
 import { animate, LocalStorage, openURL } from 'quasar'
 import FlespiTopic from './FlespiTopicConfigurator'
@@ -473,19 +474,19 @@ export default {
       }, {})
     },
     resolveSubscription (packet, subscription) {
+      let subscriptionIdentifiers = get(subscription, 'options.properties.subscriptionIdentifier', undefined),
+        packetSubIdentifiers = get(packet, 'properties.subscriptionIdentifier', undefined)
+      if (
+        packetSubIdentifiers && subscriptionIdentifiers &&
+        (
+          (typeof packetSubIdentifiers === 'number' && packetSubIdentifiers === subscriptionIdentifiers) ||
+          (Array.isArray(packetSubIdentifiers) && packetSubIdentifiers.includes(subscriptionIdentifiers))
+        )
+      ) {
+        return true
+      }
       /* check topic */
       if (this.resolveTopics(packet.topic, subscription.topic)) {
-        /* check to subscription id */
-        if (
-          packet.properties && packet.properties.subscriptionIdentifier &&
-          subscription.options && subscription.options.properties && subscription.options.properties.subscriptionIdentifier &&
-          (
-            (typeof packet.properties.subscriptionIdentifier === 'number' && packet.properties.subscriptionIdentifier !== subscription.options.properties.subscriptionIdentifier) ||
-            (Array.isArray(packet.properties.subscriptionIdentifier) && !packet.properties.subscriptionIdentifier.includes(subscription.options.properties.subscriptionIdentifier))
-          )
-        ) {
-          return false
-        }
         return true
       }
       return false
