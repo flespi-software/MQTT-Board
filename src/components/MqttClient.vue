@@ -18,6 +18,7 @@
           </q-toolbar-title>
         </q-toolbar>
         <div style="margin: 20px;" :style="{ height: $q.platform.is.mobile ? 'calc(100% - 100px)' : '50vh', width: $q.platform.is.mobile ? 'calc(100% - 40px)' : '50vw'}">
+          <q-input color="dark"  v-model="currentSettings.clientName" float-label="Client name"/>
           <q-input color="dark"  v-model="currentSettings.clientId" float-label="Client ID" :error="!currentSettings.clientId" :after="[{icon: 'mdi-refresh', handler () { currentSettings.clientId = `mqtt-board-${Math.random().toString(16).substr(2, 8)}` }}]"/>
           <q-input color="dark"  v-model="currentSettings.host" float-label="Host" :error="!currentSettings.host || (secure && currentSettings.host.indexOf('ws:') === 0)" :after="[{icon: 'mdi-alert-outline', handler: hostErrorHandler, error: true}]"/>
           <q-input color="dark"  v-model="currentSettings.keepalive" type="number" float-label="Keep alive" :error="!isNil(currentSettings.keepalive) && (currentSettings.keepalive <= 0 || currentSettings.keepalive > 0xffff)"/>
@@ -98,8 +99,15 @@
       <q-btn round v-if="activeClient" flat dense icon="mdi-close" @click="clearActiveClient"/>
       <q-toolbar-title>
         <img v-if="!activeClient && whiteLabel === ''" src="statics/mqttboard.png" alt="MQTT Board" style="height: 30px">
-        {{activeClient ? `${activeClient.config.clientId}` : (whiteLabel || 'MQTT Board')}}
-        <sup v-if="activeClient" style="border-radius: 5px;font-size: .6rem; padding: 2px;" :class="[`bg-${activeClient.status ? 'green': 'red'}`]">{{activeClient.status ? 'online': 'offline'}}</sup>
+        <span v-if="activeClient">
+          {{`${activeClient.config.clientName || activeClient.config.clientId}`}}
+          <q-tooltip v-if="activeClient.config.clientName">{{`${activeClient.config.clientId}`}}</q-tooltip>
+        </span>
+        <span v-else>
+          {{whiteLabel || 'MQTT Board'}}
+        </span>
+        <sup v-if="activeClient && $q.platform.is.desktop" style="border-radius: 5px;font-size: .6rem; padding: 2px; min-width: 15px; top: 5px;" :class="[`bg-${activeClient.status ? 'green': 'red'}`]" class="absolute">{{activeClient.status ? 'online': 'offline'}}</sup>
+        <sub v-if="activeClient && $q.platform.is.desktop && cid" style="border-radius: 5px;font-size: .7rem; padding: 2px;" title="cid">{{cid}}</sub>
         <sup v-if="!activeClient && whiteLabel === ''" style="position: relative; font-size: .9rem; padding-left: 4px">{{version}}</sup>
       </q-toolbar-title>
       <q-checkbox class="q-mr-md" v-if="activeClient && !!activeClient.notResolvedFlagInit" :value="unresolvedModel" @change="changeUnresolvedStatus" checked-icon="mdi-alert-circle" unchecked-icon="mdi-alert-circle-outline" dark color="white">
@@ -129,21 +137,18 @@
           </q-list>
         </q-popover>
       </q-btn>
-      <q-btn v-if="!activeClient && !whiteLabel" dense @click="openURL('https://github.com/flespi-software/MQTT-Board')" color="blue" icon="mdi-github-circle" style="margin-right: 90px" label="Fork me!"/>
+      <q-btn v-if="!activeClient && !whiteLabel" dense flat @click="openURL('https://github.com/flespi-software/MQTT-Board')" color="white" icon="mdi-github-circle" style="margin-right: 60px" :label="$q.platform.is.mobile ? '' : 'Fork me!'"/>
     </q-toolbar>
     <div v-if="!activeClient" class="absolute scroll" style="top:50px; left: 0; right: 0; bottom: 0;">
       <div v-if="Object.keys(clients).length" class="mqtt-clients row q-pt-md">
         <div class="client__item q-pt-md q-px-md cursor-pointer col-xl-3 col-md-4 col-sm-6 col-xs-12" v-for="(client, index) in clients" :key="index">
           <q-card :class="{'bg-red-2': !statuses[index], 'bg-green-2': statuses[index]}" @click.native="setActiveClient(index)">
-            <q-card-title>
-              <div class="ellipsis">{{client.config.clientId}}</div>
-              <q-tooltip>{{client.config.clientId}}</q-tooltip>
+            <q-card-title class="q-py-sm">
+              <div class="ellipsis">{{client.config.clientName || client.config.clientId}}</div>
+              <div class="ellipsis text-grey-9" style="font-size: 14px; line-height: 14px; min-height: 14px;">{{client.config.clientName ? client.config.clientId : ''}}</div>
             </q-card-title>
             <q-card-main class="ellipsis">
-              <span>
-                {{client.config.host}}
-                <q-tooltip>{{client.config.host}}</q-tooltip>
-              </span>
+              <span class="text-grey-9">{{client.config.host}}</span>
               </q-card-main>
             <q-card-separator />
             <q-card-actions align="end">
@@ -383,7 +388,8 @@ export default {
       notResolvedMessages: [],
       isNeedScroll: false,
       isInited: false,
-      republishMessage: null
+      republishMessage: null,
+      cid: null
     }
   },
   computed: {
@@ -556,6 +562,7 @@ export default {
       return config
     },
     setClientStatus (key, status) {
+      if (!this.clients[key]) { return false }
       this.$set(this.statuses, key, status)
       this.$set(this.clients[key], 'status', status)
     },
@@ -670,6 +677,7 @@ export default {
         clientObj.logs.push({type: 'connect', data: {...connack}, timestamp: Date.now()})
       })
       client.once('connect', (connack) => {
+        this.setCid(connack)
         this.$set(clientObj, 'inited', true)
         this.activateRender()
         let messageBuffer = []
@@ -1192,6 +1200,9 @@ export default {
       if (window.focus) {
         newWindow.focus()
       }
+    },
+    setCid (connack) {
+      this.cid = get(JSON.parse(get(connack, 'properties.userProperties.token', '{}')), 'cid', null)
     }
   },
   watch: {

@@ -1,5 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.7.4] - 2019-10-03
+[feature] client name field added
+[fix] mobile ui
+### [1.7.3] - 2019-09-18
+[feature] comma separated topic filters in combine with subscription identifier
 ### [1.7.2] - 2019-07-26
 [remove] service-worker
 ### [1.7.1] - 2019-07-12
