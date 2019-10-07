@@ -107,7 +107,7 @@
           {{whiteLabel || 'MQTT Board'}}
         </span>
         <sup v-if="activeClient && $q.platform.is.desktop" style="border-radius: 5px;font-size: .6rem; padding: 2px; min-width: 15px; top: 5px;" :class="[`bg-${activeClient.status ? 'green': 'red'}`]" class="absolute">{{activeClient.status ? 'online': 'offline'}}</sup>
-        <sub v-if="activeClient && $q.platform.is.desktop && cid" style="border-radius: 5px;font-size: .7rem; padding: 2px;" title="cid">{{cid}}</sub>
+        <sub v-if="activeClient && $q.platform.is.desktop && activeClient.cid" style="border-radius: 5px;font-size: .7rem; padding: 2px;" title="cid">{{activeClient.cid}}</sub>
         <sup v-if="!activeClient && whiteLabel === ''" style="position: relative; font-size: .9rem; padding-left: 4px">{{version}}</sup>
       </q-toolbar-title>
       <q-checkbox class="q-mr-md" v-if="activeClient && !!activeClient.notResolvedFlagInit" :value="unresolvedModel" @change="changeUnresolvedStatus" checked-icon="mdi-alert-circle" unchecked-icon="mdi-alert-circle-outline" dark color="white">
@@ -388,8 +388,7 @@ export default {
       notResolvedMessages: [],
       isNeedScroll: false,
       isInited: false,
-      republishMessage: null,
-      cid: null
+      republishMessage: null
     }
   },
   computed: {
@@ -677,7 +676,7 @@ export default {
         clientObj.logs.push({type: 'connect', data: {...connack}, timestamp: Date.now()})
       })
       client.once('connect', (connack) => {
-        this.setCid(connack)
+        this.$set(clientObj, 'cid', this.getCid(connack))
         this.$set(clientObj, 'inited', true)
         this.activateRender()
         let messageBuffer = []
@@ -1201,8 +1200,8 @@ export default {
         newWindow.focus()
       }
     },
-    setCid (connack) {
-      this.cid = get(JSON.parse(get(connack, 'properties.userProperties.token', '{}')), 'cid', null)
+    getCid (connack) {
+      return get(JSON.parse(get(connack, 'properties.userProperties.token', '{}')), 'cid', null)
     }
   },
   watch: {

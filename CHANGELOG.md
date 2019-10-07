@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.7.5] - 2019-10-07
+[fix] cid
 ### [1.7.4] - 2019-10-03
 [feature] client name field added
 [fix] mobile ui
