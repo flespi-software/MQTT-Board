@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.0.1] - 2019-11-04
+[feature] onetime route added
 ### [2.0.0] - 2019-11-04
 [feature] quasar framework updated
 ### [1.7.5] - 2019-10-07

@@ -43,36 +43,36 @@ module.exports = function (ctx) {
       all: false,
 
       components: [
-        'QLayout', //
-        'QHeader', //
-        'QFooter', //
-        'QDrawer', //
-        'QPageContainer', //
-        'QPage', //
-        'QToolbar', //
-        'QToolbarTitle', //
-        'QDialog', //
-        'QList', //
-        'QItem', //
-        'QItemLabel', //
-        'QItemSection', //
-        'QSeparator', //
-        'QBtn', //
-        'QIcon', //
-        'QInput', //
-        'QCheckbox', //
-        'QToggle', //
-        'QSelect', //
-        'QCard', //
-        'QCardSection', //
-        'QCardActions', //
-        'QExpansionItem', //
-        'QTooltip', //
-        'QBtnToggle', //
-        'QMenu', //
-        'QChip', //
-        'QInnerLoading', //
-        'QSpinnerGears' //
+        'QLayout',
+        'QHeader',
+        'QFooter',
+        'QDrawer',
+        'QPageContainer',
+        'QPage',
+        'QToolbar',
+        'QToolbarTitle',
+        'QDialog',
+        'QList',
+        'QItem',
+        'QItemLabel',
+        'QItemSection',
+        'QSeparator',
+        'QBtn',
+        'QIcon',
+        'QInput',
+        'QCheckbox',
+        'QToggle',
+        'QSelect',
+        'QCard',
+        'QCardSection',
+        'QCardActions',
+        'QExpansionItem',
+        'QTooltip',
+        'QBtnToggle',
+        'QMenu',
+        'QChip',
+        'QInnerLoading',
+        'QSpinnerGears'
       ],
       directives: [
         'Ripple',
@@ -83,7 +83,8 @@ module.exports = function (ctx) {
       plugins: [
         'Notify',
         'Dialog',
-        'LocalStorage'
+        'LocalStorage',
+        'SessionStorage'
       ]
     },
 
