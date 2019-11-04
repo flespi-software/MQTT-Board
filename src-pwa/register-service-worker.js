@@ -1,24 +1,41 @@
-/*
- * This file is picked up by the build system only
- * when building for PRODUCTION
- */
-
 import { register } from 'register-service-worker'
 
+// The ready(), registered(), cached(), updatefound() and updated()
+// events passes a ServiceWorkerRegistration instance in their arguments.
+// ServiceWorkerRegistration: https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration
+
 register(process.env.SERVICE_WORKER_FILE, {
+  // The registrationOptions object will be passed as the second argument
+  // to ServiceWorkerContainer.register()
+  // https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerContainer/register#Parameter
+
+  // registrationOptions: { scope: './' },
+
   ready () {
-    console.log('App is being served from cache by a service worker.')
+    if (process.env.DEV) {
+      console.log('App is being served from cache by a service worker.')
+    }
   },
-  registered (registration) { // registration -> a ServiceWorkerRegistration instance
-    console.log('Service worker has been registered.')
+
+  registered (/* registration */) {
+    if (process.env.DEV) {
+      console.log('Service worker has been registered.')
+    }
   },
-  cached (registration) { // registration -> a ServiceWorkerRegistration instance
-    console.log('Content has been cached for offline use.')
+
+  cached (/* registration */) {
+    if (process.env.DEV) {
+      console.log('Content has been cached for offline use.')
+    }
   },
-  updatefound (registration) { // registration -> a ServiceWorkerRegistration instance
-    console.log('New content is downloading.')
+
+  updatefound (/* registration */) {
+    if (process.env.DEV) {
+      console.log('New content is downloading.')
+    }
   },
-  updated (registration) { // registration -> a ServiceWorkerRegistration instance
+
+  updated (/* registration */) {
     let notification = document.createElement('div')
     notification.id = 'sw-notification'
     notification.innerHTML = `<div class="q-notification-list q-notification-list-bottom fixed column items-end absolute">
@@ -71,12 +88,16 @@ register(process.env.SERVICE_WORKER_FILE, {
     buttons[1].addEventListener('click', (ev) => { notification.remove() })
     body.appendChild(notification)
   },
+
   offline () {
-    console.log('No internet connection found. App is running in offline mode.')
+    if (process.env.DEV) {
+      console.log('No internet connection found. App is running in offline mode.')
+    }
   },
+
   error (err) {
-    console.error('Error during service worker registration:', err)
+    if (process.env.DEV) {
+      console.error('Error during service worker registration:', err)
+    }
   }
 })
-
-// ServiceWorkerRegistration: https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration

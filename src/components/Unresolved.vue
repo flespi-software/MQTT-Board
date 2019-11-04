@@ -1,46 +1,33 @@
 <template>
   <div class="mqtt-client__not-resolved-msgs col-md-6 col-sm-12 col-xs-12" >
     <q-card class="not-resolved-msgs__main q-ma-sm">
-      <q-card-title class="q-pa-none">
-        <q-toolbar v-if="!filterMode" color="red-6" class="q-px-none">
+      <q-card-section class="q-pa-none">
+        <q-toolbar v-if="!filterMode" class="q-pr-none text-white bg-red-6">
           <q-toolbar-title>Unresolved messages</q-toolbar-title>
           <q-btn round flat icon="mdi-magnify" @click="filterMode = true"/>
           <q-btn round flat icon="mdi-dots-vertical">
-            <q-popover anchor="bottom right" self="top right">
+            <q-menu anchor="bottom right" self="top right">
               <q-list>
-                <q-item class="cursor-pointer" v-close-overlay highlight @click.native="clearMessagesHandler">
-                  <q-item-side icon="mdi-playlist-remove" />
-                  <q-item-main label="Clear messages"/>
+                <q-item v-close-popup @click.native="clearMessagesHandler" clickable v-ripple>
+                  <q-item-section avatar><q-icon name="mdi-playlist-remove" /></q-item-section>
+                  <q-item-section><q-item-label>Clear messages</q-item-label></q-item-section>
                 </q-item>
               </q-list>
-            </q-popover>
+            </q-menu>
           </q-btn>
         </q-toolbar>
         <q-input
           v-else
-          class="q-ma-sm"
-          color="dark"
+          class="q-ma-sm q-mb-xs"
+          color="grey-9" outlined hide-bottom-space
           v-model="filter"
-          placeholder="Filter by topic"
+          label="Filter by topic"
           autofocus
-          :before="[
-            {
-              icon: 'mdi-arrow-left',
-              handler () {
-                filterMode = false
-                filter = ''
-              }
-            }
-          ]"
-          :after="[
-            {
-              icon: 'mdi-close',
-              condition: !!filter,
-              handler () { filter = '' }
-            }
-          ]"
-        />
-      </q-card-title>
+        >
+          <q-btn slot="prepend" color="grey-9" icon="mdi-arrow-left" @click="filterMode = false, filter = ''" flat round/>
+          <q-btn slot="append" color="grey-9" icon="mdi-close" @click="filter = ''" flat round v-if="!!filter"/>
+        </q-input>
+      </q-card-section>
       <virtual-list
         v-autoscroll="needAutoScroll"
         :size="110"
@@ -57,7 +44,7 @@
 
 <script>
 import VirtualList from 'vue-virtual-scroll-list'
-import Message from './Message'
+import Message from './Message.vue'
 
 export default {
   name: 'Unresolved',
@@ -91,12 +78,12 @@ export default {
   components: { VirtualList, Message },
   directives: {
     autoscroll: {
-      inserted (el, {value}) {
+      inserted (el, { value }) {
         if (value) {
           el.scrollTop = el.scrollHeight - el.clientHeight
         }
       },
-      componentUpdated (el, {value}) {
+      componentUpdated (el, { value }) {
         setTimeout(() => {
           if (value) {
             el.scrollTop = el.scrollHeight - el.clientHeight

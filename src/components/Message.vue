@@ -8,14 +8,14 @@
         {{`qos: ${message.qos}, dup: ${message.dup ? '+' : '-'}, retain: ${message.retain ? '+' : '-'}${timestamp}`}}
       </div>
       <q-btn color="indigo-4" size="sm" @click="$emit('action:send', message)" flat icon="mdi-send" round class="absolute-top-right" style="top: 10px; right: 8px; transform: rotate(-45deg);">
-        <q-tooltip>Resend message</q-tooltip>
+        <q-tooltip class="desktop-only">Resend message</q-tooltip>
       </q-btn>
     </div>
     <div class="message__payload q-pa-sm q-mr-xs q-ml-xs bg-grey-2 relative-position">
       <div v-if="typeof payload === 'string' && !payload.length">No message</div>
       <json-tree v-else-if="highlight" :data="payload"/>
       <div v-else-if="!highlight" class="message__payload q-pa-sm q-mr-xs q-ml-xs bg-grey-2">{{message.payload}}</div>
-      <q-btn v-if="!(typeof payload === 'string' && !payload.length)" icon="content_copy" @click="copyPayloadHandler" size="0.7rem" flat color="orange" style="position: absolute; right: 0; bottom: 2px;"/>
+      <q-btn v-if="canCopy" icon="content_copy" @click="copyPayloadHandler" size="0.7rem" flat color="orange" style="position: absolute; right: 0; bottom: 2px;"/>
     </div>
     <div class="message__properties q-pa-sm text-grey-7">{{JSON.stringify(message.properties)}}</div>
   </q-card>
@@ -23,11 +23,14 @@
 
 <script>
 import { date } from 'quasar'
-import JsonTree from './JsonTree'
+import JsonTree from './JsonTree.vue'
 export default {
   name: 'Message',
   props: ['message', 'highlight'],
   computed: {
+    canCopy () {
+      return !(typeof this.payload === 'string' && !this.payload.length) && !!this.$copyText
+    },
     payload () {
       return this.message.payload
     },
@@ -41,16 +44,18 @@ export default {
     copyPayloadHandler () {
       this.$copyText(typeof this.payload === 'string' ? this.payload : JSON.stringify(this.payload)).then((e) => {
         this.$q.notify({
-          type: 'positive',
+          color: 'positive',
           icon: 'content_copy',
-          message: `Payload copied`,
+          message: `<div class="text-center" style="font-size: 1.2rem;">Payload copied</div>`,
+          html: true,
           timeout: 1000
         })
       }, (e) => {
         this.$q.notify({
-          type: 'negative',
+          color: 'negative',
           icon: 'content_copy',
-          message: `Coping error`,
+          message: `<div class="text-center" style="font-size: 1.2rem;">Coping error</div>`,
+          html: true,
           timeout: 1000
         })
       })

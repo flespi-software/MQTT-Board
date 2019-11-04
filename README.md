@@ -93,6 +93,20 @@ framework: {
   ]
 },
 ```
+You must create a quasar plugin for clipboard:
+```js
+import VueClipboard from 'vue-clipboard2'
+
+export default ({ Vue }) => {
+  Vue.use(VueClipboard)
+}
+```
+and add them to quasar config:
+```js
+boot: [
+  'clipboard'
+]
+```
 ```js
 import MqttClient from 'mqtt-board'
 

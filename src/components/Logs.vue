@@ -1,22 +1,26 @@
 <template>
   <div class="mqtt-client__logs col-xl-3 col-md-6 col-sm-12 col-xs-12">
     <q-card class="logs__wrapper q-ma-sm" style="overflow: hidden;">
-      <q-card-title class="q-pa-none">
-        <q-toolbar color="blue" class="q-px-none">
+      <q-card-section class="q-pa-none">
+        <q-toolbar class="q-pr-none text-white bg-blue">
           <q-toolbar-title>Logs</q-toolbar-title>
           <q-btn round flat icon="mdi-dots-vertical">
-            <q-popover anchor="bottom right" self="top right">
+            <q-menu anchor="bottom right" self="top right">
               <q-list>
-                <q-item class="cursor-pointer" v-close-overlay highlight @click.native="clearLogsHandler">
-                  <q-item-side icon="mdi-playlist-remove" />
-                  <q-item-main label="Clear logs"/>
+                <q-item v-close-popup @click.native="clearLogsHandler" clickable v-ripple>
+                  <q-item-section avatar>
+                    <q-icon name="mdi-playlist-remove" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>Clear logs</q-item-label>
+                  </q-item-section>
                 </q-item>
               </q-list>
-            </q-popover>
+            </q-menu>
           </q-btn>
         </q-toolbar>
-      </q-card-title>
-      <q-card-main ref="scroller" class="scroll q-pa-md" style="height: calc(100% - 50px)" @scroll.native="listScroll" v-autoscroll="needAutoScroll">
+      </q-card-section>
+      <q-card-section ref="scroller" class="scroll q-pa-md" style="height: calc(100% - 50px)" @scroll.native="listScroll" v-autoscroll="needAutoScroll">
         <q-card class="log__item q-mt-md" :class="[`bg-${getColor(log)}-3`]" v-for="(log, index) in logs" :key="`log${index}`">
           <div class="log__title q-py-xs q-px-sm text-bold">
             {{log.type}}
@@ -92,14 +96,14 @@
           </template>
           <div class="log__timestamp q-py-xs q-px-sm text-grey-7">{{date.formatDate(log.timestamp, 'DD/MM/YYYY HH:mm:ss')}}</div>
         </q-card>
-      </q-card-main>
+      </q-card-section>
     </q-card>
   </div>
 </template>
 
 <script>
 import { date } from 'quasar'
-import JsonTree from './JsonTree'
+import JsonTree from './JsonTree.vue'
 export default {
   name: 'Logs',
   props: [
@@ -207,12 +211,12 @@ export default {
   },
   directives: {
     autoscroll: {
-      inserted (el, {value}) {
+      inserted (el, { value }) {
         if (value) {
           el.scrollTop = el.scrollHeight - el.clientHeight
         }
       },
-      componentUpdated (el, {value}) {
+      componentUpdated (el, { value }) {
         setTimeout(() => {
           if (value) {
             el.scrollTop = el.scrollHeight - el.clientHeight

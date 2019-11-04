@@ -1,37 +1,42 @@
 <template>
-  <q-modal v-model='opened' class="mqtt-board-modal mqtt-board-topic-modal">
-    <q-modal-layout>
-      <q-toolbar slot="header" :color='color'>
-        <q-btn flat dense v-close-overlay icon="keyboard_arrow_left" @click="clear"/>
-        <q-toolbar-title>
-          Topic config
-        </q-toolbar-title>
-      </q-toolbar>
-      <div style="margin: 20px;" :style="{ height: $q.platform.is.mobile ? 'calc(100% - 100px)' : '50vh', width: $q.platform.is.mobile ? 'calc(100% - 40px)' : '30vw'}">
-        <div class="q-mb-md q-py-sm" style="overflow: auto;">{{topic}}</div>
-        <div class="q-mb-md">
-          <div class="q-mb-xs">Type:</div>
-          <q-btn-toggle toggle-color="dark" :dense="$q.platform.is.mobile" size="sm" v-model="type" :options="[{label: 'any', value: '+'}, ...types.map(type => ({label: type, value: type}))]"/>
-        </div>
-        <div class="q-mb-md">
-          <div class="q-mb-xs">API:</div>
-          <q-btn-toggle toggle-color="dark" :dense="$q.platform.is.mobile" size="sm" v-model="api" :options="apis.map(api => ({label: api, value: api}))"/>
-        </div>
+  <q-dialog v-model='opened' class="mqtt-board-modal mqtt-board-topic-modal" :maximized="$q.platform.is.mobile">
+     <q-card :style="{minWidth: $q.platform.is.mobile ? '100%' : '30vw'}">
+      <q-card-section class="q-pa-none">
+        <q-toolbar :class="{[`bg-${color}`]: true, 'text-white': !!color}">
+          <q-btn flat dense v-close-popup icon="keyboard_arrow_left" @click="clear"/>
+          <q-toolbar-title>
+            Topic config
+          </q-toolbar-title>
+        </q-toolbar>
+      </q-card-section>
+      <q-separator />
+      <q-card-section :style="{ height: $q.platform.is.mobile ? 'calc(100% - 94px)' : '55vh'}" class="scroll">
         <div>
-          <div class="q-mb-xs">Entity:</div>
-          <q-btn-toggle v-if="entities.length" :dense="$q.platform.is.mobile" toggle-color="dark" size="sm" v-model="entity" :options="[{label: 'any', value: '+'}, ...entities.map(entity => ({label: entity, value: entity}))]"/>
-          <span v-else>Choose API</span>
+          <div class="q-mb-md q-py-sm" style="overflow: auto;">{{topic}}</div>
+          <div class="q-mb-md">
+            <div class="q-mb-xs">Type:</div>
+            <q-btn-toggle toggle-color="grey-9" :dense="$q.platform.is.mobile" size="sm" v-model="type" :options="[{label: 'any', value: '+'}, ...types.map(type => ({label: type, value: type}))]"/>
+          </div>
+          <div class="q-mb-md">
+            <div class="q-mb-xs">API:</div>
+            <q-btn-toggle toggle-color="grey-9" :dense="$q.platform.is.mobile" size="sm" v-model="api" :options="apis.map(api => ({label: api, value: api}))"/>
+          </div>
+          <div class="q-mb-md">
+            <div class="q-mb-xs">Entity:</div>
+            <q-btn-toggle v-if="entities.length" :dense="$q.platform.is.mobile" toggle-color="grey-9" size="sm" v-model="entity" :options="[{label: 'any', value: '+'}, ...entities.map(entity => ({label: entity, value: entity}))]"/>
+            <span v-else>Choose API</span>
+          </div>
+          <q-input color="grey-9" v-model="id" label="Identifier" outlined class="q-mb-md"/>
+          <q-input v-if="isNeedPostfix" color="grey-9" v-model="postfix" outlined label="Postfix" />
         </div>
-        <q-input color="dark" v-model="id" float-label="Identifier" />
-        <q-input v-if="isNeedPostfix" color="dark" v-model="postfix" float-label="Postfix" />
-      </div>
-      <q-toolbar slot="footer" :color='color'>
-        <q-toolbar-title>
-        </q-toolbar-title>
-        <q-btn flat dense v-close-overlay @click="saveSettingsHandler">Save</q-btn>
-      </q-toolbar>
-    </q-modal-layout>
-  </q-modal>
+      </q-card-section>
+      <q-separator />
+      <q-card-actions align="right" :class="{[`bg-${color}`]: true, 'text-white': !!color}">
+        <q-btn flat dense v-close-popup @click="clear">Close</q-btn>
+        <q-btn flat dense v-close-popup @click="saveSettingsHandler">Save</q-btn>
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script>
@@ -40,7 +45,7 @@ export default {
   props: {
     color: {
       type: String,
-      default: 'dark'
+      default: 'grey-9'
     }
   },
   data () {
@@ -54,7 +59,7 @@ export default {
       entity: '+',
       posibleEntities: {
         gw: ['channels', 'devices', 'streams', 'modems'],
-        storage: ['abques', 'containers'],
+        storage: ['containers'],
         mqtt: ['sessions'],
         platform: ['customer']
       },

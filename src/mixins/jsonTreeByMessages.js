@@ -40,7 +40,7 @@ function jsonTreeByMessages (messages, treeField, dest) {
         }
         currentChildContainers[pathIndex + 1] = currentNesting.container && currentNesting.container[pathElement] ? currentNesting.container[pathElement].children : null
         return currentNesting
-      }, {container: obj, name: path[0]})
+      }, { container: obj, name: path[0] })
     }
     let path = topic.split('/')
     new Array(path.length).fill('').forEach((_, index) => {

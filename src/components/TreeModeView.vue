@@ -13,8 +13,8 @@
         @click="toggle(key, index)" class="cursor-pointer" :class="{'bg-grey-2': topic && topic === data[key].topic}">
         <template v-if="data[key].children"
       >
-          <q-icon color="dark" v-if="showObj[key]" name="mdi-menu-down" style="vertical-align: baseline" />
-          <q-icon color="dark" v-else name="mdi-menu-right" style="vertical-align: baseline" />
+          <q-icon color="grey-9" v-if="showObj[key]" name="mdi-menu-down" style="vertical-align: baseline" />
+          <q-icon color="grey-9" v-else name="mdi-menu-right" style="vertical-align: baseline" />
         </template>
         <span :class="{'text-grey-6': !key, 'text-italic': !key}">{{key || '*Empty*'}}</span>
       </div>
@@ -35,14 +35,11 @@
 </template>
 
 <style lang="stylus">
-  @import '~variables'
-  .more-button
-    &:hover
+  .more-button:hover
       background-color $grey-3
 </style>
 
 <script>
-import Vue from 'vue'
 export default {
   name: 'TreeModeView',
   props: {
@@ -87,7 +84,7 @@ export default {
   },
   methods: {
     toggle (key, index) {
-      Vue.set(this.showObj, key, !this.showObj[key])
+      this.$set(this.showObj, key, !this.showObj[key])
       this.$emit('change', this.data[key].topic)
     }
   }
