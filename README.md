@@ -51,17 +51,20 @@ in quasar.conf.js
 ```js
 framework: {
   components: [
+    'QLayout',
+    'QHeader',
+    'QFooter',
+    'QDrawer',
+    'QPageContainer',
+    'QPage',
     'QToolbar',
     'QToolbarTitle',
-    'QModal',
-    'QModalLayout',
+    'QDialog',
     'QList',
-    'QListHeader',
     'QItem',
-    'QItemMain',
-    'QItemSide',
-    'QItemTile',
-    'QItemSeparator',
+    'QItemLabel',
+    'QItemSection',
+    'QSeparator',
     'QBtn',
     'QIcon',
     'QInput',
@@ -69,27 +72,26 @@ framework: {
     'QToggle',
     'QSelect',
     'QCard',
-    'QCardTitle',
-    'QCardMain',
-    'QCardSeparator',
+    'QCardSection',
     'QCardActions',
-    'QCollapsible',
+    'QExpansionItem',
     'QTooltip',
     'QBtnToggle',
-    'QPopover',
+    'QMenu',
     'QChip',
-    'QField',
     'QInnerLoading',
     'QSpinnerGears'
   ],
   directives: [
-    'CloseOverlay',
+    'Ripple',
+    'ClosePopup',
     'TouchSwipe'
   ],
   plugins: [
     'Notify',
     'Dialog',
-    'LocalStorage'
+    'LocalStorage',
+    'SessionStorage'
   ]
 },
 ```
