@@ -232,5 +232,8 @@ let client = {
 }
 ```
 
+## In-app routes
+`/mode/:mode/token/:token` used for init empty state board to flespi by token. Modes for now: `onetime` - make client to flespi w/o saving to local storage.
+
 ## License
 [MIT](https://github.com/flespi-software/mqtt-board/blob/master/LICENSE) license.
