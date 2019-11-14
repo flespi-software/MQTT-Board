@@ -1,5 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.0.3] - 2019-11-14
+[remove] lib build
+### [2.0.2] - 2019-11-04
+[fix] README
+[fix] rm old babel config
 ### [2.0.1] - 2019-11-04
 [feature] onetime route added
 ### [2.0.0] - 2019-11-04

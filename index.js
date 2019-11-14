@@ -1,3 +1,3 @@
-import MqttClient from './lib/mqtt-board.js'
+import MqttClient from './src/components/MqttClient.vue'
 
 export default MqttClient
