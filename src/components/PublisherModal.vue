@@ -1,5 +1,5 @@
 <template>
-  <q-dialog ref="modal" @show="$emit('show')" @hide="$emit('hide')" class="mqtt-board-modal mqtt-board-publisher-modal" :maximized="$q.platform.is.mobile">
+  <q-dialog ref="modal" @show="$emit('show')" @hide="$emit('hide')" content-class="mqtt-board__popup" :maximized="$q.platform.is.mobile">
      <q-card :style="{width: $q.platform.is.mobile ? '100%' : '50vw'}">
       <q-card-section class="q-pa-none">
         <q-toolbar class="q-pr-none bg-indigo text-white">

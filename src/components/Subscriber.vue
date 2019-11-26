@@ -8,7 +8,7 @@
             <q-tooltip>Subscribe</q-tooltip>
           </q-btn>
           <q-btn round flat icon="mdi-dots-vertical">
-            <q-menu anchor="bottom right" self="top right">
+            <q-menu anchor="bottom right" self="top right" content-class="mqtt-board__popup">
               <q-list>
                 <q-item v-close-popup @click.native="removeSubscriber()" clickable v-ripple>
                   <q-item-section avatar><q-icon color="red" name="mdi-delete-outline" /></q-item-section>
@@ -109,7 +109,7 @@
           </q-chip>
         </q-btn>
         <q-btn round flat icon="mdi-dots-vertical">
-          <q-menu anchor="bottom right" self="top right">
+          <q-menu anchor="bottom right" self="top right" content-class="mqtt-board__popup">
             <q-list>
               <q-item v-if="config.mode === 0" v-close-popup @click.native="clearMessagesHandler" clickable v-ripple>
                 <q-item-section avatar><q-icon name="mdi-playlist-remove" /></q-item-section>

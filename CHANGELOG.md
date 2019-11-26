@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.0.4] - 2019-11-26
+[fix] integration classes
 ### [2.0.3] - 2019-11-14
 [remove] lib build
 ### [2.0.2] - 2019-11-04

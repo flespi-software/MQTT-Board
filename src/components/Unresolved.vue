@@ -6,7 +6,7 @@
           <q-toolbar-title>Unresolved messages</q-toolbar-title>
           <q-btn round flat icon="mdi-magnify" @click="filterMode = true"/>
           <q-btn round flat icon="mdi-dots-vertical">
-            <q-menu anchor="bottom right" self="top right">
+            <q-menu anchor="bottom right" self="top right" content-class="mqtt-board__popup">
               <q-list>
                 <q-item v-close-popup @click.native="clearMessagesHandler" clickable v-ripple>
                   <q-item-section avatar><q-icon name="mdi-playlist-remove" /></q-item-section>

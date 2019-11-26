@@ -1,5 +1,5 @@
 <template>
-  <q-dialog v-model='opened' class="mqtt-board-modal mqtt-board-topic-modal" :maximized="$q.platform.is.mobile">
+  <q-dialog v-model='opened' content-class="mqtt-board__popup" :maximized="$q.platform.is.mobile">
      <q-card :style="{minWidth: $q.platform.is.mobile ? '100%' : '30vw'}">
       <q-card-section class="q-pa-none">
         <q-toolbar :class="{[`bg-${color}`]: true, 'text-white': !!color}">

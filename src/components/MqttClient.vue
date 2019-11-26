@@ -13,7 +13,7 @@
       @show="showSettingsModalHandler"
       @hide="clearCurrentSettings"
       v-model='settingsModalModel'
-      class="mqtt-board-modal mqtt-board-settings-modal"
+      content-class="mqtt-board__popup"
       :maximized="$q.platform.is.mobile"
     >
       <q-card :style="{minWidth: $q.platform.is.mobile ? '100%' : '50vw'}">
@@ -167,7 +167,7 @@
       </q-btn>
       <q-btn round flat dark v-if="activeClient" icon="mdi-settings" @click.stop="editClientHandler(activeClient.id)"/>
       <q-btn round flat v-if="activeClient" icon="mdi-plus">
-        <q-menu anchor="bottom right" self="top right">
+        <q-menu anchor="bottom right" self="top right" content-class="mqtt-board__popup">
           <q-list>
             <q-item-label header>Add pane</q-item-label>
             <q-item v-close-popup @click.native="addPublisher" clickable v-ripple>

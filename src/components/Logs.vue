@@ -5,7 +5,7 @@
         <q-toolbar class="q-pr-none text-white bg-blue">
           <q-toolbar-title>Logs</q-toolbar-title>
           <q-btn round flat icon="mdi-dots-vertical">
-            <q-menu anchor="bottom right" self="top right">
+            <q-menu anchor="bottom right" self="top right" content-class="mqtt-board__popup">
               <q-list>
                 <q-item v-close-popup @click.native="clearLogsHandler" clickable v-ripple>
                   <q-item-section avatar>
