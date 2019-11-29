@@ -22,14 +22,14 @@
 </template>
 
 <script>
-import { date } from 'quasar'
+import { date, copyToClipboard } from 'quasar'
 import JsonTree from './JsonTree.vue'
 export default {
   name: 'Message',
   props: ['message', 'highlight'],
   computed: {
     canCopy () {
-      return !(typeof this.payload === 'string' && !this.payload.length) && !!this.$copyText
+      return !(typeof this.payload === 'string' && !this.payload.length) && !!copyToClipboard
     },
     payload () {
       return this.message.payload
@@ -42,7 +42,7 @@ export default {
   },
   methods: {
     copyPayloadHandler () {
-      this.$copyText(typeof this.payload === 'string' ? this.payload : JSON.stringify(this.payload)).then((e) => {
+      copyToClipboard(typeof this.payload === 'string' ? this.payload : JSON.stringify(this.payload)).then((e) => {
         this.$q.notify({
           color: 'positive',
           icon: 'content_copy',
