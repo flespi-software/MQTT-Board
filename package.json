@@ -1,6 +1,6 @@
 {
   "name": "mqtt-board",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "Client based on MQTT.js and Vue.js",
   "productName": "MQTT Board",
   "cordovaId": "org.cordova.quasar.app",
@@ -13,15 +13,14 @@
     "deploy": "quasar build -m spa && mkdir -p deploy && cp -R dist/spa/* misc LICENSE package.json README.md deploy && node_modules/git-directory-deploy/bin/git-directory-deploy.sh -ddeploy -bgh-pages -rhttps://git.gurtam.net/flespi/frontend/mqtt-board.git && rm -rf deploy && git push github gh-pages"
   },
   "dependencies": {
-    "@quasar/extras": "^1.0.0",
+    "@quasar/extras": "^1.3.3",
     "lodash": "^4.17.11",
     "mqtt": "^3.0.0",
-    "quasar": "^1.3.0",
-    "vue-clipboard2": "^0.3.0",
-    "vue-virtual-scroll-list": "^1.3.2"
+    "quasar": "^1.5.1",
+    "vue-virtual-scroll-list": "^1.4.3"
   },
   "devDependencies": {
-    "@quasar/app": "^1.2.3",
+    "@quasar/app": "^1.3.1",
     "@vue/eslint-config-standard": "^4.0.0",
     "babel-eslint": "^10.0.1",
     "eslint": "^5.10.0",
