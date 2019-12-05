@@ -1,5 +1,8 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.0.6] - 2019-12-05
+[fix] number field value
+[fix] responsive pannels layout
 ### [2.0.5] - 2019-11-29
 [update] copy function
 ### [2.0.4] - 2019-11-26

@@ -1,5 +1,5 @@
 <template>
-  <div class="mqtt-client__publisher col-md-6 col-sm-12 col-xs-12">
+  <div class="mqtt-client__publisher col-md-4 col-sm-6 col-xs-12">
     <q-card class="publisher__item q-ma-sm">
       <q-card-section class="q-pa-none">
         <q-toolbar class="q-pr-none text-white bg-indigo">
@@ -43,13 +43,13 @@
                   <q-checkbox color="grey-9" class="q-mt-sm q-mb-sm" v-model="config.options.properties.payloadFormatIndicator" label="Payload format indicator"/>
                   <q-input
                     color="grey-9" type="number" label="Message expiry interval" clearable outlined class="q-mb-xs" hide-bottom-space
-                    v-model="config.options.properties.messageExpiryInterval"
+                    :value="config.options.properties.messageExpiryInterval" @input="val => $set(config.options.properties, 'messageExpiryInterval', +val)"
                     @clear="config.options.properties.messageExpiryInterval = undefined"
                     :error="!isNil(config.options.properties.messageExpiryInterval) && (config.options.properties.messageExpiryInterval < 0 || config.options.properties.messageExpiryInterval > 0xffffffff)"
                   />
                   <q-input
                     color="grey-9" type="number" label="Topic alias" clearable outlined class="q-mb-xs" hide-bottom-space
-                    v-model="config.options.properties.topicAlias"
+                    :value="config.options.properties.topicAlias" @input="val => $set(config.options.properties, 'topicAlias', +val)"
                     @clear="config.options.properties.topicAlias = undefined"
                     :error="!isNil(config.options.properties.topicAlias) && (config.options.properties.topicAlias <= 0 || config.options.properties.topicAlias > 0xffff)"
                   />

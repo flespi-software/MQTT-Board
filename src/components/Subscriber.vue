@@ -1,5 +1,5 @@
 <template>
-  <div class="mqtt-client__subscriber col-md-6 col-sm-12 col-xs-12">
+  <div class="mqtt-client__subscriber col-md-4 col-sm-6 col-xs-12">
     <q-card class="subscriber__item q-ma-sm" v-if="!status && isPlayed === null">
       <q-card-section class="q-pa-none">
         <q-toolbar class="q-pr-none text-white bg-orange">
@@ -51,7 +51,7 @@
                 <div class="q-px-md q-py-sm">
                   <q-input
                     :disable="status" color="grey-9" label="Subscription identifier" clearable type="number" outlined class="q-my-xs" hide-bottom-space
-                    v-model="config.options.properties.subscriptionIdentifier"
+                    :value="config.options.properties.subscriptionIdentifier" @input="val => $set(config.options.properties, 'subscriptionIdentifier', +val)"
                     @clear="config.options.properties.subscriptionIdentifier = undefined"
                     :error="!isNil(config.options.properties.subscriptionIdentifier) && (config.options.properties.subscriptionIdentifier <= 0 || config.options.properties.subscriptionIdentifier > 268435455)"
                   />

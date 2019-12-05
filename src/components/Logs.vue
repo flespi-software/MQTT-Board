@@ -1,5 +1,5 @@
 <template>
-  <div class="mqtt-client__logs col-xl-3 col-md-6 col-sm-12 col-xs-12">
+  <div class="mqtt-client__logs col-xl-3 col-md-4 col-sm-6 col-xs-12">
     <q-card class="logs__wrapper q-ma-sm" style="overflow: hidden;">
       <q-card-section class="q-pa-none">
         <q-toolbar class="q-pr-none text-white bg-blue">

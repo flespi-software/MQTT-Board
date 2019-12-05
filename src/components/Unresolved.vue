@@ -1,5 +1,5 @@
 <template>
-  <div class="mqtt-client__not-resolved-msgs col-md-6 col-sm-12 col-xs-12" >
+  <div class="mqtt-client__not-resolved-msgs col-md-4 col-sm-6 col-xs-12" >
     <q-card class="not-resolved-msgs__main q-ma-sm">
       <q-card-section class="q-pa-none">
         <q-toolbar v-if="!filterMode" class="q-pr-none text-white bg-red-6">
