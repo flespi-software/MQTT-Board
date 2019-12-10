@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.0.7] - 2019-12-10
+[fix] version select
 ### [2.0.6] - 2019-12-05
 [fix] number field value
 [fix] responsive pannels layout
