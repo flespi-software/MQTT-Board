@@ -530,20 +530,20 @@ export default {
     resolveSubscription (packet, subscription) {
       let subscriptionIdentifiers = get(subscription, 'options.properties.subscriptionIdentifier', undefined),
         packetSubIdentifiers = get(packet, 'properties.subscriptionIdentifier', undefined)
-      if (
-        packetSubIdentifiers && subscriptionIdentifiers &&
-        (
+      if (packetSubIdentifiers && subscriptionIdentifiers) {
+        if (
           (typeof packetSubIdentifiers === 'number' && packetSubIdentifiers === subscriptionIdentifiers) ||
           (Array.isArray(packetSubIdentifiers) && packetSubIdentifiers.includes(subscriptionIdentifiers))
-        )
-      ) {
+        ) {
+          return true
+        } else {
+          return false
+        }
+      } else if (this.resolveTopics(packet.topic, subscription.topic)) {
         return true
+      } else {
+        return false
       }
-      /* check topic */
-      if (this.resolveTopics(packet.topic, subscription.topic)) {
-        return true
-      }
-      return false
     },
     resolveSubscriptions (packet, subscriptions, statuses) {
       return subscriptions.reduce((res, subscription, index) => {
