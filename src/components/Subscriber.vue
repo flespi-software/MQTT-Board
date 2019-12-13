@@ -51,7 +51,7 @@
                 <div class="q-px-md q-py-sm">
                   <q-input
                     :disable="status" color="grey-9" label="Subscription identifier" clearable type="number" outlined class="q-my-xs" hide-bottom-space
-                    :value="config.options.properties.subscriptionIdentifier" @input="val => $set(config.options.properties, 'subscriptionIdentifier', +val)"
+                    v-model.number="config.options.properties.subscriptionIdentifier"
                     @clear="config.options.properties.subscriptionIdentifier = undefined"
                     :error="!isNil(config.options.properties.subscriptionIdentifier) && (config.options.properties.subscriptionIdentifier <= 0 || config.options.properties.subscriptionIdentifier > 268435455)"
                   />

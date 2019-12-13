@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.0.9] - 2019-12-13
+[fix] integration styles
 ### [2.0.8] - 2019-12-11
 [fix] subId messages resolve
 ### [2.0.7] - 2019-12-10

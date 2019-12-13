@@ -33,8 +33,8 @@
               <q-btn slot="append" color="grey-9" icon="mdi-refresh" @click="currentSettings.clientId = `mqtt-board-${Math.random().toString(16).substr(2, 8)}`" flat round/>
             </q-input>
             <q-input color="grey-9" outlined v-model="currentSettings.host" label="Host" :error="!currentSettings.host || (secure && currentSettings.host.indexOf('ws:') === 0)" error-message="Host must be not empty and only over secured sockets" hide-bottom-space class="q-mb-xs"/>
-            <q-input color="grey-9" outlined class="q-mb-xs" hide-bottom-space :value="currentSettings.keepalive" @input="val => $set(currentSettings, 'keepalive', +val)" type="number" label="Keep alive" :error="!isNil(currentSettings.keepalive) && (currentSettings.keepalive <= 0 || currentSettings.keepalive > 0xffff)"/>
-            <q-select color="grey-9" outlined class="q-mb-xs" v-model="currentSettings.protocolVersion" map-options emit-value :options="[{label: '3.1.1', value: 4}, {label: '5.0', value: 5}]" label="Version of MQTT" hide-bottom-space options-selected-class="bg-grey-2 text-grey-9"/>
+            <q-input color="grey-9" outlined class="q-mb-xs" hide-bottom-space v-model.number="currentSettings.keepalive" type="number" label="Keep alive" :error="!isNil(currentSettings.keepalive) && (currentSettings.keepalive <= 0 || currentSettings.keepalive > 0xffff)"/>
+            <q-select color="grey-9" outlined popup-content-class="mqtt-board__popup" class="q-mb-xs" v-model="currentSettings.protocolVersion" map-options emit-value :options="[{label: '3.1.1', value: 4}, {label: '5.0', value: 5}]" label="Version of MQTT" hide-bottom-space options-selected-class="bg-grey-2 text-grey-9"/>
             <q-checkbox color="grey-9" class="q-mt-sm q-mb-sm" v-model="currentSettings.clean" :label="currentSettings.protocolVersion === 5 ? 'Clean start' : 'Clean session'"/>
             <q-input color="grey-9" outlined class="q-mb-xs" hide-bottom-space v-model="currentSettings.username" label="Username">
               <q-btn slot="append" color="grey-9" icon="mdi-login" @click="flespiLoginHandler" flat round v-if="currentSettings.host.indexOf('flespi') !== -1"/>
@@ -44,26 +44,26 @@
               <div class="q-px-md q-py-sm">
                 <q-input
                   color="grey-9" outlined class="q-mb-xs" hide-bottom-space type="number" :min="0" clearable
-                  :value="currentSettings.properties.sessionExpiryInterval" @input="val => $set(currentSettings.properties, 'sessionExpiryInterval', +val)"
+                  v-model.number="currentSettings.properties.sessionExpiryInterval"
                   @clear="currentSettings.properties.sessionExpiryInterval = undefined"
                   label="Session expiry interval"
                   :error="!isNil(currentSettings.properties.sessionExpiryInterval) && (currentSettings.properties.sessionExpiryInterval < 0 || currentSettings.properties.sessionExpiryInterval > 0xffffffff)"
                 />
                 <q-input
                   color="grey-9" type="number" label="Receive maximum" clearable outlined class="q-mb-xs" hide-bottom-space
-                  :value="currentSettings.properties.receiveMaximum" @input="val => $set(currentSettings.properties, 'receiveMaximum', +val)"
+                  v-model.number="currentSettings.properties.receiveMaximum"
                   @clear="currentSettings.properties.receiveMaximum = undefined"
                   :error="!isNil(currentSettings.properties.receiveMaximum) && (currentSettings.properties.receiveMaximum <= 0 || currentSettings.properties.receiveMaximum > 0xffff)"
                 />
                 <q-input
                   color="grey-9" type="number" label="Maximum packet size" clearable outlined class="q-mb-xs" hide-bottom-space
-                  :value="currentSettings.properties.maximumPacketSize" @input="val => $set(currentSettings.properties, 'maximumPacketSize', +val)"
+                  v-model.number="currentSettings.properties.maximumPacketSize"
                   @clear="currentSettings.properties.maximumPacketSize = undefined"
                   :error="!isNil(currentSettings.properties.maximumPacketSize) && (currentSettings.properties.maximumPacketSize <= 0 || currentSettings.properties.maximumPacketSize > 0xffffffff)"
                 />
                 <q-input
                   color="grey-9" type="number" label="Topic alias maximum" clearable outlined class="q-mb-xs" hide-bottom-space
-                  :value="currentSettings.properties.topicAliasMaximum" @input="val => $set(currentSettings.properties, 'topicAliasMaximum', +val)"
+                  v-model.number="currentSettings.properties.topicAliasMaximum"
                   :error="!isNil(currentSettings.properties.topicAliasMaximum) && (currentSettings.properties.topicAliasMaximum < 0 || currentSettings.properties.topicAliasMaximum > 0xffff)"
                 />
                 <q-checkbox style="display: flex;" color="grey-9" class="q-mt-sm q-mb-sm" v-model="currentSettings.properties.requestResponseInformation" label="Request-Response information"/>
@@ -99,13 +99,13 @@
                   <div class="q-px-md q-py-sm">
                     <q-input
                       color="grey-9" outlined clearable class="q-mb-xs" hide-bottom-space type="number" label="Will delay interval"
-                      :value="currentSettings.will.properties.willDelayInterval" @input="val => $set(currentSettings.will.properties, 'willDelayInterval', +val)"
+                      v-model.number="currentSettings.will.properties.willDelayInterval"
                       @clear="currentSettings.will.properties.willDelayInterval = undefined"
                     />
                     <q-checkbox color="grey-9" class="q-mt-sm q-mb-sm" v-model="currentSettings.will.properties.payloadFormatIndicator" label="Payload format indicator"/>
                     <q-input
                       color="grey-9" type="number" label="Message expiry interval" clearable outlined class="q-mb-xs" hide-bottom-space
-                      :value="currentSettings.will.properties.messageExpiryInterval"  @input="val => $set(currentSettings.will.properties, 'messageExpiryInterval', +val)"
+                      v-model.number="currentSettings.will.properties.messageExpiryInterval"
                       @clear="currentSettings.will.properties.messageExpiryInterval = undefined"
                     />
                     <q-input color="grey-9" v-model="currentSettings.will.properties.contentType" label="Content type" outlined class="q-mb-xs" hide-bottom-space/>

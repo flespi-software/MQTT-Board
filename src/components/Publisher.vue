@@ -43,13 +43,13 @@
                   <q-checkbox color="grey-9" class="q-mt-sm q-mb-sm" v-model="config.options.properties.payloadFormatIndicator" label="Payload format indicator"/>
                   <q-input
                     color="grey-9" type="number" label="Message expiry interval" clearable outlined class="q-mb-xs" hide-bottom-space
-                    :value="config.options.properties.messageExpiryInterval" @input="val => $set(config.options.properties, 'messageExpiryInterval', +val)"
+                    v-model.number="config.options.properties.messageExpiryInterval"
                     @clear="config.options.properties.messageExpiryInterval = undefined"
                     :error="!isNil(config.options.properties.messageExpiryInterval) && (config.options.properties.messageExpiryInterval < 0 || config.options.properties.messageExpiryInterval > 0xffffffff)"
                   />
                   <q-input
                     color="grey-9" type="number" label="Topic alias" clearable outlined class="q-mb-xs" hide-bottom-space
-                    :value="config.options.properties.topicAlias" @input="val => $set(config.options.properties, 'topicAlias', +val)"
+                    v-model.number="config.options.properties.topicAlias"
                     @clear="config.options.properties.topicAlias = undefined"
                     :error="!isNil(config.options.properties.topicAlias) && (config.options.properties.topicAlias <= 0 || config.options.properties.topicAlias > 0xffff)"
                   />
