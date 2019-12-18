@@ -755,6 +755,7 @@ export default {
         endHandler()
       })
       client.on('close', () => {
+        console.log(JSON.stringify(client))
         clientObj.logs.push({ type: 'disconnect', timestamp: Date.now() })
         endHandler()
       })
@@ -794,7 +795,7 @@ export default {
           if (clientObj.processTimer) {
             clearInterval(clientObj.processTimer)
           }
-          await clientObj.client.end()
+          this.destroyClient(clientObj.client)
           this.setClientStatus(key, CLIENT_STATUS_INACTIVE)
         }
         clientObj.logs.push({ type: 'updated', data: { ...config }, timestamp: Date.now() })
@@ -889,17 +890,21 @@ export default {
       let clientObj = this.clients[key]
       if (clientObj.client) {
         clientObj.processTimer && clearInterval(clientObj.processTimer)
-        clientObj.client.end()
+        this.destroyClient(clientObj.client)
         this.setClientStatus(key, CLIENT_STATUS_INACTIVE)
       }
       this.initClient(key, clientObj.config)
       this.saveClients()
     },
+    destroyClient (client) {
+      client.removeAllListeners(['reconnect', 'end', 'offline', 'close', 'disconnect', 'error', 'message', 'connect'])
+      return client.end(true)
+    },
     async disconnectClientHandler (key) {
       let clientObj = this.clients[key]
       clientObj.processTimer && clearInterval(clientObj.processTimer)
       this.setClientStatus(key, CLIENT_STATUS_USER_INACTIVE)
-      await clientObj.client.end()
+      await this.destroyClient(clientObj.client)
       clientObj.client = null
       this.saveClients()
     },
@@ -913,7 +918,7 @@ export default {
       }).onOk(() => {
         clientObj.processTimer && clearInterval(clientObj.processTimer)
         if (clientObj.client) {
-          clientObj.client.end()
+          this.destroyClient(clientObj.client)
             .then(() => {
               this.$delete(this.statuses, key)
               this.$delete(this.clients, key)
@@ -1273,7 +1278,7 @@ export default {
           let clientObj = this.clients[clientObjKey]
           if (clientObj.status) {
             clientObj.processTimer && clearInterval(clientObj.processTimer)
-            clientObj.client.end()
+            this.destroyClient(clientObj.client)
           }
         }
       })
@@ -1284,7 +1289,7 @@ export default {
       let clientObj = this.clients[clientObjKey]
       if (clientObj.status) {
         clientObj.processTimer && clearInterval(clientObj.processTimer)
-        clientObj.client.end()
+        this.destroyClient(clientObj.client)
       }
     }
   },
