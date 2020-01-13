@@ -445,7 +445,7 @@ export default {
   computed: {
     isCurrentSettingsValid () {
       let settings = this.currentSettings
-      return this.validateSettings(this.currentSettings) && !!this.secure && !(settings.host.indexOf('ws:') === 0)
+      return this.validateSettings(this.currentSettings) && !(!!this.secure && settings.host.indexOf('ws:') === 0)
     },
     logsModel () {
       return !!this.activeClient && !!this.entities.filter(entity => entity.type === 'logs').length

@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.0.11] - 2020-01-13
+[fix] secure flag handling
 ### [2.0.10] - 2019-12-18
 [fix] destroy client
 [update] deps
