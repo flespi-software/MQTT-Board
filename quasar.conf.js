@@ -70,7 +70,8 @@ module.exports = function (ctx) {
         'QMenu',
         'QChip',
         'QInnerLoading',
-        'QSpinnerGears'
+        'QSpinnerGears',
+        'QSpinner'
       ],
       directives: [
         'Ripple',

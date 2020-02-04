@@ -194,13 +194,14 @@
             <q-card-section class="q-py-sm">
               <div class="ellipsis q-mb-xs" style="font-size: 18px; line-height: 18px; min-height: 18px;">{{client.config.clientName || client.config.clientId}}</div>
               <div class="ellipsis text-grey-9" style="font-size: 14px; line-height: 14px; min-height: 14px;">{{client.config.clientName ? client.config.clientId : ''}}</div>
-            </q-card-section>
-            <q-card-section class="ellipsis">
-              <span class="text-grey-9">{{client.config.host}}</span>
+              <div class="text-grey-9 q-mt-sm">{{client.config.host}}</div>
             </q-card-section>
             <q-separator />
             <q-card-actions align="right">
               <q-btn round flat v-if="client.client" size=".7rem" icon="mdi-stop" :loading="!!client.client && !statuses[index] && client.inited" @click.stop="disconnectClientHandler(index)">
+                <div slot="loading" @click.stop>
+                  <q-spinner />
+                </div>
                 <q-tooltip>Deactivate client</q-tooltip>
               </q-btn>
               <q-btn round flat v-else size=".7rem" icon="mdi-play" @click.stop="connectClientHandler(index)">
@@ -755,7 +756,6 @@ export default {
         endHandler()
       })
       client.on('close', () => {
-        console.log(JSON.stringify(client))
         clientObj.logs.push({ type: 'disconnect', timestamp: Date.now() })
         endHandler()
       })
