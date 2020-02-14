@@ -1131,6 +1131,7 @@ export default {
         }
         this.$set(clientObj.subscribersStatuses, subscriberIndex, false)
         this.$set(clientObj.messages, subscriberIndex, settings.mode === 1 ? {} : [])
+        this.$set(clientObj.subscribersMessagesBuffer, subscriberIndex, [])
         await clientObj.client.unsubscribe(settings.topic, { properties: settings.unsubscribeProperties })
         clientObj.logs.push({ type: 'unsubscribe', data: this.clearObject(settings), timestamp: Date.now() })
         this.$set(clientObj.subscribersConnectivityStatuses, subscriberIndex, false)

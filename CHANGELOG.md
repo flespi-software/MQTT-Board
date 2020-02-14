@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.0.13] - 2020-02-14
+[fix] unsubscribe
 ### [2.0.12] - 2020-02-04
 [fix] stop button click on loading
 ### [2.0.11] - 2020-01-13
