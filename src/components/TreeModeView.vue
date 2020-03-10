@@ -68,7 +68,7 @@ export default {
         a = a.toLowerCase()
         b = b.toLowerCase()
         if (a !== b) {
-          let na = Number(a),
+          const na = Number(a),
             ba = Number(b)
           if (na + '' === a && ba + '' === b) {
             return na - ba

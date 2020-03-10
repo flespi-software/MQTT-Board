@@ -63,7 +63,7 @@ export default {
   },
   methods: {
     listScroll: function (e, data) {
-      let el = this.$refs.scroller && this.$refs.scroller.$el
+      const el = this.$refs.scroller && this.$refs.scroller.$el
       if (!el) { return false }
       if (el.scrollTop < el.scrollHeight - el.clientHeight) {
         this.needAutoScroll = false

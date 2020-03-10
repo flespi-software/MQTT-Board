@@ -307,10 +307,10 @@ import validateEntities from '../mixins/validateEntities.js'
 import { defaultSettings, defaultSubscriber, defaultPublisher } from '../mixins/defaults.js'
 import jsonTreeByMessages from '../mixins/jsonTreeByMessages.js'
 
-let
+const
   makeExportClients = (clients) => {
     return Object.keys(clients).map(clientId => {
-      let client = clients[clientId]
+      const client = clients[clientId]
       return {
         status: client.status,
         config: client.config,
@@ -445,7 +445,7 @@ export default {
   },
   computed: {
     isCurrentSettingsValid () {
-      let settings = this.currentSettings
+      const settings = this.currentSettings
       return this.validateSettings(this.currentSettings) && !(!!this.secure && settings.host.indexOf('ws:') === 0)
     },
     logsModel () {
@@ -529,7 +529,7 @@ export default {
       }, {})
     },
     resolveSubscription (packet, subscription) {
-      let subscriptionIdentifiers = get(subscription, 'options.properties.subscriptionIdentifier', undefined),
+      const subscriptionIdentifiers = get(subscription, 'options.properties.subscriptionIdentifier', undefined),
         packetSubIdentifiers = get(packet, 'properties.subscriptionIdentifier', undefined)
       if (packetSubIdentifiers && subscriptionIdentifiers) {
         if (
@@ -561,7 +561,7 @@ export default {
       if (subTopic.indexOf('$share') === 0) {
         subTopic = this.getSharedTopicFilter(subTopic)
       }
-      let subTopicPath = subTopic.split('/'),
+      const subTopicPath = subTopic.split('/'),
         topicPath = topic.split('/')
 
       if (topicPath.length === subTopicPath.length || subTopicPath[subTopicPath.length - 1] === '#') {
@@ -576,7 +576,7 @@ export default {
       }
     },
     errorHandler (key, e, needShow) {
-      let clientObj = this.clients[key]
+      const clientObj = this.clients[key]
       clientObj.logs.push({ type: 'error', data: { error: e }, timestamp: Date.now() })
       if (needShow) {
         this.showError(e)
@@ -613,6 +613,7 @@ export default {
     },
     setClientStatus (key, status) {
       if (!this.clients[key]) { return false }
+      if (this.clients[key].status === CLIENT_STATUS_USER_INACTIVE && !status) { return false }
       this.$set(this.statuses, key, status)
       this.$set(this.clients[key], 'status', status)
     },
@@ -621,10 +622,10 @@ export default {
       try {
         packet.payload = JSON.parse(packet.payload)
       } catch (e) {}
-      let clientObj = this.clients[clientId]
+      const clientObj = this.clients[clientId]
       /* if subscribersStatuses contains true or paused statuses */
       if (clientObj.subscribersStatuses.length && clientObj.subscribersStatuses.filter(status => !!status).length) {
-        let activeSubscriptionsIndexes = this.resolveSubscriptions(packet, clientObj.subscribers, clientObj.subscribersStatuses),
+        const activeSubscriptionsIndexes = this.resolveSubscriptions(packet, clientObj.subscribers, clientObj.subscribersStatuses),
           isResolved = !!activeSubscriptionsIndexes.length
         if (isResolved) {
           activeSubscriptionsIndexes.forEach((index) => {
@@ -655,20 +656,20 @@ export default {
       }
     },
     initClient (key, config) {
-      let clientObj = this.clients[key]
-      let endHandler = () => {
+      const clientObj = this.clients[key]
+      const endHandler = () => {
         this.setClientStatus(key, CLIENT_STATUS_INACTIVE)
       }
-      let client = mqtt.connect(config.host, config)
+      const client = mqtt.connect(config.host, config)
 
       /* resubscribe to exists topics */
       client.on('connect', (connack) => {
-        let currentStatuses = clientObj.subscribersStatuses,
+        const currentStatuses = clientObj.subscribersStatuses,
           subscribers = clientObj.subscribers,
           /* flespi feature */
           existedSubscriptionsInSession = connack.properties && connack.properties.userProperties && connack.properties.userProperties.subscriptions ? JSON.parse(connack.properties.userProperties.subscriptions) : []
         subscribers.forEach((subscriber, index) => {
-          let status = currentStatuses[index],
+          const status = currentStatuses[index],
             exitedSubscriptionIndex = existedSubscriptionsInSession.findIndex(subscription => subscription.topic === subscriber.topic),
             isSubscriptionExited = exitedSubscriptionIndex !== -1
           if (isSubscriptionExited && !status) {
@@ -677,8 +678,8 @@ export default {
             if (subscriber.mode === 0) {
               clientObj.messages[index].splice(0, clientObj.messages[index].length)
             } else {
-              let tree = clientObj.messages[index]
-              let treeKeys = Object.keys(tree)
+              const tree = clientObj.messages[index]
+              const treeKeys = Object.keys(tree)
               treeKeys.forEach(key => {
                 this.$delete(tree, key)
               })
@@ -693,10 +694,10 @@ export default {
         /* restore subscriptions by broker */
         existedSubscriptionsInSession.forEach(subscription => {
           this.addSubscriber(key)
-          let id = subscribers.length - 1,
+          const id = subscribers.length - 1,
             subscriber = subscribers[id]
           // update subscriber options by subscription
-          let options = {
+          const options = {
             nl: subscription.no_local,
             rap: subscription.rap,
             rh: subscription.retain_handling,
@@ -709,7 +710,7 @@ export default {
           this.$set(subscriber, 'options', options)
           this.$set(subscriber, 'topic', subscription.topic)
           this.$set(currentStatuses, id, true)
-          let grants = [{
+          const grants = [{
             nl: subscription.no_local,
             rap: subscription.rap,
             rh: subscription.retain_handling,
@@ -775,14 +776,14 @@ export default {
       this.$set(this.clients[key], 'client', client)
     },
     async createClient (index) {
-      let config = this.createConnectPacket(this.currentSettings),
+      const config = this.createConnectPacket(this.currentSettings),
         isClientExists = typeof index === 'string' || typeof index === 'number',
         key = isClientExists
           ? index
           : Object.keys(this.clients).reduce((result, id) => result > parseInt(id) ? result : parseInt(id), -1) + 1
       /* init new client */
       if (!this.clients[key]) {
-        let client = {}
+        const client = {}
         client.id = key
         client.status = false
         this.createInitEntities(client)
@@ -790,7 +791,7 @@ export default {
         client.notResolvedMessages = []
         this.clients[key] = client
       } else {
-        let clientObj = this.clients[key]
+        const clientObj = this.clients[key]
         if (clientObj.client) {
           if (clientObj.processTimer) {
             clearInterval(clientObj.processTimer)
@@ -810,8 +811,8 @@ export default {
     initExternalClients (savedClients) {
       if (savedClients) {
         savedClients.forEach(client => {
-          let key = Object.keys(this.clients).length
-          let currentClient = {}
+          const key = Object.keys(this.clients).length
+          const currentClient = {}
           currentClient.config = client.config
           currentClient.id = key
           currentClient.client = null
@@ -848,7 +849,7 @@ export default {
       }
     },
     createInitEntities (client) {
-      let entities = this.initEntities
+      const entities = this.initEntities
       client.subscribers = []
       client.publishers = []
       client.entities = []
@@ -887,7 +888,7 @@ export default {
       this.settingsModalModel = true
     },
     connectClientHandler (key) {
-      let clientObj = this.clients[key]
+      const clientObj = this.clients[key]
       if (clientObj.client) {
         clientObj.processTimer && clearInterval(clientObj.processTimer)
         this.destroyClient(clientObj.client)
@@ -901,7 +902,7 @@ export default {
       return client.end(true)
     },
     async disconnectClientHandler (key) {
-      let clientObj = this.clients[key]
+      const clientObj = this.clients[key]
       clientObj.processTimer && clearInterval(clientObj.processTimer)
       this.setClientStatus(key, CLIENT_STATUS_USER_INACTIVE)
       await this.destroyClient(clientObj.client)
@@ -909,7 +910,7 @@ export default {
       this.saveClients()
     },
     deleteClientHandler (key) {
-      let clientObj = this.clients[key]
+      const clientObj = this.clients[key]
       this.$q.dialog({
         title: 'Confirm',
         message: `Do you really want to delete client for ${clientObj.config.clientId}?`,
@@ -938,8 +939,8 @@ export default {
           Object.values(this.clients).forEach((client) => {
             client.subscribersMessagesBuffer.forEach((messages, index) => {
               if (!messages.length) { return false }
-              let subscriber = client.subscribers[index]
-              let savedMessages = client.messages[index]
+              const subscriber = client.subscribers[index]
+              const savedMessages = client.messages[index]
               if (subscriber.mode === 0) {
                 if (savedMessages) {
                   messages = messages.splice(-this.messagesLimitCount)
@@ -959,7 +960,7 @@ export default {
       }
     },
     setActiveClient (key) {
-      let client = this.clients[key]
+      const client = this.clients[key]
       this.entities = client.entities
       this.subscribers = client.subscribers
       this.publishers = client.publishers
@@ -997,7 +998,7 @@ export default {
       clientId = typeof clientId === 'number' || typeof clientId === 'string'
         ? clientId
         : this.activeClient.id
-      let clientObj = this.clients[clientId]
+      const clientObj = this.clients[clientId]
       clientObj.subscribers.push(cloneDeep(defaultSubscriber))
       clientObj.messages.push([])
       clientObj.subscribersMessagesBuffer.push([])
@@ -1018,7 +1019,7 @@ export default {
       this.saveClients()
     },
     async removeSubscriber (subscriberIndex) {
-      let status = this.subscribersStatuses[subscriberIndex]
+      const status = this.subscribersStatuses[subscriberIndex]
       if (status) {
         await this.unsubscribeMessageHandler(this.activeClient.id, subscriberIndex)
       }
@@ -1064,7 +1065,7 @@ export default {
       }
     },
     async subscribeMessageHandler (clientKey, subscriberIndex) {
-      let settings = this.clearObject(this.subscribers[subscriberIndex])
+      const settings = this.clearObject(this.subscribers[subscriberIndex])
       if (
         this.subscribers.reduce((res, sub, index) => {
           if (this.subscribersStatuses[index]) {
@@ -1083,12 +1084,12 @@ export default {
       await this.subscribe(clientKey, subscriberIndex)
     },
     async subscribe (clientKey, subscriberIndex) {
-      let clientObj = this.clients[clientKey],
+      const clientObj = this.clients[clientKey],
         settings = this.clearObject(clientObj.subscribers[subscriberIndex])
       try {
         this.$set(this.clients[clientKey].subscribersStatuses, subscriberIndex, true)
         this.$set(this.clients[clientKey].subscribersConnectivityStatuses, subscriberIndex, false)
-        let grants = await clientObj.client.subscribe(settings.topic, settings.options)
+        const grants = await clientObj.client.subscribe(settings.topic, settings.options)
         this.$set(this.clients[clientKey].subscribersConnectivityStatuses, subscriberIndex, true)
         if (grants.length) {
           clientObj.logs.push({ type: 'subscribe', data: { settings, grants }, timestamp: Date.now() })
@@ -1116,14 +1117,14 @@ export default {
       this.$set(this.subscribersStatuses, subscriberIndex, 'paused')
     },
     clearMessagesHandler (subscriberIndex) {
-      let messages = this.subscribersMessages[subscriberIndex]
+      const messages = this.subscribersMessages[subscriberIndex]
       messages.splice(0, messages.length)
     },
     async unsubscribeMessageHandler (clientKey, subscriberIndex) {
       await this.unsubscribe(clientKey, subscriberIndex)
     },
     async unsubscribe (clientKey, subscriberIndex) {
-      let clientObj = this.clients[clientKey],
+      const clientObj = this.clients[clientKey],
         settings = this.clearObject(clientObj.subscribers[subscriberIndex])
       try {
         if (!clientObj.subscribersConnectivityStatuses[subscriberIndex]) {
@@ -1157,12 +1158,12 @@ export default {
       this.saveClients()
     },
     hideLogs () {
-      let indexLogsEntity = this.entities.findIndex(entity => entity.type === 'logs')
+      const indexLogsEntity = this.entities.findIndex(entity => entity.type === 'logs')
       this.entities.splice(indexLogsEntity, 1)
     },
     showLogs () {
       this.entities.unshift({ type: 'logs' })
-      let el = this.$refs.wrapper
+      const el = this.$refs.wrapper
       if (el) {
         animate.start({
           from: el.scrollLeft,
@@ -1173,7 +1174,7 @@ export default {
       }
     },
     clearLogs () {
-      let logs = this.activeClient.logs
+      const logs = this.activeClient.logs
       logs.splice(0, logs.length)
     },
     changeUnresolvedStatus (status) {
@@ -1184,12 +1185,12 @@ export default {
       }
     },
     hideUnresolved () {
-      let indexLogsEntity = this.entities.findIndex(entity => entity.type === 'unresolved')
+      const indexLogsEntity = this.entities.findIndex(entity => entity.type === 'unresolved')
       this.entities.splice(indexLogsEntity, 1)
     },
     showUnresolved () {
       this.entities.push({ type: 'unresolved' })
-      let el = this.$refs.wrapper
+      const el = this.$refs.wrapper
       if (el) {
         animate.start({
           from: el.scrollLeft,
@@ -1200,11 +1201,11 @@ export default {
       }
     },
     clearUnresolvedMessages () {
-      let messages = this.activeClient.notResolvedMessages
+      const messages = this.activeClient.notResolvedMessages
       messages.splice(0, messages.length)
     },
     swipeHandler (data) {
-      let el = this.$refs.wrapper,
+      const el = this.$refs.wrapper,
         elementOffsetWidth = el && el.offsetWidth,
         { direction } = data
       if (el && direction === 'left') {
@@ -1224,27 +1225,31 @@ export default {
       }
     },
     flespiLoginHandler () {
-      let tokenHandler = (event) => {
-        if (typeof event.data === 'string' && ~event.data.indexOf('FlespiToken')) {
-          this.currentSettings.username = event.data
+      const tokenHandler = (event) => {
+        if (typeof event.data === 'string' && ~event.data.indexOf('FlespiLogin|token:')) {
+          let payload = event.data
+          payload = payload.replace('FlespiLogin|token:', '')
+          payload = JSON.parse(payload)
+          this.currentSettings.username = payload.token
+          this.currentSettings.host = `wss://${payload.region['mqtt-ws']}`
           window.removeEventListener('message', tokenHandler)
         }
       }
       window.addEventListener('message', tokenHandler)
-      this.openWindow(`https://flespi.io/login/#/providers`)
+      this.openWindow('https://flespi.io/login/#/providers')
     },
     openWindow (url, title) {
       title = title || 'auth'
-      let w = 500, h = 600
-      let dualScreenLeft = window.screenLeft !== undefined ? window.screenLeft : screen.left
-      let dualScreenTop = window.screenTop !== undefined ? window.screenTop : screen.top
+      const w = 500, h = 600
+      const dualScreenLeft = window.screenLeft !== undefined ? window.screenLeft : screen.left
+      const dualScreenTop = window.screenTop !== undefined ? window.screenTop : screen.top
 
-      let width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width
-      let height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height
+      const width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width
+      const height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height
 
-      let left = ((width / 2) - (w / 2)) + dualScreenLeft
-      let top = ((height / 2) - (h / 2)) + dualScreenTop
-      let newWindow = window.open(url, title, 'toolbar=no,location=no,status=yes,resizable=yes,scrollbars=yes, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left)
+      const left = ((width / 2) - (w / 2)) + dualScreenLeft
+      const top = ((height / 2) - (h / 2)) + dualScreenTop
+      const newWindow = window.open(url, title, 'toolbar=no,location=no,status=yes,resizable=yes,scrollbars=yes, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left)
 
       // Puts focus on the newWindow
       if (window.focus) {
@@ -1269,14 +1274,14 @@ export default {
     if (this.configuredClients.length) {
       this.initExternalClients(this.configuredClients)
     } else if (this.useLocalStorage) {
-      let savedClients = LocalStorage.getItem(MQTT_BOARD_LOCALSTORAGE_NAME)
+      const savedClients = LocalStorage.getItem(MQTT_BOARD_LOCALSTORAGE_NAME)
       this.initExternalClients(savedClients)
     }
     this.isInited = true
     if (window) {
       window.addEventListener('beforeunload', () => {
-        for (let clientObjKey in this.clients) {
-          let clientObj = this.clients[clientObjKey]
+        for (const clientObjKey in this.clients) {
+          const clientObj = this.clients[clientObjKey]
           if (clientObj.status) {
             clientObj.processTimer && clearInterval(clientObj.processTimer)
             this.destroyClient(clientObj.client)
@@ -1286,8 +1291,8 @@ export default {
     }
   },
   destroyed () {
-    for (let clientObjKey in this.clients) {
-      let clientObj = this.clients[clientObjKey]
+    for (const clientObjKey in this.clients) {
+      const clientObj = this.clients[clientObjKey]
       if (clientObj.status) {
         clientObj.processTimer && clearInterval(clientObj.processTimer)
         this.destroyClient(clientObj.client)
@@ -1299,7 +1304,7 @@ export default {
   },
   updated () {
     if (this.isNeedScroll) {
-      let el = this.$refs.wrapper
+      const el = this.$refs.wrapper
       animate.start({
         from: el.scrollLeft,
         to: el.scrollWidth,
@@ -1309,6 +1314,6 @@ export default {
       this.isNeedScroll = false
     }
   },
-  mixins: [ validateEntities ]
+  mixins: [validateEntities]
 }
 </script>

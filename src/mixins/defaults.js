@@ -1,4 +1,4 @@
-let defaultSettings = {
+const defaultSettings = {
     clientId: `mqtt-board-${Math.random().toString(16).substr(2, 8)}`,
     wsOptions: {
       objectMode: false,

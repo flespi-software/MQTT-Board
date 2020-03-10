@@ -1,7 +1,7 @@
 import Vue from 'vue'
 function jsonTreeByMessages (messages, treeField, dest) {
   function write (topic, payload, dest) {
-    let path = topic.split('/')
+    const path = topic.split('/')
     let currentNesting = dest
     let currentTopic = ''
     path.forEach((pathElement, pathIndex, path) => {
@@ -22,7 +22,7 @@ function jsonTreeByMessages (messages, treeField, dest) {
         if (!currentNesting[pathElement].value) {
           Vue.set(currentNesting[pathElement], 'value', {})
         }
-        let valueByTreeField = payload.properties && payload.properties.userProperties && payload.properties.userProperties[treeField]
+        const valueByTreeField = payload.properties && payload.properties.userProperties && payload.properties.userProperties[treeField]
           ? payload.properties.userProperties[treeField]
           : ''
         Vue.set(currentNesting[pathElement].value, valueByTreeField, JSON.stringify(payload))
@@ -31,10 +31,10 @@ function jsonTreeByMessages (messages, treeField, dest) {
   }
   function clear (topic, payload, dest) {
     function getNesting (obj, path) {
-      let currentChildContainers = new Array(path.length).fill(undefined)
+      const currentChildContainers = new Array(path.length).fill(undefined)
       currentChildContainers[0] = obj
       return path.reduce((nesting, pathElement, pathIndex, path) => {
-        let currentNesting = {
+        const currentNesting = {
           container: currentChildContainers[pathIndex] || null,
           name: pathElement
         }
@@ -42,16 +42,16 @@ function jsonTreeByMessages (messages, treeField, dest) {
         return currentNesting
       }, { container: obj, name: path[0] })
     }
-    let path = topic.split('/')
+    const path = topic.split('/')
     new Array(path.length).fill('').forEach((_, index) => {
-      let nestingCount = path.length - index
-      let currentPath = path.slice(0, nestingCount)
-      let nesting = getNesting(dest, currentPath)
+      const nestingCount = path.length - index
+      const currentPath = path.slice(0, nestingCount)
+      const nesting = getNesting(dest, currentPath)
       if (!nesting.container || !nesting.container[nesting.name]) { return false }
-      let valueByPath = nesting.container[nesting.name]
-      let hasChildren = valueByPath.children && !!Object.keys(valueByPath.children).length
+      const valueByPath = nesting.container[nesting.name]
+      const hasChildren = valueByPath.children && !!Object.keys(valueByPath.children).length
       if (valueByPath.value && index === 0) {
-        let valueByTreeField = payload.properties && payload.properties.userProperties && payload.properties.userProperties[treeField]
+        const valueByTreeField = payload.properties && payload.properties.userProperties && payload.properties.userProperties[treeField]
           ? payload.properties.userProperties[treeField]
           : ''
         Vue.delete(valueByPath.value, valueByTreeField)

@@ -185,7 +185,7 @@ export default {
       return this.colors[log.type]
     },
     listScroll (e) {
-      let el = this.$refs.scroller.$el
+      const el = this.$refs.scroller.$el
       if (el.scrollTop < el.scrollHeight - el.clientHeight) {
         this.needAutoScroll = false
       } else {
@@ -204,7 +204,7 @@ export default {
   created () {
     this.$nextTick(() => {
       if (this.needAutoScroll && this.$refs.scroller) {
-        let el = this.$refs.scroller.$el
+        const el = this.$refs.scroller.$el
         el.scrollTop = el.scrollHeight - el.clientHeight
       }
     })

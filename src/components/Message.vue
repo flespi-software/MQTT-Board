@@ -46,7 +46,7 @@ export default {
         this.$q.notify({
           color: 'positive',
           icon: 'content_copy',
-          message: `<div class="text-center" style="font-size: 1.2rem;">Payload copied</div>`,
+          message: '<div class="text-center" style="font-size: 1.2rem;">Payload copied</div>',
           html: true,
           timeout: 1000
         })
@@ -54,7 +54,7 @@ export default {
         this.$q.notify({
           color: 'negative',
           icon: 'content_copy',
-          message: `<div class="text-center" style="font-size: 1.2rem;">Coping error</div>`,
+          message: '<div class="text-center" style="font-size: 1.2rem;">Coping error</div>',
           html: true,
           timeout: 1000
         })

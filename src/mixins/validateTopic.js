@@ -1,7 +1,7 @@
 export default {
   methods: {
     validateTopic (topic) {
-      let parts = topic.split('/')
+      const parts = topic.split('/')
 
       for (let i = 0; i < parts.length; i++) {
         if (parts[i] === '+') {

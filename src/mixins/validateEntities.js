@@ -1,5 +1,5 @@
 import isNil from 'lodash/isNil'
-let schemas = {
+const schemas = {
   publisher: {
     topic: 'string',
     payload: 'string',
@@ -79,7 +79,7 @@ export default {
     validateObjectBySchema (object, schema) {
       return Object.keys(schema).reduce((result, key) => {
         if (object[key] !== undefined && object[key] !== null) {
-          let objectValueType = typeof object[key]
+          const objectValueType = typeof object[key]
           if (typeof schema[key] === 'object') {
             result = result && this.validateObjectBySchema(object[key], schema[key])
           } else if (objectValueType === schema[key]) {
@@ -105,7 +105,7 @@ export default {
       }
     },
     validateSettings (settings) {
-      return this.validateObjectBySchema(settings, schemas['settings']) &&
+      return this.validateObjectBySchema(settings, schemas.settings) &&
         !!settings.clientId &&
         !!settings.host &&
         (
@@ -130,7 +130,7 @@ export default {
         )
     },
     validatePublisher (publisher) {
-      return this.validateObjectBySchema(publisher, schemas['publisher']) &&
+      return this.validateObjectBySchema(publisher, schemas.publisher) &&
       !!publisher.topic && !!publisher.options &&
       (!publisher.options.properties ||
         (
@@ -141,7 +141,7 @@ export default {
       )
     },
     validateSubscriber (subscriber) {
-      return this.validateObjectBySchema(subscriber, schemas['subscriber']) &&
+      return this.validateObjectBySchema(subscriber, schemas.subscriber) &&
         !!subscriber.topic && !!subscriber.options &&
         (!subscriber.options.properties ||
           (
@@ -151,7 +151,7 @@ export default {
         )
     },
     validateEntityRecord (settings) {
-      return this.validateObjectBySchema(settings, schemas['entity'])
+      return this.validateObjectBySchema(settings, schemas.entity)
     }
   }
 }

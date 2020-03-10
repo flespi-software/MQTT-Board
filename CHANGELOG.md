@@ -1,5 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.0.14] - 2020-03-10
+[fix] saving status of client
+[fix] regions by login
+[rebase] code for new standarts
 ### [2.0.13] - 2020-02-14
 [fix] unsubscribe
 ### [2.0.12] - 2020-02-04

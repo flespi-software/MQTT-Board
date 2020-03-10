@@ -244,7 +244,7 @@ export default {
       let result = null
       if (this.config.mode === TREE_MODE) {
         if (this.treeSelectedTopic === null) { return { '': { topic: '*Empty*' } } }
-        let path = this.treeSelectedTopic.split('/')
+        const path = this.treeSelectedTopic.split('/')
         result = path.reduce((result, pathElement, pathIndex) => {
           if (pathIndex === path.length - 1) {
             if (!result[pathElement]) {
@@ -351,7 +351,7 @@ export default {
     },
     listScroll (e) {
       if (this.status) {
-        let el = this.$refs.scroller && this.$refs.scroller.$el
+        const el = this.$refs.scroller && this.$refs.scroller.$el
         if (!el) { return false }
         if (el.scrollTop < el.scrollHeight - el.clientHeight) {
           this.needAutoScroll = false

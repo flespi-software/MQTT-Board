@@ -23,8 +23,8 @@ export default {
   },
   created () {
     let mode = this.$route.params.mode,
-      token = this.$route.params.token,
-      sessionSettings = this.$q.sessionStorage.getItem('mqtt-board-session-settings')
+      token = this.$route.params.token
+    const sessionSettings = this.$q.sessionStorage.getItem('mqtt-board-session-settings')
     if (sessionSettings) {
       mode = sessionSettings.mode
       token = sessionSettings.token
