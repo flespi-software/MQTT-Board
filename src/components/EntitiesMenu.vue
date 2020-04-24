@@ -11,8 +11,8 @@
         <div class="absolute-top-left absolute-bottom-left" :class="[`bg-${`${colorByType[entity.type]}-6`}`]" style="width: 10px;"></div>
         <q-item-section>
           <q-item-label header class="q-pa-none text-bold" :class="[`text-${entity.rendered ? 'white' : `${colorByType[entity.type]}-10`}`]">{{labelByType[entity.type]}}</q-item-label>
-          <q-item-label caption :class="[`text-${entity.rendered ? 'grey-2' : `${colorByType[entity.type]}-10`}`]" v-if="entity.type === 'subscriber' || entity.type === 'publisher'">{{entity.settings.topic}}</q-item-label>
-          <q-item-label caption :class="[`text-${entity.rendered ? 'grey-2' : `${colorByType[entity.type]}-10`}`]" v-if="entity.type === 'publisher'"><small>{{entity.settings.payload}}</small></q-item-label>
+          <q-item-label class="ellipsis" caption :class="[`text-${entity.rendered ? 'grey-2' : `${colorByType[entity.type]}-10`}`]" v-if="entity.type === 'subscriber' || entity.type === 'publisher'">{{entity.settings.topic}}</q-item-label>
+          <q-item-label class="ellipsis" caption :class="[`text-${entity.rendered ? 'grey-2' : `${colorByType[entity.type]}-10`}`]" v-if="entity.type === 'publisher'"><small>{{entity.settings.payload}}</small></q-item-label>
         </q-item-section>
         <q-item-section v-if="entity.type === 'subscriber' || entity.type === 'publisher'" side>
           <q-btn dense outline color="white" v-if="entity.type === 'publisher'" :disable="!isValidPublisher(entity.settings)" icon="mdi-send" @click.stop="$emit('publish', entity.settings)">

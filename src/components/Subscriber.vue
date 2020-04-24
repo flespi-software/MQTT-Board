@@ -411,7 +411,7 @@ export default {
       }
     }
   },
-  components: { VirtualList, Tree },
+  components: { VirtualList, Tree, Message },
   directives: {
     autoscroll: {
       inserted (el, { value }) {

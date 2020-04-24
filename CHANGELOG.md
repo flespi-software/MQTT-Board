@@ -1,5 +1,8 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.1.1] - 2020-04-24
+[fix] tree view
+[fix] styles
 ### [2.1.0] - 2020-04-24
 [feature] panes menu
 [fix] multiple value of user properies
