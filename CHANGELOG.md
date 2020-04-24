@@ -1,5 +1,8 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.1.0] - 2020-04-24
+[feature] panes menu
+[fix] multiple value of user properies
 ### [2.0.14] - 2020-03-10
 [fix] saving status of client
 [fix] regions by login

@@ -118,7 +118,16 @@ export default {
       if (!this.config.options.properties.userProperties) {
         this.$set(this.config.options.properties, 'userProperties', {})
       }
-      this.$set(this.config.options.properties.userProperties, this.publishUserProperty.name, this.publishUserProperty.value)
+      const userProperties = this.config.options.properties.userProperties
+      if (userProperties[this.publishUserProperty.name]) {
+        if (Array.isArray(userProperties[this.publishUserProperty.name])) {
+          userProperties[this.publishUserProperty.name].push(this.publishUserProperty.value)
+        } else {
+          this.$set(userProperties, this.publishUserProperty.name, [userProperties[this.publishUserProperty.name], this.publishUserProperty.value])
+        }
+      } else {
+        this.$set(userProperties, this.publishUserProperty.name, this.publishUserProperty.value)
+      }
       this.publishUserProperty = {
         value: '',
         name: ''

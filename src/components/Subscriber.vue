@@ -140,14 +140,14 @@
           v-autoscroll="needAutoScroll"
           ref="scroller"
           :onscroll="listScroll"
-          :debounce="10"
           v-if="messages && messages.length && config.mode === 0"
           :size="110"
           :remain="15"
           class="subscriber__list"
-        >
-          <message :message="message" :highlight="config.highlight" v-for="(message, msgIndex) in renderedMessages" :key="`subMsg$${msgIndex}`" @action:send="(message) => { $emit('action:send', message) }" />
-        </virtual-list>
+          :item="Message"
+          :itemcount="renderedMessages.length"
+          :itemprops="getMessageProps"
+        />
         <div class="subscriber__list subscriber__list--tree" v-else-if="config.mode === 1 && Object.keys(renderedMessages).length && subscribed">
           <div style="height: 60%" class="scroll">
             <tree :topic="treeSelectedTopic" :data="renderedMessages" @change="treeValueChangeHandler"/>
@@ -220,7 +220,8 @@ export default {
       isPlayed: this.status || null,
       filter: '',
       treeSelectedTopic: null,
-      processingFlag: null
+      processingFlag: null,
+      Message
     }
   },
   computed: {
@@ -282,6 +283,19 @@ export default {
         this.processingFlag = true
         setTimeout(() => { this.processingFlag = false }, 500)
       }
+    },
+    getMessageProps (index) {
+      const props = {
+        key: `subMsg$${index}`,
+        props: {
+          highlight: this.config.highlight,
+          message: this.renderedMessages[index]
+        },
+        on: {
+          'action:send': (message) => { this.$emit('action:send', message) }
+        }
+      }
+      return props
     },
     playStopHandler () {
       if (this.isPlayed) {
@@ -397,7 +411,7 @@ export default {
       }
     }
   },
-  components: { VirtualList, Message, Tree },
+  components: { VirtualList, Tree },
   directives: {
     autoscroll: {
       inserted (el, { value }) {

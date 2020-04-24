@@ -81,7 +81,6 @@
 </template>
 
 <script>
-import Vue from 'vue'
 import validateTopic from '../mixins/validateTopic.js'
 import isNil from 'lodash/isNil'
 
@@ -111,18 +110,27 @@ export default {
     isNil,
     addPublishUserProperty () {
       if (!this.config.options.properties.userProperties) {
-        Vue.set(this.config.options.properties, 'userProperties', {})
+        this.$set(this.config.options.properties, 'userProperties', {})
       }
-      Vue.set(this.config.options.properties.userProperties, this.publishUserProperty.name, this.publishUserProperty.value)
+      const userProperties = this.config.options.properties.userProperties
+      if (userProperties[this.publishUserProperty.name]) {
+        if (Array.isArray(userProperties[this.publishUserProperty.name])) {
+          userProperties[this.publishUserProperty.name].push(this.publishUserProperty.value)
+        } else {
+          this.$set(userProperties, this.publishUserProperty.name, [userProperties[this.publishUserProperty.name], this.publishUserProperty.value])
+        }
+      } else {
+        this.$set(userProperties, this.publishUserProperty.name, this.publishUserProperty.value)
+      }
       this.publishUserProperty = {
         value: '',
         name: ''
       }
     },
     removePublishUserProperty (name) {
-      Vue.delete(this.config.options.properties.userProperties, name)
+      this.$delete(this.config.options.properties.userProperties, name)
       if (!Object.keys(this.config.options.properties.userProperties).length) {
-        Vue.set(this.config.options.properties, 'userProperties', null)
+        this.$set(this.config.options.properties, 'userProperties', null)
       }
     }
   },

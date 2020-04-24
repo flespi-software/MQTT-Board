@@ -1,5 +1,5 @@
 <template>
-  <q-card class="message">
+  <q-card class="message q-my-sm q-mx-sm">
     <div class="message__title q-pt-sm q-pl-sm q-pr-sm">
       <div :title="message.topic" class="message__topic ellipsis">
         {{message.topic}}

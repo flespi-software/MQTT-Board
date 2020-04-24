@@ -20,8 +20,8 @@
           </q-btn>
         </q-toolbar>
       </q-card-section>
-      <q-card-section ref="scroller" class="scroll q-pa-md" style="height: calc(100% - 50px)" @scroll.native="listScroll" v-autoscroll="needAutoScroll">
-        <q-card class="log__item q-mt-md" :class="[`bg-${getColor(log)}-3`]" v-for="(log, index) in logs" :key="`log${index}`">
+      <q-card-section ref="scroller" class="scroll q-pa-none" style="height: calc(100% - 50px)" @scroll.native="listScroll" v-autoscroll="needAutoScroll">
+        <q-card class="log__item q-ma-sm" :class="[`bg-${getColor(log)}-3`]" v-for="(log, index) in logs" :key="`log${index}`">
           <div class="log__title q-py-xs q-px-sm text-bold">
             {{log.type}}
           </div>
