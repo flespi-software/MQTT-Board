@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.1.2] - 2020-05-12
+[feature] highlight leafs in tree view with messages
 ### [2.1.1] - 2020-04-24
 [fix] tree view
 [fix] styles

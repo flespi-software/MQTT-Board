@@ -10,13 +10,13 @@
           overflow: $q.platform.is.desktop ? '' : 'hidden',
           textOverflow: $q.platform.is.desktop ? '' : 'ellipsis'
         }"
-        @click="toggle(key, index)" class="cursor-pointer" :class="{'bg-grey-2': topic && topic === data[key].topic}">
-        <template v-if="data[key].children"
+        @click="toggle(key, index)" class="cursor-pointer" :class="{'bg-grey-2': topic && topic === data[key].topic}"
       >
+        <template v-if="data[key].children">
           <q-icon color="grey-9" v-if="showObj[key]" name="mdi-menu-down" style="vertical-align: baseline" />
           <q-icon color="grey-9" v-else name="mdi-menu-right" style="vertical-align: baseline" />
         </template>
-        <span :class="{'text-grey-6': !key, 'text-italic': !key}">{{key || '*Empty*'}}</span>
+        <span :class="{'text-grey-9': true, 'text-italic': !key, 'text-grey-10': data[key].value, 'text-bold': data[key].value}">{{key || '*Empty*'}}</span>
       </div>
       <tree-mode-view :key="`nest-${key}`" :nesting="nesting + 1" :topic="topic" v-if="showObj[key] && data[key].children" :data='data[key].children' @change="(value) => { $emit('change', value) }"/>
     </template>
