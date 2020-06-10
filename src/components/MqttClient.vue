@@ -475,10 +475,17 @@ export default {
       return this.validateSettings(this.currentSettings) && !(!!this.secure && settings.host.indexOf('ws:') === 0)
     },
     renderedEntities () {
-      return this.entities.filter(entity => entity.rendered || entity.rendered === undefined)
+      const renderedEntities = []
+      for (const entity of this.entities) {
+        if (entity.rendered || entity.rendered === undefined) {
+          renderedEntities.push(entity)
+        }
+      }
+      return renderedEntities
     },
     menuEnitites () {
-      return this.entities.map((entity, index) => {
+      const menu = []
+      for (const entity of this.entities) {
         const menuEntity = { ...entity }
         if (entity.type === 'subscriber') {
           menuEntity.settings = this.subscribers[entity.index]
@@ -486,8 +493,9 @@ export default {
         } else if (entity.type === 'publisher') {
           menuEntity.settings = this.publishers[entity.index]
         }
-        return menuEntity
-      })
+        menu.push(menuEntity)
+      }
+      return menu
     },
     colsCountClass () {
       return `col-xl-${this.entities.length < 4 ? 12 / this.entities.length : 4}`
