@@ -400,7 +400,7 @@ export default {
       if (val && this.loadingStatus) {
         this.loadingStatus = false
         this.isPlayed = true
-      } else {
+      } else if (!val) {
         this.isPlayed = null
       }
     },

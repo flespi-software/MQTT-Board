@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.1.4] - 2020-06-19
+[fix] change status played/paused
 ### [2.1.3] - 2020-06-10
 [fix] menu integration
 ### [2.1.2] - 2020-05-12
