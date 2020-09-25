@@ -27,8 +27,16 @@
             v-model="config.topic"
             label="Topic"
             :error="!isValidSubscriber"
+            reactive-rules
+            no-error-icon
+            :rules="[
+              val => (val.indexOf(',') === -1 || (val.indexOf(',') !== -1 && config.options.properties.subscriptionIdentifier)) || 'You need to setup subscription inditifier'
+            ]"
           >
             <q-btn slot="append" color="yellow-9" icon="mdi-alert" @click="showSharedSubscriptionNotification" flat round v-if="config.topic.indexOf('$share') === 0"/>
+            <q-btn slot="append" color="red-9" icon="icon-flespi2-02-01" flat round v-if="isFlespiMode" @click="flespiTopicOpened = true">
+              <q-tooltip>Flespi topic generator</q-tooltip>
+            </q-btn>
           </q-input>
           <q-btn-toggle v-close-popup flat rounded toggle-text-color="grey-9" text-color="grey-6" v-model="config.mode" :options="modeSelectOptions" @input="changeModeHandler" style="width: 100%" class="q-mt-md"/>
           <q-input color="grey-9" outlined class="q-my-xs" hide-bottom-space v-model="config.treeField" label="Field to group by" v-if="config.mode === 1 && version === 5" hint="User properties field name by which messages will be grouped."/>
@@ -154,7 +162,7 @@
           </div>
           <div class="scroll tree__message">
             <template v-for="(message, key, index) in treeModeValue">
-              <message :key="`tree-message-${key}-${index}`" :message="message" v-if="typeof message.payload !== 'undefined'" :highlight="config.highlight" @action:send="(message) => { $emit('action:send', message) }" />
+              <message :key="`tree-message-${key}-${index}`" :message="message" v-if="typeof message.payload !== 'undefined'" :highlight="config.highlight" @action-send="(message) => { $emit('action-send', message) }" />
               <div :key="`tree-message-empty-${index}`" v-else style="height: 100%" class='text-center'>
                 <div style="font-size: 1.5rem;" class="q-pt-sm text-grey-9">No messages</div>
                 <div class="text-grey-8">{{message.topic}}</div>
@@ -169,10 +177,12 @@
         </q-inner-loading>
       </div>
     </q-card>
+    <flespi-topic-configurator v-if="flespiTopicOpened" :opened="flespiTopicOpened" ref="ftopic" v-model="config.topic" color="orange" :bus="client.restBus" @close="flespiTopicOpened = false"/>
   </div>
 </template>
 
 <script>
+import FlespiTopicConfigurator from './FlespiTopicConfigurator'
 import Tree from './TreeModeView.vue'
 import VirtualList from 'vue-virtual-scroll-list'
 import Message from './Message.vue'
@@ -189,11 +199,12 @@ export default {
     'value',
     'messages',
     'status',
-    'version',
+    'client',
     'subscribed'
   ],
   data () {
     return {
+      version: this.client.config.protocolVersion,
       filterMode: false,
       config: this.value,
       loadingStatus: false,
@@ -221,10 +232,14 @@ export default {
       filter: '',
       treeSelectedTopic: null,
       processingFlag: null,
-      Message
+      Message,
+      flespiTopicOpened: false
     }
   },
   computed: {
+    isFlespiMode () {
+      return this.client.config.host.indexOf('flespi') > -1
+    },
     renderedMessages () {
       let res = []
       switch (this.config.mode) {
@@ -266,7 +281,7 @@ export default {
       return result
     },
     isValidSubscriber () {
-      return !!this.config.topic && this.validateTopic(this.config.topic) &&
+      return !!this.config.topic && (this.config.topic.indexOf(',') === -1 || (this.config.topic.indexOf(',') !== -1 && this.config.options.properties.subscriptionIdentifier)) && this.validateTopic(this.config.topic) &&
         (isNil(this.config.options.properties.subscriptionIdentifier) || (this.config.options.properties.subscriptionIdentifier > 0 && this.config.options.properties.subscriptionIdentifier <= 268435455))
     },
     isNeedLoading () {
@@ -292,7 +307,7 @@ export default {
           message: this.renderedMessages[index]
         },
         on: {
-          'action:send': (message) => { this.$emit('action:send', message) }
+          'action-send': (message) => { this.$emit('action-send', message) }
         }
       }
       return props
@@ -411,7 +426,7 @@ export default {
       }
     }
   },
-  components: { VirtualList, Tree, Message },
+  components: { VirtualList, Tree, Message, FlespiTopicConfigurator },
   directives: {
     autoscroll: {
       inserted (el, { value }) {

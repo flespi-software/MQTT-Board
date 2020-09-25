@@ -30,10 +30,6 @@
                   <q-item-section avatar><q-icon name="mdi-arrow-down-bold" /></q-item-section>
                   <q-item-section><q-item-label>Subscriber</q-item-label></q-item-section>
                 </q-item>
-                <q-item v-if="activeClient && activeClient.config.host.indexOf('flespi') !== -1" v-close-popup @click.native="$refs.felspiModal.open()" clickable v-ripple>
-                  <q-item-section avatar><q-icon name="mdi-star-outline" /></q-item-section>
-                  <q-item-section><q-item-label>Flespi subscriber</q-item-label></q-item-section>
-                </q-item>
               </q-list>
             </q-menu>
           </q-btn>
@@ -64,7 +60,6 @@
       <q-page-container>
         <q-page>
           <div>
-            <flespi-topic ref="felspiModal" @topic="(topic) => { addSubscriber(); subscribers[subscribers.length - 1].topic = topic }"/>
             <publisher-modal
               v-if="republishMessage"
               ref="publisherModal"
@@ -256,14 +251,14 @@
                   :status="subscribersStatuses[entity.index]"
                   :subscribed="subscribersConnectivityStatuses[entity.index]"
                   :messages="subscribersMessages[entity.index]"
-                  :version="activeClient.config.protocolVersion"
+                  :client="activeClient"
                   @remove="removeSubscriber(entity.index)"
                   @subscribe="subscribeMessageHandler(activeClient.id, entity.index)"
                   @unsubscribe="unsubscribeMessageHandler(activeClient.id, entity.index)"
                   @play="playSubscriberHandler(entity.index)"
                   @pause="pauseSubscriberHandler(entity.index)"
                   @clear="clearMessagesHandler(entity.index)"
-                  @action:send="sendFromSubscriberHandler"
+                  @action-send="sendFromSubscriberHandler"
                 />
                 <unresolved
                   :class='[colsCountClass]'
@@ -284,7 +279,7 @@
               </template>
             </div>
             <div v-else-if="!renderedEntities.length" class="text-center q-mt-lg text-grey-9 text-weight-bold absolute" style="font-size: 2.5rem; top: 50px; bottom: 0; left: 0; right: 0;">No active entities</div>
-            <div v-else-if="!statuses[activeClient.id] && !renderedEntities.length" class="text-center q-mt-lg text-grey-9 text-weight-bold absolute" style="font-size: 2.5rem; top: 50px; bottom: 0; left: 0; right: 0;">
+            <div v-else-if="!statuses[activeClient.id]" class="text-center q-mt-lg text-grey-9 text-weight-bold absolute" style="font-size: 2.5rem; top: 50px; bottom: 0; left: 0; right: 0;">
               <div>Сlient is disconnected</div>
             </div>
           </div>
@@ -318,7 +313,6 @@ import get from 'lodash/get'
 import debounce from 'lodash/debounce'
 import { LocalStorage, openURL } from 'quasar'
 import animate from '../mixins/animate'
-import FlespiTopic from './FlespiTopicConfigurator.vue'
 import Subscriber from './Subscriber.vue'
 import Publisher from './Publisher.vue'
 import Unresolved from './Unresolved.vue'
@@ -329,6 +323,7 @@ import { version } from '../../package.json'
 import validateEntities from '../mixins/validateEntities.js'
 import { defaultSettings, defaultSubscriber, defaultPublisher } from '../mixins/defaults.js'
 import jsonTreeByMessages from '../mixins/jsonTreeByMessages.js'
+import SelectorsAsync from './selectors/async'
 
 const
   makeExportClients = (clients) => {
@@ -819,6 +814,7 @@ export default {
         clientObj.logs.push({ type: 'reconnect', timestamp: Date.now() })
       })
       this.$set(this.clients[key], 'client', client)
+      this.makeFlespiRestBus(key)
     },
     async createClient (index) {
       const config = this.createConnectPacket(this.currentSettings),
@@ -1294,6 +1290,29 @@ export default {
     },
     getCid (connack) {
       return get(JSON.parse(get(connack, 'properties.userProperties.token', '{}')), 'cid', null)
+    },
+    makeFlespiRestBus (clientId) {
+      const client = this.clients[clientId]
+      const selectorsAsync = new SelectorsAsync()
+      selectorsAsync.bus.auth.getRegions()
+        .then((regions) => {
+          regions = get(regions, 'data.result', [])
+          const flespiClientRestRegion = regions.reduce((flespiRegion, region) => {
+            const host = region['mqtt-ws'].split(':')[0]
+            if (client.config.host.indexOf(host) !== -1) {
+              return region
+            } else {
+              return flespiRegion
+            }
+          })
+          if (flespiClientRestRegion) {
+            selectorsAsync.settings = { server: flespiClientRestRegion.rest }
+            selectorsAsync.token = client.config.username
+            this.$set(this.clients[clientId], 'restBus', selectorsAsync)
+          } else {
+            this.$set(this.clients[clientId], 'restBus', null)
+          }
+        })
     }
   },
   watch: {
@@ -1336,7 +1355,7 @@ export default {
     }
   },
   components: {
-    FlespiTopic, Subscriber, Publisher, Unresolved, Logs, PublisherModal, EntitiesMenu
+    Subscriber, Publisher, Unresolved, Logs, PublisherModal, EntitiesMenu
   },
   updated () {
     if (this.isNeedScroll) {

@@ -6,7 +6,7 @@ module.exports = function (ctx) {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://quasar.dev/quasar-cli/cli-documentation/boot-files
-    boot: [],
+    boot: ['icomoon'],
 
     // https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-css
     css: [
@@ -146,29 +146,29 @@ module.exports = function (ctx) {
         theme_color: '#333333',
         icons: [
           {
-            'src': 'statics/icons/apple-icon-120x120.png',
-            'sizes': '120x120',
-            'type': 'image/png'
+            src: 'statics/icons/apple-icon-120x120.png',
+            sizes: '120x120',
+            type: 'image/png'
           },
           {
-            'src': 'statics/icons/ms-icon-144x144.png',
-            'sizes': '144x144',
-            'type': 'image/png'
+            src: 'statics/icons/ms-icon-144x144.png',
+            sizes: '144x144',
+            type: 'image/png'
           },
           {
-            'src': 'statics/icons/apple-icon-152x152.png',
-            'sizes': '152x152',
-            'type': 'image/png'
+            src: 'statics/icons/apple-icon-152x152.png',
+            sizes: '152x152',
+            type: 'image/png'
           },
           {
-            'src': 'statics/icons/icon-192x192.png',
-            'sizes': '192x192',
-            'type': 'image/png'
+            src: 'statics/icons/icon-192x192.png',
+            sizes: '192x192',
+            type: 'image/png'
           },
           {
-            'src': 'statics/icons/ms-icon-310x310.png',
-            'sizes': '310x310',
-            'type': 'image/png'
+            src: 'statics/icons/ms-icon-310x310.png',
+            sizes: '310x310',
+            type: 'image/png'
           }
         ]
       }

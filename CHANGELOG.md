@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.2.0] - 2020-09-25
+[feature] flespi selectors
 ### [2.1.4] - 2020-06-19
 [fix] change status played/paused
 ### [2.1.3] - 2020-06-10

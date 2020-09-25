@@ -1,6 +1,6 @@
 {
   "name": "mqtt-board",
-  "version": "2.1.4",
+  "version": "2.2.0",
   "description": "Client based on MQTT.js and Vue.js",
   "productName": "MQTT Board",
   "cordovaId": "org.cordova.quasar.app",
@@ -14,9 +14,10 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.6.4",
-    "lodash": "^4.17.15",
+    "flespi-io-js": "git+https://github.com/flespi-software/flespi-io-js.git",
+    "lodash": "^4.17.20",
     "mqtt": "^3.0.0",
-    "quasar": "^1.9.15",
+    "quasar": "^1.14.0",
     "vue-virtual-scroll-list": "^1.4.7"
   },
   "devDependencies": {
