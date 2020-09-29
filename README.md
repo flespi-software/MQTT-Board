@@ -113,6 +113,7 @@ Props:
 | configuredClients | Full configured clients | [] |
 | whiteLabel | Label in component | '' |
 | useLocalStorage | local storage usage flag | true |
+| clientsCloseable | can clients close to clients page | true |
 | needInitNewClient | Need create and init new client with default settings | false |
 | secure | Need validate by security host | true |
 | initEntities | Start-pack entities in new clients | [SUBSCRIBER, PUBLISHER] |
@@ -125,7 +126,35 @@ Events:
 |---|---|---|
 | change | Any change in clients | [<client>] |
 
-settings structure:
+## Use like iframe integration
+You must integrate it on `/integration` route
+
+[Component](/src/components/Integration.vue)
+
+[Wrapper](/docs/IntegrationTest.vue)
+
+Methods:
+Iframe integration has one method SetSettings with config payload. Its params:
+| Name  | Description  | Default |
+|---|---|---|
+| settings | Init settings for clients | undefined |
+| configuredClients | Full configured clients | [] |
+| whiteLabel | Label in component | '' |
+| useLocalStorage | local storage usage flag | true |
+| clientsCloseable | can clients close to clients page | true |
+| secure | Need validate by security host | true |
+| entities | Start-pack entities in new clients | [SUBSCRIBER, PUBLISHER] |
+| color | Color of bars by quasar color palette | 'dark' |
+| accentColor | Secondary color by quasar color palette | 'light-blue-7' |
+
+Events:
+
+| Name  | Description  | Payload |
+|---|---|---|
+| updateSettings | Any change in clients | {configuredClients: [<client>]} |
+| ready | Iframe mounted | *Empty* |
+
+## Settings structure:
 ```js
 let settings = {
   clientId: `mqtt-board-${Math.random().toString(16).substr(2, 8)}`,
