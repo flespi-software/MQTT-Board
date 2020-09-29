@@ -3,7 +3,7 @@
     <q-layout view="hhh LpR lff" container>
       <q-header reveal>
         <q-toolbar :class="{[`bg-${color}`]: true, 'text-white': !!color}"  style="position: absolute; z-index: 1">
-          <q-btn round v-if="activeClient" flat dense icon="mdi-close" @click="clearActiveClient"/>
+          <q-btn round v-if="activeClient && clientsCloseable" flat dense icon="mdi-close" @click="clearActiveClient"/>
           <q-toolbar-title>
             <img v-if="!activeClient && whiteLabel === ''" src="statics/mqttboard.png" alt="MQTT Board" style="height: 30px">
             <span v-if="activeClient">
@@ -367,6 +367,10 @@ export default {
     needInitNewClient: {
       type: Boolean,
       default: false
+    },
+    clientsCloseable: {
+      type: Boolean,
+      default: true
     },
     secure: {
       type: Boolean,

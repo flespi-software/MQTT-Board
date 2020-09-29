@@ -5,6 +5,7 @@ const routes = [
     component: () => import('layouts/MyLayout.vue'),
     children: [
       { path: '', component: () => import('pages/Index.vue') },
+      { path: 'integration', component: () => import('pages/Integration.vue') },
       { path: 'mode/:mode/token/:token', component: () => import('pages/Index.vue') }
     ]
   }

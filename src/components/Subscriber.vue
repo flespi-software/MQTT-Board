@@ -30,7 +30,7 @@
             reactive-rules
             no-error-icon
             :rules="[
-              val => (val.indexOf(',') === -1 || (val.indexOf(',') !== -1 && config.options.properties.subscriptionIdentifier)) || 'You need to setup subscription inditifier'
+              val => (val.indexOf(',') === -1 || (val.indexOf(',') !== -1 && config.options.properties.subscriptionIdentifier)) || 'You need to set up subscription identifier in the properties below'
             ]"
           >
             <q-btn slot="append" color="yellow-9" icon="mdi-alert" @click="showSharedSubscriptionNotification" flat round v-if="config.topic.indexOf('$share') === 0"/>
