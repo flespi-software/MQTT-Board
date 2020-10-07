@@ -2,7 +2,9 @@
   <q-page>
     <mqtt-client
       v-if="inited"
+      ref="client"
       :useLocalStorage="useLS"
+      :initEntities="entities"
       :initSettings="settings"
       :needInitNewClient="!!settings"
       :whiteLabel="whiteLabel"
@@ -42,6 +44,15 @@ export default {
         this[name] = config[name]
       }
       this.inited = true
+    })
+    this.$integrationBus.on('SetActive', (index) => {
+      this.$refs.client.setActiveClient(index)
+    })
+    this.$integrationBus.on('AddPublisher', (config) => {
+      this.$refs.client.addPublisher(config)
+    })
+    this.$integrationBus.on('AddSubscriber', (config) => {
+      this.$refs.client.addSubscriber(config)
     })
     this.$integrationBus.send('ready')
   },

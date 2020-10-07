@@ -18,7 +18,7 @@ export default {
   },
   methods: {
     send (cmd, payload) {
-      cmd = `MQTTBoard${this.name ? `|${this.name}` : ''}|${cmd}${payload ? `=>${JSON.stringify(payload)}` : ''}`
+      cmd = `MQTTBoard${this.name ? `|${this.name}` : ''}|${cmd}${payload !== undefined ? `=>${JSON.stringify(payload)}` : ''}`
       this.$refs.iframe.contentWindow.postMessage(cmd, '*')
     },
     messageProcess (message) {
@@ -42,7 +42,10 @@ export default {
     },
     setSettings (config) {
       this.send('SetSettings', config)
-    }
+    },
+    setActive (index) { this.send('SetActive', index) },
+    addPublisher (config) { this.send('AddPublisher', config) },
+    addSubscriber (config) { this.send('AddSubscriber', config) }
   },
   created () {
     window.addEventListener('message', ({ data }) => {

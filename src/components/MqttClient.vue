@@ -737,7 +737,7 @@ export default {
         })
         /* restore subscriptions by broker */
         existedSubscriptionsInSession.forEach(subscription => {
-          this.addSubscriber(key)
+          this.addSubscriber(undefined, key)
           const id = subscribers.length - 1,
             subscriber = subscribers[id]
           // update subscriber options by subscription
@@ -1042,8 +1042,9 @@ export default {
         return obj.type === entity.type && obj.index === entity.index
       })
     },
-    addPublisher () {
-      this.publishers.push(cloneDeep(defaultPublisher))
+    addPublisher (config) {
+      config = merge({}, defaultPublisher, config)
+      this.publishers.push(cloneDeep(config))
       const publisher = { type: 'publisher', rendered: true, index: this.publishers.length - 1, id: Math.random().toString(16).substr(2, 8) }
       if (this.activeClient.notResolvedFlagInit) {
         this.entities.splice(-1, 0, publisher)
@@ -1053,12 +1054,13 @@ export default {
       this.saveClients()
       this.isNeedScroll = true
     },
-    addSubscriber (clientId) {
+    addSubscriber (config, clientId) {
       clientId = typeof clientId === 'number' || typeof clientId === 'string'
         ? clientId
         : this.activeClient.id
       const clientObj = this.clients[clientId]
-      clientObj.subscribers.push(cloneDeep(defaultSubscriber))
+      config = merge({}, defaultSubscriber, config)
+      clientObj.subscribers.push(cloneDeep(config))
       clientObj.messages.push([])
       clientObj.subscribersMessagesBuffer.push([])
       clientObj.subscribersStatuses.push(false)
