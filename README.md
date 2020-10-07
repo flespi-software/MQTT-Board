@@ -134,7 +134,14 @@ You must integrate it on `/integration` route
 [Wrapper](/docs/IntegrationTest.vue)
 
 Methods:
-Iframe integration has one method SetSettings with config payload. Its params:
+| Name  | Description  | Params |
+|---|---|---|
+| SetSettings | Init app | <settings> |
+| SetActive | Activate client | clientIndex |
+| AddPublisher | Add configured or empty new publisher | <publisher> |
+| AddSubscriber | Add configured or empty new subscriber | <subscriber> |
+
+SetSettings params:
 | Name  | Description  | Default |
 |---|---|---|
 | settings | Init settings for clients | undefined |
@@ -229,6 +236,14 @@ let publisher = {
     }
   }
 }
+```
+init entity structure:
+```js
+let initEntity = {
+    type: 'subscriber', // publisher || subscriber required
+    rendered: true, // need show flag
+    settings: {<publisher> or <subscriber>}
+  }
 ```
 entities structure:
 ```js
