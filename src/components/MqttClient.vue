@@ -22,11 +22,11 @@
             <q-menu anchor="bottom right" self="top right" content-class="mqtt-board__popup">
               <q-list>
                 <q-item-label header>Add pane</q-item-label>
-                <q-item v-close-popup @click.native="addPublisher" clickable v-ripple>
+                <q-item v-close-popup @click="addPublisher()" clickable v-ripple>
                   <q-item-section avatar><q-icon name="mdi-publish" /></q-item-section>
                   <q-item-section><q-item-label>Publisher</q-item-label></q-item-section>
                 </q-item>
-                <q-item v-close-popup @click.native="addSubscriber" clickable v-ripple>
+                <q-item v-close-popup @click="addSubscriber()" clickable v-ripple>
                   <q-item-section avatar><q-icon name="mdi-arrow-down-bold" /></q-item-section>
                   <q-item-section><q-item-label>Subscriber</q-item-label></q-item-section>
                 </q-item>
@@ -1015,6 +1015,10 @@ export default {
     },
     setActiveClient (key) {
       const client = this.clients[key]
+      if (!client) {
+        this.showError('No current client')
+        return false
+      }
       this.entities = client.entities
       this.subscribers = client.subscribers
       this.publishers = client.publishers

@@ -1,5 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.3.2] - 2020-10-08
+[fix] integration logic
+### [2.3.1] - 2020-10-07
+[feature] new iframe integration methods
+[fix] init entities of iframe integrations
 ### [2.3.0] - 2020-09-29
 [feature] iframe integration
 ### [2.2.0] - 2020-09-25
