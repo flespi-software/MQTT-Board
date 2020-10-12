@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.3.3] - 2020-10-12
+[fix] initEntities schema
 ### [2.3.2] - 2020-10-08
 [fix] integration logic
 ### [2.3.1] - 2020-10-07

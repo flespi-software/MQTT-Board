@@ -919,12 +919,12 @@ export default {
             client.subscribersMessagesBuffer.push([])
             client.subscribersStatuses.push(false)
             client.subscribersConnectivityStatuses.push(false)
-            client.entities.push({ type: 'subscriber', rendered: true, index: client.subscribers.length - 1, id: Math.random().toString(16).substr(2, 8) })
+            client.entities.push({ type: 'subscriber', rendered: entity.rendered, index: client.subscribers.length - 1, id: Math.random().toString(16).substr(2, 8) })
             break
           }
           case 'publisher': {
             client.publishers.push(cloneDeep(merge({}, defaultPublisher, entity.settings)))
-            client.entities.push({ type: 'publisher', rendered: true, index: client.publishers.length - 1, id: Math.random().toString(16).substr(2, 8) })
+            client.entities.push({ type: 'publisher', rendered: entity.rendered, index: client.publishers.length - 1, id: Math.random().toString(16).substr(2, 8) })
             break
           }
           default: {
