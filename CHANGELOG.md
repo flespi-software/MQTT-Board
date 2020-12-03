@@ -1,5 +1,8 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.3.4] - 2020-11-03
+[fix] selectors naming
+[fix] mobile styles
 ### [2.3.3] - 2020-10-12
 [fix] initEntities schema
 ### [2.3.2] - 2020-10-08

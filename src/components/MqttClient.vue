@@ -46,7 +46,6 @@
         bordered
         :breakpoint="500"
         content-class="bg-grey-3 absolute"
-        :content-style="$q.platform.is.desktop ? 'height: calc(100% - 50px)!important; top: 50px;' : ''"
       >
         <entities-menu
           :entities="menuEnitites"
@@ -74,6 +73,7 @@
               v-model='settingsModalModel'
               content-class="mqtt-board__popup"
               :maximized="$q.platform.is.mobile"
+              no-backdrop-dismiss no-esc-dismiss
             >
               <q-card :style="{minWidth: $q.platform.is.mobile ? '100%' : '50vw'}">
                 <q-card-section :class="{[`bg-${color}`]: true, 'text-white': !!color}" class="q-pa-none">
@@ -437,7 +437,7 @@ export default {
   data () {
     return {
       version: version,
-      drawerRight: true,
+      drawerRight: this.$q.platform.is.desktop,
       currentSettings: cloneDeep(merge({}, defaultSettings, this.initSettings)),
       prevSettings: null,
       clients: {},
