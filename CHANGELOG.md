@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.3.5] - 2020-12-28
+[fix] mobile scroll
 ### [2.3.4] - 2020-11-03
 [fix] selectors naming
 [fix] mobile styles
