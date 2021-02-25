@@ -49,7 +49,7 @@
       >
         <entities-menu
           :entities="menuEnitites"
-          @hide="hideEntity" @show="showEntity"
+          @pick="pickEntity"
           @subscriber:play="index => subscribeMessageHandler(activeClient.id, index)"
           @subscriber:stop="index => unsubscribeMessageHandler(activeClient.id, index)"
           @publish="publishFreeMessage"
@@ -67,136 +67,15 @@
               @publish="publishFreeMessage"
               @hide="republishMessage = null"
             />
-            <q-dialog
-              @show="showSettingsModalHandler"
-              @hide="clearCurrentSettings"
-              v-model='settingsModalModel'
-              content-class="mqtt-board__popup"
-              :maximized="$q.platform.is.mobile"
-              no-backdrop-dismiss no-esc-dismiss
-            >
-              <q-card :style="{minWidth: $q.platform.is.mobile ? '100%' : '50vw'}">
-                <q-card-section :class="{[`bg-${color}`]: true, 'text-white': !!color}" class="q-pa-none">
-                  <q-toolbar :class="{[`bg-${color}`]: true, 'text-white': !!color}">
-                    <q-btn flat dense v-close-popup icon="keyboard_arrow_left" @click="revertSettings"/>
-                    <q-toolbar-title>
-                      Connection settings
-                    </q-toolbar-title>
-                  </q-toolbar>
-                </q-card-section>
-                <q-separator />
-                <q-card-section class="scroll" :style="{ height: $q.platform.is.mobile ? 'calc(100% - 94px)' : '50vh'}">
-                  <div>
-                    <q-input color="grey-9" outlined v-model="currentSettings.clientName" label="Client name" class="q-mb-xs"/>
-                    <q-input color="grey-9" outlined v-model="currentSettings.clientId" label="Client ID" :error="!currentSettings.clientId" hide-bottom-space class="q-mb-xs">
-                      <q-btn slot="append" color="grey-9" icon="mdi-refresh" @click="currentSettings.clientId = `mqtt-board-${Math.random().toString(16).substr(2, 8)}`" flat round/>
-                    </q-input>
-                    <q-input color="grey-9" outlined v-model="currentSettings.host" label="Host" :error="!currentSettings.host || (secure && currentSettings.host.indexOf('ws:') === 0)" error-message="Host must be not empty and only over secured sockets" hide-bottom-space class="q-mb-xs"/>
-                    <q-input color="grey-9" outlined class="q-mb-xs" hide-bottom-space v-model.number="currentSettings.keepalive" type="number" label="Keep alive" :error="!isNil(currentSettings.keepalive) && (currentSettings.keepalive <= 0 || currentSettings.keepalive > 0xffff)"/>
-                    <q-select color="grey-9" outlined popup-content-class="mqtt-board__popup" class="q-mb-xs" v-model="currentSettings.protocolVersion" map-options emit-value :options="[{label: '3.1.1', value: 4}, {label: '5.0', value: 5}]" label="Version of MQTT" hide-bottom-space options-selected-class="bg-grey-2 text-grey-9"/>
-                    <q-checkbox color="grey-9" class="q-mt-sm q-mb-sm" v-model="currentSettings.clean" :label="currentSettings.protocolVersion === 5 ? 'Clean start' : 'Clean session'"/>
-                    <q-input color="grey-9" outlined class="q-mb-xs" hide-bottom-space v-model="currentSettings.username" label="Username">
-                      <q-btn slot="append" color="grey-9" icon="mdi-login" @click="flespiLoginHandler" flat round v-if="currentSettings.host.indexOf('flespi') !== -1"/>
-                    </q-input>
-                    <q-input color="grey-9" outlined class="q-mb-xs" hide-bottom-space v-model="currentSettings.password" label="Password"/>
-                    <q-expansion-item class="q-mt-sm q-mb-sm bg-grey-2" label="Properties" v-if="currentSettings.protocolVersion === 5">
-                      <div class="q-px-md q-py-sm">
-                        <q-input
-                          color="grey-9" outlined class="q-mb-xs" hide-bottom-space type="number" :min="0" clearable
-                          v-model.number="currentSettings.properties.sessionExpiryInterval"
-                          @clear="currentSettings.properties.sessionExpiryInterval = undefined"
-                          label="Session expiry interval"
-                          :error="!isNil(currentSettings.properties.sessionExpiryInterval) && (currentSettings.properties.sessionExpiryInterval < 0 || currentSettings.properties.sessionExpiryInterval > 0xffffffff)"
-                        />
-                        <q-input
-                          color="grey-9" type="number" label="Receive maximum" clearable outlined class="q-mb-xs" hide-bottom-space
-                          v-model.number="currentSettings.properties.receiveMaximum"
-                          @clear="currentSettings.properties.receiveMaximum = undefined"
-                          :error="!isNil(currentSettings.properties.receiveMaximum) && (currentSettings.properties.receiveMaximum <= 0 || currentSettings.properties.receiveMaximum > 0xffff)"
-                        />
-                        <q-input
-                          color="grey-9" type="number" label="Maximum packet size" clearable outlined class="q-mb-xs" hide-bottom-space
-                          v-model.number="currentSettings.properties.maximumPacketSize"
-                          @clear="currentSettings.properties.maximumPacketSize = undefined"
-                          :error="!isNil(currentSettings.properties.maximumPacketSize) && (currentSettings.properties.maximumPacketSize <= 0 || currentSettings.properties.maximumPacketSize > 0xffffffff)"
-                        />
-                        <q-input
-                          color="grey-9" type="number" label="Topic alias maximum" clearable outlined class="q-mb-xs" hide-bottom-space
-                          v-model.number="currentSettings.properties.topicAliasMaximum"
-                          :error="!isNil(currentSettings.properties.topicAliasMaximum) && (currentSettings.properties.topicAliasMaximum < 0 || currentSettings.properties.topicAliasMaximum > 0xffff)"
-                        />
-                        <q-checkbox style="display: flex;" color="grey-9" class="q-mt-sm q-mb-sm" v-model="currentSettings.properties.requestResponseInformation" label="Request-Response information"/>
-                        <q-checkbox style="display: flex;" color="grey-9" class="q-mt-sm q-mb-sm" v-model="currentSettings.properties.requestProblemInformation" label="Request problem information"/>
-                        <div class="q-mb-sm">
-                          <div class="q-mt-md">User Properties</div>
-                          <div>
-                            <q-list v-if="currentSettings.properties.userProperties" bordered class="q-mb-xs">
-                              <q-item v-for="(value, name) in currentSettings.properties.userProperties" :key="`${name}: ${value}`" style="min-height: 17px;">
-                                <q-icon class="q-mr-sm cursor-pointer" size='1rem' @click.native="removeConnectUserProperty(name)" name="mdi-close-circle"/>
-                                <span>{{`${name}: ${value}`}}</span>
-                              </q-item>
-                            </q-list>
-                            <q-input color="grey-9" v-model="connectUserProperty.name" label="User property name" outlined class="q-mb-xs" hide-bottom-space/>
-                            <q-input color="grey-9" v-model="connectUserProperty.value" label="User property value" outlined class="q-mb-xs" hide-bottom-space/>
-                            <q-btn style="width: 100%" class="q-mt-sm" color="grey-9" @click="addUserProperty">Add</q-btn>
-                          </div>
-                        </div>
-                        <q-input color="grey-9" v-model="currentSettings.properties.authenticationMethod" label="Authentication method" outlined class="q-mb-xs" hide-bottom-space/>
-                        <q-input color="grey-9" v-model="currentSettings.properties.authenticationData" type="textarea" label="Authentication data" outlined class="q-mb-xs q-textarea--fix" hide-bottom-space autogrow/>
-                      </div>
-                    </q-expansion-item>
-                    <q-expansion-item class="q-mt-sm q-mb-sm bg-grey-2" label="Will">
-                      <div class="q-px-md q-py-sm">
-                        <q-input color="grey-9" v-model="currentSettings.will.topic" :error="!this.currentSettings.will.topic && !!this.currentSettings.will.payload" label="Will topic" outlined class="q-mb-xs" hide-bottom-space/>
-                        <q-input color="grey-9" v-model="currentSettings.will.payload" :error="!!this.currentSettings.will.topic && !this.currentSettings.will.payload" type="textarea" label="Will payload" outlined class="q-mb-xs q-textarea--fix" hide-bottom-space autogrow/>
-                        <div class="q-my-sm">
-                          QoS
-                          <q-btn-toggle flat rounded toggle-text-color="grey-9" text-color="grey-6" class="q-ml-sm" v-model="currentSettings.will.qos" :options="[{label: '0', value: 0},{label: '1', value: 1},{label: '2', value: 2}]"/>
-                        </div>
-                        <q-checkbox color="grey-9" class="q-mt-sm q-mb-sm" v-model="currentSettings.will.retain" label="Will retain" />
-                        <q-expansion-item class="bg-grey-4" label="Will properties" v-if="currentSettings.protocolVersion === 5">
-                          <div class="q-px-md q-py-sm">
-                            <q-input
-                              color="grey-9" outlined clearable class="q-mb-xs" hide-bottom-space type="number" label="Will delay interval"
-                              v-model.number="currentSettings.will.properties.willDelayInterval"
-                              @clear="currentSettings.will.properties.willDelayInterval = undefined"
-                            />
-                            <q-checkbox color="grey-9" class="q-mt-sm q-mb-sm" v-model="currentSettings.will.properties.payloadFormatIndicator" label="Payload format indicator"/>
-                            <q-input
-                              color="grey-9" type="number" label="Message expiry interval" clearable outlined class="q-mb-xs" hide-bottom-space
-                              v-model.number="currentSettings.will.properties.messageExpiryInterval"
-                              @clear="currentSettings.will.properties.messageExpiryInterval = undefined"
-                            />
-                            <q-input color="grey-9" v-model="currentSettings.will.properties.contentType" label="Content type" outlined class="q-mb-xs" hide-bottom-space/>
-                            <q-input color="grey-9" v-model="currentSettings.will.properties.responseTopic" label="Response topic" outlined class="q-mb-xs" hide-bottom-space/>
-                            <q-input color="grey-9" v-model="currentSettings.will.properties.correlationData" type="textarea" label="Correlation data" outlined class="q-mb-xs q-textarea--fix" hide-bottom-space autogrow />
-                            <div>
-                              <div class="q-mt-md">Will user properties</div>
-                              <div>
-                                <q-list style="border-color: #b7b7b7;" v-if="currentSettings.will.properties.userProperties" class="q-mb-xs">
-                                  <q-item v-for="(value, name) in currentSettings.will.properties.userProperties" :key="`${name}: ${value}`" style="min-height: 17px;">
-                                    <q-icon class="q-mr-sm cursor-pointer" size='1rem' @click.native="removeWillConnectUserProperty(name)" name="mdi-close-circle"/>
-                                    <span>{{`${name}: ${value}`}}</span>
-                                  </q-item>
-                                </q-list>
-                                <q-input color="grey-9" v-model="willConnectUserProperty.name" label="Will user property name" outlined class="q-mb-xs" hide-bottom-space/>
-                                <q-input color="grey-9" v-model="willConnectUserProperty.value"  label="Will user property value" outlined class="q-mb-xs" hide-bottom-space/>
-                                <q-btn style="width: 100%" class="q-mt-sm" color="grey-9" @click="addWillUserProperty">Add</q-btn>
-                              </div>
-                            </div>
-                          </div>
-                        </q-expansion-item>
-                      </div>
-                    </q-expansion-item>
-                  </div>
-                </q-card-section>
-                <q-separator />
-                <q-card-actions align="right" :class="{[`bg-${color}`]: true, 'text-white': !!color}">
-                  <q-btn flat dense v-close-popup class="q-mr-sm" @click="revertSettings">Close</q-btn>
-                  <q-btn flat dense :disable="!isCurrentSettingsValid" @click="saveSettingsHandler">Save</q-btn>
-                </q-card-actions>
-              </q-card>
-            </q-dialog>
+            <client-settings-modal
+              v-if="settingsModalModel"
+              :color="color"
+              :secure="secure"
+              :settings="editedClientId !== null ? clients[editedClientId].config : {}"
+              :initSettings="initSettings"
+              @save="saveSettingsHandler"
+              @close="closeSettingsHandler"
+            />
             <div v-if="!activeClient" class="absolute scroll" style="top:50px; left: 0; right: 0; bottom: 0;">
               <div v-if="Object.keys(clients).length" class="mqtt-clients row q-pt-md">
                 <div class="client__item q-pt-md q-px-md cursor-pointer col-xl-3 col-md-4 col-sm-6 col-xs-12" v-for="(client, index) in clients" :key="index">
@@ -228,55 +107,72 @@
                 <q-btn v-if="!activeClient" @click.native="addClientHandler">Create client</q-btn>
               </div>
             </div>
-            <div ref="wrapper" v-touch-swipe.horizontal="swipeHandler" class="no-wrap row client__wrapper" v-else-if="renderedEntities.length">
-              <template v-for="(entity, index) in renderedEntities">
-                <publisher
-                  :class='[colsCountClass]'
-                  ref="entities"
-                  v-if="entity.type === 'publisher'"
-                  :key="`publ${entity.id}`"
-                  :value="publishers[entity.index]"
-                  @input="(val) => { inputPublisher(entity.index, val) }"
-                  :version="activeClient.config.protocolVersion"
-                  @remove="removePublisher(entity.index)"
-                  @publish="publishMessageHandler(activeClient.id, entity.index)"
-                />
-                <subscriber
-                  :class='[colsCountClass]'
-                  ref="entities"
-                  v-else-if="entity.type === 'subscriber'"
-                  :key="`subs${entity.id}`"
-                  :value="subscribers[entity.index]"
-                  @input="(val) => { inputSubscriber(entity.index, val) }"
-                  :status="subscribersStatuses[entity.index]"
-                  :subscribed="subscribersConnectivityStatuses[entity.index]"
-                  :messages="subscribersMessages[entity.index]"
-                  :client="activeClient"
-                  @remove="removeSubscriber(entity.index)"
-                  @subscribe="subscribeMessageHandler(activeClient.id, entity.index)"
-                  @unsubscribe="unsubscribeMessageHandler(activeClient.id, entity.index)"
-                  @play="playSubscriberHandler(entity.index)"
-                  @pause="pauseSubscriberHandler(entity.index)"
-                  @clear="clearMessagesHandler(entity.index)"
-                  @action-send="sendFromSubscriberHandler"
-                />
-                <unresolved
-                  :class='[colsCountClass]'
-                  ref="entities"
-                  v-else-if="entity.type === 'unresolved'"
-                  :key="`unresolved${index}`"
-                  :messages="notResolvedMessages"
-                  @clear="clearUnresolvedMessages"
-                />
-                <logs
-                  :class='[colsCountClass]'
-                  ref="entities"
-                  v-else-if="entity.type === 'logs'"
-                  :key="`subs${index}`"
-                  :logs="activeClient.logs"
-                  @clear="clearLogs"
-                />
-              </template>
+            <div v-else-if="renderedEntities.length">
+              <div ref="wrapper" v-touch-swipe.horizontal="swipeHandler" @scroll="wrapperScroll" class="no-wrap row client__wrapper">
+                <q-resize-observer @resize="onWrapperResize" :debounce="0" />
+                <template v-for="(entity, index) in renderedEntities">
+                  <publisher
+                    :class='[`col-${12 / colsCount}`]'
+                    ref="entities"
+                    v-if="entity.type === 'publisher'"
+                    :key="`publ${entity.id}`"
+                    :value="publishers[entity.index]"
+                    @input="(val) => { inputPublisher(entity.index, val) }"
+                    :version="activeClient.config.protocolVersion"
+                    @remove="removePublisher(entity.index)"
+                    @publish="publishMessageHandler(activeClient.id, entity.index)"
+                    @hide="$set(entity, 'rendered', false)"
+                  />
+                  <subscriber
+                    :class='[`col-${12 / colsCount}`]'
+                    ref="entities"
+                    v-else-if="entity.type === 'subscriber'"
+                    :key="`subs${entity.id}`"
+                    :value="subscribers[entity.index]"
+                    @input="(val) => { inputSubscriber(entity.index, val) }"
+                    :status="subscribersStatuses[entity.index]"
+                    :subscribed="subscribersConnectivityStatuses[entity.index]"
+                    :messages="subscribersMessages[entity.index]"
+                    :client="activeClient"
+                    @remove="removeSubscriber(entity.index)"
+                    @subscribe="subscribeMessageHandler(activeClient.id, entity.index)"
+                    @unsubscribe="unsubscribeMessageHandler(activeClient.id, entity.index)"
+                    @play="playSubscriberHandler(entity.index)"
+                    @pause="pauseSubscriberHandler(entity.index)"
+                    @clear="clearMessagesHandler(entity.index)"
+                    @action-send="sendFromSubscriberHandler"
+                    @hide="$set(entity, 'rendered', false)"
+                  />
+                  <unresolved
+                    :class='[`col-${12 / colsCount}`]'
+                    ref="entities"
+                    v-else-if="entity.type === 'unresolved'"
+                    :key="`unresolved${index}`"
+                    :messages="notResolvedMessages"
+                    @clear="clearUnresolvedMessages"
+                    @hide="$set(entity, 'rendered', false)"
+                  />
+                  <logs
+                    :class='[`col-${12 / colsCount}`]'
+                    ref="entities"
+                    v-else-if="entity.type === 'logs'"
+                    :key="`subs${index}`"
+                    :logs="activeClient.logs"
+                    @clear="clearLogs"
+                    @hide="$set(entity, 'rendered', false)"
+                  />
+                </template>
+              </div>
+              <slider-controller
+                :entities="renderedEntities"
+                :buttons-disable="{
+                  prev: firstViewedPanelIndex === 0,
+                  next: entities.length - colsCount === firstViewedPanelIndex
+                }"
+                :active="[firstViewedPanelIndex, firstViewedPanelIndex + colsCount - 1]"
+                @swipe="direction => swipeHandler({ direction })"
+                @swipe-to="pickEntity"
+              />
             </div>
             <div v-else-if="!renderedEntities.length" class="text-center q-mt-lg text-grey-9 text-weight-bold absolute" style="font-size: 2.5rem; top: 50px; bottom: 0; left: 0; right: 0;">No active entities</div>
             <div v-else-if="!statuses[activeClient.id]" class="text-center q-mt-lg text-grey-9 text-weight-bold absolute" style="font-size: 2.5rem; top: 50px; bottom: 0; left: 0; right: 0;">
@@ -298,17 +194,16 @@
   .client__wrapper
     position absolute
     top 50px
-    bottom 0
+    bottom 50px
     left 0
     right 0
-    overflow auto
+    overflow hidden
 </style>
 
 <script>
 import mqtt from '../boot/async-mqtt.js'
 import merge from 'lodash/merge'
 import cloneDeep from 'lodash/cloneDeep'
-import isNil from 'lodash/isNil'
 import get from 'lodash/get'
 import debounce from 'lodash/debounce'
 import { LocalStorage, openURL } from 'quasar'
@@ -318,6 +213,8 @@ import Publisher from './Publisher.vue'
 import Unresolved from './Unresolved.vue'
 import Logs from './Logs.vue'
 import PublisherModal from './PublisherModal.vue'
+import ClientSettingsModal from './ClientSettingsModal'
+import SliderController from './SliderController'
 import EntitiesMenu from './EntitiesMenu'
 import { version } from '../../package.json'
 import validateEntities from '../mixins/validateEntities.js'
@@ -438,8 +335,6 @@ export default {
     return {
       version: version,
       drawerRight: this.$q.platform.is.desktop,
-      currentSettings: cloneDeep(merge({}, defaultSettings, this.initSettings)),
-      prevSettings: null,
       clients: {},
       statuses: {},
       activeClient: null,
@@ -450,34 +345,30 @@ export default {
       subscribersConnectivityStatuses: [false],
       subscribersMessages: [[]],
       subscribersMessagesBuffer: [[]],
-      connectUserProperty: {
-        value: '',
-        name: ''
-      },
-      willConnectUserProperty: {
-        value: '',
-        name: ''
-      },
       settingsModalModel: false,
-      activeClientSettings: null,
+      editedClientId: null,
       renderInterval: 0,
       messagesLimitCount: 3000,
       notResolvedMessages: [],
       isNeedScroll: false,
       isInited: false,
-      republishMessage: null
+      republishMessage: null,
+      wrapperWidth: 0,
+      firstViewedPanelIndex: 0
     }
   },
   computed: {
-    isCurrentSettingsValid () {
-      const settings = this.currentSettings
-      return this.validateSettings(this.currentSettings) && !(!!this.secure && settings.host.indexOf('ws:') === 0)
-    },
     renderedEntities () {
       const renderedEntities = []
       for (const entity of this.entities) {
         if (entity.rendered || entity.rendered === undefined) {
-          renderedEntities.push(entity)
+          const entityWithConfig = entity
+          if (entity.type === 'publisher') {
+            entityWithConfig.config = this.publishers[entity.index]
+          } else if (entity.type === 'subscriber') {
+            entityWithConfig.config = this.subscribers[entity.index]
+          }
+          renderedEntities.push(entityWithConfig)
         }
       }
       return renderedEntities
@@ -496,62 +387,28 @@ export default {
       }
       return menu
     },
-    colsCountClass () {
-      return `col-xl-${this.entities.length < 4 ? 12 / this.entities.length : 4}`
+    colsCount () {
+      return this.getСolsCount(this.wrapperWidth)
     }
   },
   methods: {
-    isNil,
     openURL: openURL,
+    getСolsCount (wrapperWidth) {
+      const pannelMinWidth = 350
+      let pannelsMinCount = Math.floor(wrapperWidth / pannelMinWidth)
+      if (pannelsMinCount > this.renderedEntities.length) {
+        pannelsMinCount = this.renderedEntities.length
+      }
+      const colsCount = this.wrapperWidth < 600 ? 1 : pannelsMinCount
+      return colsCount
+    },
     /* settings modal handlers start */
-    showSettingsModalHandler () {
-      this.prevSettings = cloneDeep(this.currentSettings)
-    },
-    revertSettings () {
-      this.clearCurrentSettings()
-      this.prevSettings = null
-    },
-    clearCurrentSettings () {
-      this.currentSettings = cloneDeep(merge({}, defaultSettings, this.initSettings))
-      this.currentSettings.clientId = `mqtt-board-${Math.random().toString(16).substr(2, 8)}`
-      this.activeClientSettings = null
-    },
-    saveSettingsHandler () {
-      this.prevSettings = null
-      this.createClient(this.activeClientSettings)
+    closeSettingsHandler () {
       this.settingsModalModel = false
+      this.editedClientId = null
     },
-    addUserProperty () {
-      if (!this.currentSettings.properties.userProperties) {
-        this.currentSettings.properties.userProperties = {}
-      }
-      this.currentSettings.properties.userProperties[this.connectUserProperty.name] = this.connectUserProperty.value
-      this.connectUserProperty = {
-        value: '',
-        name: ''
-      }
-    },
-    addWillUserProperty () {
-      if (!this.currentSettings.will.properties.userProperties) {
-        this.currentSettings.will.properties.userProperties = {}
-      }
-      this.currentSettings.will.properties.userProperties[this.willConnectUserProperty.name] = this.willConnectUserProperty.value
-      this.willConnectUserProperty = {
-        value: '',
-        name: ''
-      }
-    },
-    removeConnectUserProperty (name) {
-      this.$delete(this.currentSettings.properties.userProperties, name)
-      if (!Object.keys(this.currentSettings.properties.userProperties).length) {
-        this.currentSettings.properties.userProperties = null
-      }
-    },
-    removeWillConnectUserProperty (name) {
-      this.$delete(this.currentSettings.will.properties.userProperties, name)
-      if (!Object.keys(this.currentSettings.will.properties.userProperties).length) {
-        this.currentSettings.will.properties.userProperties = null
-      }
+    saveSettingsHandler (settings) {
+      this.createClient(settings, this.editedClientId)
     },
     /* settings modal handlers end */
     /* client logic start */
@@ -820,8 +677,8 @@ export default {
       this.$set(this.clients[key], 'client', client)
       this.makeFlespiRestBus(key)
     },
-    async createClient (index) {
-      const config = this.createConnectPacket(this.currentSettings),
+    async createClient (settings, index) {
+      const config = this.createConnectPacket(settings),
         isClientExists = typeof index === 'string' || typeof index === 'number',
         key = isClientExists
           ? index
@@ -851,7 +708,6 @@ export default {
       }
       this.$set(this.clients[key], 'config', config)
       this.saveClients()
-      this.clearCurrentSettings()
     },
     initExternalClients (savedClients) {
       if (savedClients) {
@@ -937,8 +793,7 @@ export default {
       this.settingsModalModel = true
     },
     editClientHandler (key) {
-      this.currentSettings = cloneDeep(merge({}, defaultSettings, this.clients[key].config))
-      this.activeClientSettings = key
+      this.editedClientId = key
       this.settingsModalModel = true
     },
     connectClientHandler (key) {
@@ -1223,12 +1078,15 @@ export default {
       const logs = this.activeClient.logs
       logs.splice(0, logs.length)
     },
-    showEntity (index) {
-      this.$set(this.entities[index], 'rendered', true)
+    pickEntity (index) {
+      const entity = this.entities[index]
+      if (!entity.rendered) {
+        this.$set(this.entities[index], 'rendered', true)
+      }
       if (!this.$refs.wrapper) { return }
       const el = this.$refs.wrapper,
-        entityOffsetWidth = this.$refs.entities[0] ? this.$refs.entities[0].$el.offsetWidth : el.offsetWidth / 3,
-        entityScrollLeft = entityOffsetWidth * (index - 1),
+        entityOffsetWidth = this.wrapperWidth / this.colsCount,
+        entityScrollLeft = entityOffsetWidth * index,
         duration = (Math.abs(el.scrollLeft - entityScrollLeft) / entityOffsetWidth) * 50
       animate.start({
         from: el.scrollLeft,
@@ -1236,11 +1094,6 @@ export default {
         duration,
         apply (pos) { el.scrollLeft = pos }
       })
-      this.saveClients()
-    },
-    hideEntity (index) {
-      this.$set(this.entities[index], 'rendered', false)
-      this.saveClients()
     },
     clearUnresolvedMessages () {
       const messages = this.activeClient.notResolvedMessages
@@ -1248,55 +1101,20 @@ export default {
     },
     swipeHandler (data) {
       const el = this.$refs.wrapper,
-        elementOffsetWidth = el && el.offsetWidth,
+        elementOffsetWidth = this.wrapperWidth / this.colsCount,
         { direction } = data
+      let to = 0
       if (el && direction === 'left') {
-        animate.start({
-          from: el.scrollLeft,
-          to: el.scrollLeft + elementOffsetWidth,
-          duration: 200,
-          apply (pos) { el.scrollLeft = pos }
-        })
+        to = el.scrollLeft + elementOffsetWidth
       } else if (el && direction === 'right') {
-        animate.start({
-          from: el.scrollLeft,
-          to: el.scrollLeft - elementOffsetWidth,
-          duration: 200,
-          apply (pos) { el.scrollLeft = pos }
-        })
+        to = el.scrollLeft - elementOffsetWidth
       }
-    },
-    flespiLoginHandler () {
-      const tokenHandler = (event) => {
-        if (typeof event.data === 'string' && ~event.data.indexOf('FlespiLogin|token:')) {
-          let payload = event.data
-          payload = payload.replace('FlespiLogin|token:', '')
-          payload = JSON.parse(payload)
-          this.currentSettings.username = payload.token
-          this.currentSettings.host = `wss://${payload.region['mqtt-ws']}`
-          window.removeEventListener('message', tokenHandler)
-        }
-      }
-      window.addEventListener('message', tokenHandler)
-      this.openWindow('https://flespi.io/login/#/providers')
-    },
-    openWindow (url, title) {
-      title = title || 'auth'
-      const w = 500, h = 600
-      const dualScreenLeft = window.screenLeft !== undefined ? window.screenLeft : screen.left
-      const dualScreenTop = window.screenTop !== undefined ? window.screenTop : screen.top
-
-      const width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width
-      const height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height
-
-      const left = ((width / 2) - (w / 2)) + dualScreenLeft
-      const top = ((height / 2) - (h / 2)) + dualScreenTop
-      const newWindow = window.open(url, title, 'toolbar=no,location=no,status=yes,resizable=yes,scrollbars=yes, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left)
-
-      // Puts focus on the newWindow
-      if (window.focus) {
-        newWindow.focus()
-      }
+      animate.start({
+        from: el.scrollLeft,
+        to,
+        duration: 200,
+        apply (pos) { el.scrollLeft = pos }
+      })
     },
     getCid (connack) {
       return get(JSON.parse(get(connack, 'properties.userProperties.token', '{}')), 'cid', null)
@@ -1323,6 +1141,14 @@ export default {
             this.$set(this.clients[clientId], 'restBus', null)
           }
         })
+    },
+    onWrapperResize ({ width }) {
+      this.wrapperWidth = width
+      const el = this.$refs.wrapper,
+        colsCount = this.getСolsCount(width),
+        entityOffsetWidth = width / colsCount,
+        entityScrollLeft = entityOffsetWidth * this.firstViewedPanelIndex
+      el.scrollLeft = entityScrollLeft
     }
   },
   watch: {
@@ -1331,9 +1157,14 @@ export default {
     }
   },
   created () {
+    this.wrapperScroll = debounce((e) => {
+      if (!this.$refs.wrapper) { return }
+      const el = this.$refs.wrapper,
+        entityOffsetWidth = this.wrapperWidth / this.colsCount
+      this.firstViewedPanelIndex = Math.round(el.scrollLeft / entityOffsetWidth)
+    }, 100)
     if (this.needInitNewClient && !this.configuredClients.length) {
-      this.currentSettings = cloneDeep(merge({}, defaultSettings, this.initSettings))
-      this.createClient()
+      this.createClient(cloneDeep(merge({}, defaultSettings, this.initSettings)))
       this.setActiveClient(0)
     }
     if (this.configuredClients.length) {
@@ -1365,7 +1196,7 @@ export default {
     }
   },
   components: {
-    Subscriber, Publisher, Unresolved, Logs, PublisherModal, EntitiesMenu
+    ClientSettingsModal, SliderController, Subscriber, Publisher, Unresolved, Logs, PublisherModal, EntitiesMenu
   },
   updated () {
     if (this.isNeedScroll) {

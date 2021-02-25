@@ -71,7 +71,8 @@ module.exports = function (ctx) {
         'QChip',
         'QInnerLoading',
         'QSpinnerGears',
-        'QSpinner'
+        'QSpinner',
+        'QResizeObserver'
       ],
       directives: [
         'Ripple',

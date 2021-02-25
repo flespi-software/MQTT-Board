@@ -1,5 +1,5 @@
 <template>
-  <div class="mqtt-client__subscriber col-md-4 col-sm-6 col-xs-12">
+  <div class="mqtt-client__subscriber">
     <q-card class="subscriber__item q-ma-sm" v-if="!status && isPlayed === null">
       <q-card-section class="q-pa-none">
         <q-toolbar class="q-pr-none text-white bg-orange">
@@ -10,7 +10,15 @@
           <q-btn round flat icon="mdi-dots-vertical">
             <q-menu anchor="bottom right" self="top right" content-class="mqtt-board__popup">
               <q-list>
-                <q-item v-close-popup @click.native="removeSubscriber()" clickable v-ripple>
+                <q-item v-close-popup @click="$emit('hide')" clickable v-ripple>
+                  <q-item-section avatar>
+                    <q-icon name="mdi-eye-off-outline" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>Hide pannel</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-item v-close-popup @click="removeSubscriber()" clickable v-ripple>
                   <q-item-section avatar><q-icon color="red" name="mdi-delete-outline" /></q-item-section>
                   <q-item-section><q-item-label>Remove</q-item-label></q-item-section>
                 </q-item>

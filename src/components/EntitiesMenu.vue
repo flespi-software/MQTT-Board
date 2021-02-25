@@ -4,7 +4,7 @@
     <div class="scroll absolute full-width" style="height: calc(100% - 48px);">
       <q-item
         v-for="(entity, index) in entities" :key="`${entity.type}-${entity.id}`"
-        :active="entity.rendered" clickable @click="$emit(entity.rendered ? 'hide' : 'show', index)"
+        :active="entity.rendered" clickable @click="$emit('pick', index)"
         class="q-ma-xs rounded-borders" style="overflow: hidden;"
         :class="[`bg-${entity.rendered ? `${colorByType[entity.type]}-6` : 'grey-13'}`]"
       >

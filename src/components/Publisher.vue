@@ -1,5 +1,5 @@
 <template>
-  <div class="mqtt-client__publisher col-md-4 col-sm-6 col-xs-12">
+  <div class="mqtt-client__publisher">
     <q-card class="publisher__item q-ma-sm">
       <q-card-section class="q-pa-none">
         <q-toolbar class="q-pr-none text-white bg-indigo">
@@ -10,7 +10,15 @@
           <q-btn round flat icon="mdi-dots-vertical">
             <q-menu anchor="bottom right" self="top right" content-class="mqtt-board__popup">
               <q-list>
-                <q-item v-close-popup @click.native="$emit('remove')" clickable v-ripple>
+                <q-item v-close-popup @click="$emit('hide')" clickable v-ripple>
+                  <q-item-section avatar>
+                    <q-icon name="mdi-eye-off-outline" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>Hide pannel</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-item v-close-popup @click="$emit('remove')" clickable v-ripple>
                   <q-item-section avatar><q-icon color="red" name="mdi-delete-outline" /></q-item-section>
                   <q-item-section><q-item-label>Remove</q-item-label></q-item-section>
                 </q-item>
@@ -20,8 +28,8 @@
         </q-toolbar>
       </q-card-section>
       <q-card-section class="publisher__main q-pb-none">
-        <div class="q-mt-md">
-          <q-input color="grey-9" v-model="config.topic" label="Topic" :error="!isValidPublisher" outlined class="q-mb-xs q-mt-sm" hide-bottom-space/>
+        <div>
+          <q-input color="grey-9" v-model="config.topic" label="Topic" :error="!isValidPublisher" outlined class="q-mb-xs" hide-bottom-space/>
           <q-input
             color="grey-9" outlined class="q-mb-xs q-textarea--fix" hide-bottom-space autogrow
             type="textarea"
