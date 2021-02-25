@@ -1,5 +1,8 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.4.1] - 2021-02-25
+[feature] right menu viewed items highlight
+[fix] scroll by dots
 ### [2.4.0] - 2021-02-25
 [feature] scroll view
 [rebase] right menu functions

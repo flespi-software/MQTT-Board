@@ -49,6 +49,7 @@
       >
         <entities-menu
           :entities="menuEnitites"
+          :active="[firstViewedPanelIndex, firstViewedPanelIndex + colsCount - 1]"
           @pick="pickEntity"
           @subscriber:play="index => subscribeMessageHandler(activeClient.id, index)"
           @subscriber:stop="index => unsubscribeMessageHandler(activeClient.id, index)"
@@ -171,7 +172,7 @@
                 }"
                 :active="[firstViewedPanelIndex, firstViewedPanelIndex + colsCount - 1]"
                 @swipe="direction => swipeHandler({ direction })"
-                @swipe-to="pickEntity"
+                @swipe-to="scrollToEntity"
               />
             </div>
             <div v-else-if="!renderedEntities.length" class="text-center q-mt-lg text-grey-9 text-weight-bold absolute" style="font-size: 2.5rem; top: 50px; bottom: 0; left: 0; right: 0;">No active entities</div>
@@ -1083,6 +1084,9 @@ export default {
       if (!entity.rendered) {
         this.$set(this.entities[index], 'rendered', true)
       }
+      this.scrollToEntity(index)
+    },
+    scrollToEntity (index) {
       if (!this.$refs.wrapper) { return }
       const el = this.$refs.wrapper,
         entityOffsetWidth = this.wrapperWidth / this.colsCount,

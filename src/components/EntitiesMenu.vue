@@ -3,10 +3,10 @@
     <q-item-label header>Panes</q-item-label>
     <div class="scroll absolute full-width" style="height: calc(100% - 48px);">
       <q-item
-        v-for="(entity, index) in entities" :key="`${entity.type}-${entity.id}`"
+        v-for="(entity, index) in visibleItems" :key="`${entity.type}-${entity.id}`"
         :active="entity.rendered" clickable @click="$emit('pick', index)"
         class="q-ma-xs rounded-borders" style="overflow: hidden;"
-        :class="[`bg-${entity.rendered ? `${colorByType[entity.type]}-6` : 'grey-13'}`]"
+        :class="getItemClasses(entity)"
       >
         <div class="absolute-top-left absolute-bottom-left" :class="[`bg-${`${colorByType[entity.type]}-6`}`]" style="width: 10px;"></div>
         <q-item-section>
@@ -31,7 +31,7 @@
 import isNil from 'lodash/isNil'
 import validateTopic from '../mixins/validateTopic.js'
 export default {
-  props: ['entities'],
+  props: ['entities', 'active'],
   data () {
     return {
       colorByType: {
@@ -48,6 +48,20 @@ export default {
       }
     }
   },
+  computed: {
+    visibleItems () {
+      let visibleIndex = 0
+      return this.entities.reduce((res, entity) => {
+        const item = { ...entity }
+        if (entity.rendered) {
+          item.visibleIndex = visibleIndex
+          visibleIndex++
+        }
+        res.push(item)
+        return res
+      }, [])
+    }
+  },
   methods: {
     isValidPublisher (settings) {
       return !!settings.topic && this.validateTopic(settings.topic) &&
@@ -57,6 +71,13 @@ export default {
     isValidSubscriber (settings) {
       return !!settings.topic && this.validateTopic(settings.topic) &&
         (isNil(settings.options.properties.subscriptionIdentifier) || (settings.options.properties.subscriptionIdentifier > 0 && settings.options.properties.subscriptionIdentifier <= 268435455))
+    },
+    getItemClasses (entity) {
+      const classes = [`bg-${entity.rendered ? `${this.colorByType[entity.type]}-6` : 'grey-13'}`]
+      if (this.active[0] > entity.visibleIndex || this.active[1] < entity.visibleIndex || entity.visibleIndex === undefined) {
+        classes.push('q-ml-md')
+      }
+      return classes
     }
   },
   mixins: [validateTopic]
