@@ -1,5 +1,8 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.4.2] - 2021-03-16
+[feature] remove all button
+[fix] cols count for layout
 ### [2.4.1] - 2021-02-25
 [feature] right menu viewed items highlight
 [fix] scroll by dots

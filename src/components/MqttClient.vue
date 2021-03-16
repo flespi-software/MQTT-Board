@@ -48,6 +48,7 @@
         content-class="bg-grey-3 absolute"
       >
         <entities-menu
+           class="full-width relative-position" style="height: calc(100% - 98px); top: 50px;"
           :entities="menuEnitites"
           :active="[firstViewedPanelIndex, firstViewedPanelIndex + colsCount - 1]"
           @pick="pickEntity"
@@ -55,6 +56,7 @@
           @subscriber:stop="index => unsubscribeMessageHandler(activeClient.id, index)"
           @publish="publishFreeMessage"
         />
+        <q-btn color="red" :disable="!subscribers.length && !publishers.length" unelevated @click="closeAllHandler" label="remove all" class="absolute-bottom" style="bottom: 7px; left: 4px; width: calc(100% - 8px);"/>
       </q-drawer>
 
       <q-page-container>
@@ -397,6 +399,7 @@ export default {
     getСolsCount (wrapperWidth) {
       const pannelMinWidth = 350
       let pannelsMinCount = Math.floor(wrapperWidth / pannelMinWidth)
+      pannelsMinCount = 12 / Math.ceil(12 / pannelsMinCount)
       if (pannelsMinCount > this.renderedEntities.length) {
         pannelsMinCount = this.renderedEntities.length
       }
@@ -1153,6 +1156,18 @@ export default {
         entityOffsetWidth = width / colsCount,
         entityScrollLeft = entityOffsetWidth * this.firstViewedPanelIndex
       el.scrollLeft = entityScrollLeft
+    },
+    closeAllHandler () {
+      for (let i = this.entities.length - 1; i >= 0; i--) {
+        const entity = this.entities[i],
+          type = entity.type,
+          index = entity.index
+        if (type === 'subscriber') {
+          this.removeSubscriber(index)
+        } else if (type === 'publisher') {
+          this.removePublisher(index)
+        }
+      }
     }
   },
   watch: {
