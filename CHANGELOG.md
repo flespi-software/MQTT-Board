@@ -1,5 +1,8 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.5.0] - 2021-04-27
+[feature] new validate engine
+[feature] mqtt helpers in settings, subscribers and publishers
 ### [2.4.2] - 2021-03-16
 [feature] remove all button
 [fix] cols count for layout

@@ -34,13 +34,12 @@
             color="grey-9" outlined class="q-mb-xs" hide-bottom-space
             v-model="config.topic"
             label="Topic"
-            :error="!isValidSubscriber"
+            :error="validateSetting('topic')"
+            :error-message="getValidateMessage('topic')"
             reactive-rules
             no-error-icon
-            :rules="[
-              val => (val.indexOf(',') === -1 || (val.indexOf(',') !== -1 && config.options.properties.subscriptionIdentifier)) || 'You need to set up subscription identifier in the properties below'
-            ]"
           >
+            <q-icon slot="after" name="mdi-information-outline"><q-tooltip>{{getDescription('topic')}}</q-tooltip></q-icon>
             <q-btn slot="append" color="yellow-9" icon="mdi-alert" @click="showSharedSubscriptionNotification" flat round v-if="config.topic.indexOf('$share') === 0"/>
             <q-btn slot="append" color="red-9" icon="icon-flespi2-02-01" flat round v-if="isFlespiMode" @click="flespiTopicOpened = true">
               <q-tooltip>Flespi topic generator</q-tooltip>
@@ -50,29 +49,48 @@
           <q-input color="grey-9" outlined class="q-my-xs" hide-bottom-space v-model="config.treeField" label="Field to group by" v-if="config.mode === 1 && version === 5" hint="User properties field name by which messages will be grouped."/>
           <q-toggle v-model="config.highlight" color="grey-9" label="Highlight messages content" class="q-my-md" />
           <q-expansion-item :value="true" class="q-mt-sm q-mb-sm bg-grey-2" label="Options">
-            <div class="q-pa-sm">
-              <div class="q-px-md q-py-sm">
-                QoS
-                <q-btn-toggle :disable="status" flat rounded toggle-text-color="grey-9" text-color="grey-6" class="q-ml-sm" v-model="config.options.qos" :options="[{label: '0', value: 0},{label: '1', value: 1},{label: '2', value: 2}]"/>
+            <div>
+              <div class="q-mx-md" style="line-height: 34px;">
+                <div style="width: calc(100% - 36px);display:inline-flex;">
+                  QoS
+                  <q-btn-toggle :disable="status" flat rounded toggle-text-color="grey-9" text-color="grey-6" class="q-ml-sm" v-model="config.options.qos" :options="[{label: '0', value: 0},{label: '1', value: 1},{label: '2', value: 2}]"/>
+                </div>
+                <q-icon size="24px" color="grey-7" style="margin-left: 12px" slot="after" name="mdi-information-outline"><q-tooltip max-width="200px">{{getDescription('options.qos')}}</q-tooltip></q-icon>
               </div>
-              <q-checkbox :disable="status" v-if="version === 5" style="display: flex;" color="grey-9" class="q-mt-sm q-mb-sm" v-model="config.options.nl" label="No local"/>
-              <q-checkbox :disable="status" v-if="version === 5" style="display: flex;" color="grey-9" class="q-mt-sm q-mb-sm" v-model="config.options.rap" label="Retain as Published"/>
-              <div v-if="version === 5">
-                <div class="q-mb-sm">
+              <div class="q-mr-md q-ml-sm">
+                <q-checkbox :disable="status" v-if="version === 5" style="width: calc(100% - 36px)" color="grey-9" v-model="config.options.nl" label="No local"/>
+                <q-icon size="24px" color="grey-7" style="margin-left: 12px" slot="after" name="mdi-information-outline"><q-tooltip max-width="200px">{{getDescription('options.nl')}}</q-tooltip></q-icon>
+              </div>
+              <div class="q-mr-md q-ml-sm">
+                <q-checkbox :disable="status" v-if="version === 5" style="width: calc(100% - 36px)" color="grey-9" v-model="config.options.rap" label="Retain as Published"/>
+                <q-icon size="24px" color="grey-7" style="margin-left: 12px" slot="after" name="mdi-information-outline"><q-tooltip max-width="200px">{{getDescription('options.rap')}}</q-tooltip></q-icon>
+              </div>
+              <div class="q-mx-md" style="line-height: 34px;" v-if="version === 5">
+                <div style="width: calc(100% - 36px);display:inline-flex;">
                   Retain handling
                   <q-btn-toggle :disable="status" flat rounded toggle-text-color="grey-9" text-color="grey-6" class="q-ml-sm" v-model="config.options.rh" :options="[{label: '0', value: 0},{label: '1', value: 1},{label: '2', value: 2}]"/>
                 </div>
+                <q-icon size="24px" color="grey-7" style="margin-left: 12px" slot="after" name="mdi-information-outline"><q-tooltip max-width="200px">{{getDescription('options.rh')}}</q-tooltip></q-icon>
               </div>
-              <q-expansion-item v-if="version === 5" class="q-mt-sm q-mb-sm bg-grey-4" label="Properties">
+              <q-expansion-item v-if="version === 5" class="q-mt-sm bg-grey-4" label="Properties">
                 <div class="q-px-md q-py-sm">
                   <q-input
-                    :disable="status" color="grey-9" label="Subscription identifier" clearable type="number" outlined class="q-my-xs" hide-bottom-space
+                    :disable="status" color="grey-9" label="Subscription identifier" type="number" outlined class="q-my-xs" hide-bottom-space
                     v-model.number="config.options.properties.subscriptionIdentifier"
-                    @clear="config.options.properties.subscriptionIdentifier = undefined"
-                    :error="!isNil(config.options.properties.subscriptionIdentifier) && (config.options.properties.subscriptionIdentifier <= 0 || config.options.properties.subscriptionIdentifier > 268435455)"
-                  />
+                    @input="(val) => { if (!val) { config.options.properties.subscriptionIdentifier = undefined } }"
+                    :error="validateSetting('options.properties.subscriptionIdentifier')"
+                    :error-message="getValidateMessage('options.properties.subscriptionIdentifier')"
+                    no-error-icon
+                  >
+                    <q-icon slot="after" name="mdi-information-outline"><q-tooltip>{{getDescription('options.properties.subscriptionIdentifier')}}</q-tooltip></q-icon>
+                  </q-input>
                   <div v-if="!status || config.options.properties.userProperties">
-                    <div class="q-mt-md">User Properties</div>
+                    <div class="q-mt-md q-mb-sm">
+                      <div style="width: calc(100% - 36px);display:inline-flex;">User Properties</div>
+                      <q-icon size="24px" color="grey-7" style="margin-left: 12px" slot="after" name="mdi-information-outline">
+                        <q-tooltip>{{getDescription('options.properties.userProperties')}}</q-tooltip>
+                      </q-icon>
+                    </div>
                     <q-checkbox style="display: flex;" color="grey-9" class="q-mt-sm q-mb-sm" v-model="needUseSubUserPropsToUnsub" label="Also use to unsubscribe"/>
                     <div>
                       <q-list v-if="config.options.properties.userProperties" class="q-mb-xs">
@@ -88,9 +106,15 @@
                   </div>
                 </div>
               </q-expansion-item>
-              <q-expansion-item v-if="version === 5 && !needUseSubUserPropsToUnsub" :value="!!config.unsubscribeProperties.userProperties" class="q-mt-sm q-mb-sm bg-grey-4" label="Unsubscribe properties">
+              <q-separator dark color="grey-5"/>
+              <q-expansion-item v-if="version === 5 && !needUseSubUserPropsToUnsub" :value="!!config.unsubscribeProperties.userProperties" class="q-mb-sm bg-grey-4" label="Unsubscribe properties">
                 <div v-if="!status || config.unsubscribeProperties.userProperties" class="q-px-md q-py-sm">
-                  <div class="q-mt-md">User Properties</div>
+                  <div class="q-mt-md q-mb-sm">
+                    <div style="width: calc(100% - 36px);display:inline-flex;">User Properties</div>
+                    <q-icon size="24px" color="grey-7" style="margin-left: 12px" slot="after" name="mdi-information-outline">
+                      <q-tooltip>{{getDescription('unsubscribeProperties.userProperties')}}</q-tooltip>
+                    </q-icon>
+                  </div>
                   <div>
                     <q-list v-if="config.unsubscribeProperties.userProperties" class="q-mb-xs">
                       <q-item v-for="(value, name) in config.unsubscribeProperties.userProperties" :key="`${name}: ${value}`" style="min-height: 17px;">
@@ -194,11 +218,13 @@ import FlespiTopicConfigurator from './FlespiTopicConfigurator'
 import Tree from './TreeModeView.vue'
 import VirtualList from 'vue-virtual-scroll-list'
 import Message from './Message.vue'
-import validateTopic from '../mixins/validateTopic.js'
+import validateEntities from '../mixins/validateEntities.js'
+import { subscriber as declarations } from '../mixins/declarations.js'
+import get from 'lodash/get'
 import isNil from 'lodash/isNil'
 
 const
-  HISTORY_MODE = 0,
+  LIST_MODE = 0,
   TREE_MODE = 1
 
 export default {
@@ -212,6 +238,7 @@ export default {
   ],
   data () {
     return {
+      declarations,
       version: this.client.config.protocolVersion,
       filterMode: false,
       config: this.value,
@@ -227,8 +254,8 @@ export default {
       },
       modeSelectOptions: [
         {
-          label: 'History',
-          value: HISTORY_MODE
+          label: 'List',
+          value: LIST_MODE
         },
         {
           label: 'Tree',
@@ -251,7 +278,7 @@ export default {
     renderedMessages () {
       let res = []
       switch (this.config.mode) {
-        case HISTORY_MODE: {
+        case LIST_MODE: {
           res = this.filter
             ? this.messages.filter(message => message.topic.indexOf(this.filter) !== -1)
             : this.messages
@@ -288,9 +315,11 @@ export default {
       }
       return result
     },
+    validationModel () {
+      return this.validateSubscriber(this.config, true)
+    },
     isValidSubscriber () {
-      return !!this.config.topic && (this.config.topic.indexOf(',') === -1 || (this.config.topic.indexOf(',') !== -1 && this.config.options.properties.subscriptionIdentifier)) && this.validateTopic(this.config.topic) &&
-        (isNil(this.config.options.properties.subscriptionIdentifier) || (this.config.options.properties.subscriptionIdentifier > 0 && this.config.options.properties.subscriptionIdentifier <= 268435455))
+      return !Object.keys(this.validationModel).length
     },
     isNeedLoading () {
       if (this.config.mode === 1 && this.status && this.subscribed && this.processingFlag === null) {
@@ -410,6 +439,15 @@ export default {
     },
     changeModeHandler () {
       this.treeSelectedTopic = null
+    },
+    validateSetting (path) {
+      return !!get(this.validationModel, path, false)
+    },
+    getValidateMessage (path) {
+      return get(this.validationModel, path, '')
+    },
+    getDescription (path) {
+      return get(this.declarations, `${path}.desc`, '')
     }
   },
   watch: {
@@ -451,7 +489,7 @@ export default {
       }
     }
   },
-  mixins: [validateTopic]
+  mixins: [validateEntities]
 }
 </script>
 

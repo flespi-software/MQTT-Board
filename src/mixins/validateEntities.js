@@ -1,95 +1,179 @@
-import isNil from 'lodash/isNil'
-const schemas = {
-  publisher: {
-    topic: 'string',
-    payload: 'string',
-    options: {
-      qos: 'number',
-      retain: 'boolean',
-      dup: 'boolean',
-      properties: {
-        payloadFormatIndicator: 'boolean',
-        messageExpiryInterval: 'number',
-        topicAlias: 'number',
-        responseTopic: 'string',
-        correlationData: 'string',
-        userProperties: {},
-        contentType: 'string'
-      }
+// import isNil from 'lodash/isNil'
+import get from 'lodash/get'
+import schemas from './declarations'
+
+function validateTopic (topic) {
+  const parts = topic.split('/')
+  for (let i = 0; i < parts.length; i++) {
+    if (parts[i] === '+') { continue }
+    if (parts[i] === '#') { return i === parts.length - 1 }
+    if (parts[i].indexOf('+') !== -1 || parts[i].indexOf('#') !== -1) {
+      return false
     }
-  },
-  subscriber: {
-    topic: 'string',
-    mode: 'number',
-    options: {
-      qos: 'number',
-      nl: 'boolean',
-      rap: 'boolean',
-      rh: 'number',
-      properties: {
-        subscriptionIdentifier: 'number',
-        userProperties: {}
-      }
-    }
-  },
-  settings: {
-    clientId: 'string',
-    host: 'string',
-    keepalive: 'number',
-    protocolVersion: 'number',
-    clean: 'boolean',
-    username: 'string',
-    password: 'string',
-    properties: {
-      sessionExpiryInterval: 'number',
-      receiveMaximum: 'number',
-      maximumPacketSize: 'number',
-      topicAliasMaximum: 'number',
-      requestResponseInformation: 'boolean',
-      requestProblemInformation: 'boolean',
-      userProperties: {},
-      authenticationMethod: 'string',
-      authenticationData: 'string'
-    },
-    will: {
-      topic: 'string',
-      payload: 'string',
-      qos: 'number',
-      retain: 'boolean',
-      properties: {
-        willDelayInterval: 'number',
-        payloadFormatIndicator: 'boolean',
-        messageExpiryInterval: 'number',
-        contentType: 'string',
-        responseTopic: 'string',
-        correlationData: 'string',
-        userProperties: {}
-      }
-    }
-  },
-  entity: {
-    type: 'string',
-    index: 'number',
-    id: 'string'
   }
+
+  return true
+}
+
+function getType (data) {
+  let result = ''
+  const typeString = Object.prototype.toString.call(data)
+  result = typeString.replace(/\[object /gi, '').replace(/\]/gi, '')
+  return result
+}
+
+function min (value, path, object) {
+  let result = true
+  const fieldSchema = get(schemas, path, undefined)
+  if (fieldSchema.min !== undefined) {
+    const msg = `Value must be more or equal ${fieldSchema.min}`
+    result = fieldSchema.min <= value || msg
+  }
+  return result
+}
+function max (value, path, object) {
+  let result = true
+  const fieldSchema = get(schemas, path, undefined)
+  if (fieldSchema.max !== undefined) {
+    const msg = `Value must be less or equal ${fieldSchema.max}`
+    result = fieldSchema.max >= value || msg
+  }
+  return result
+}
+function options (value, path, object) {
+  let result = true
+  const fieldSchema = get(schemas, path, undefined)
+  if (fieldSchema.options !== undefined) {
+    const msg = `Value must be ${fieldSchema.options.join(' or ')}`
+    result = fieldSchema.options.includes(value) || msg
+  }
+  return result
+}
+
+function typeDetails (value, path, object) {
+  let result = true
+  const minV = min(value, path, object),
+    maxV = max(value, path, object),
+    optV = options(value, path, object)
+  if (typeof optV === 'string') {
+    result = optV
+  } else if (typeof maxV === 'string') {
+    result = maxV
+  } else if (typeof minV === 'string') {
+    result = minV
+  }
+  return result
+}
+
+const commonValidators = {
+  min,
+  max,
+  options,
+  typeDetails,
+  types (value, path, object) {
+    let result = true
+    const fieldType = this.getType(value),
+      fieldSchema = get(schemas, path, undefined),
+      isTypeValid = fieldType === fieldSchema.type,
+      isEmpty = fieldType === 'String' && !value.length,
+      isValueValid = typeDetails(value, path, object)
+    if (fieldSchema.required) {
+      if (isEmpty) {
+        result = 'Value cannot be empty'
+      } else if (!isTypeValid) {
+        result = 'Value has invalid type'
+      } else if (typeof isValueValid === 'string') {
+        result = isValueValid
+      }
+    } else if (!fieldSchema.required && fieldType !== 'Undefined') {
+      if (!isTypeValid) {
+        result = 'Value has invalid type'
+      } else if (typeof isValueValid === 'string') {
+        result = isValueValid
+      }
+    }
+    return result
+  },
+  custom (value, path, object) {
+    let result = true
+    if (customValidators[path]) {
+      for (const validator of customValidators[path]) {
+        const validatorResult = validator.apply(this, [value, path, object])
+        if (typeof validatorResult === 'string') {
+          result = validatorResult
+          break
+        }
+      }
+    }
+    return result
+  }
+}
+
+const customValidators = {
+  // path:[Function(value, path, object)]
+  'settings.host': [
+    function (value, path, object) {
+      return (!(!!this.secure && value.indexOf('ws:') === 0)) || 'Host must be only over secured sockets'
+    }
+  ],
+  'publisher.topic': [
+    function (value, path, object) {
+      return validateTopic(value) || 'Topic is invalid'
+    }
+  ],
+  'subscriber.topic': [
+    function (value, path, object) {
+      return validateTopic(value) || 'Topic is invalid'
+    },
+    function (value, path, object) {
+      return (
+        value.indexOf(',') === -1 ||
+        (value.indexOf(',') !== -1 && object.options.properties.subscriptionIdentifier)
+      ) || 'You need to set up subscription identifier in the properties below'
+    }
+  ]
 }
 
 export default {
   methods: {
-    validateObjectBySchema (object, schema) {
-      return Object.keys(schema).reduce((result, key) => {
-        if (object[key] !== undefined && object[key] !== null) {
-          const objectValueType = typeof object[key]
-          if (typeof schema[key] === 'object') {
-            result = result && this.validateObjectBySchema(object[key], schema[key])
-          } else if (objectValueType === schema[key]) {
-            result = result && true
+    getType,
+    validateField (value, path, object, needReason = false) {
+      let result = true
+      const validators = ['types', 'custom']
+      for (const validatorName of validators) {
+        const validator = commonValidators[validatorName]
+        const validatorResult = validator.apply(this, [value, path, object])
+        if (typeof validatorResult === 'string') {
+          if (needReason) {
+            result = validatorResult
           } else {
-            result = result && false
+            result = false
           }
+          break
         }
+      }
+      return result
+    },
+    validateObjectBySchema (object, path, needReasons = false) {
+      const schema = get(schemas, path, {})
+      let result = Object.keys(schema).reduce((result, key) => {
+        const value = object[key],
+          isDict = !!schema[key].type,
+          fieldPath = `${path}.${key}`
+        let reason = true
+        if (!isDict) {
+          reason = this.validateObjectBySchema(value, fieldPath, needReasons)
+        } else {
+          reason = this.validateField(value, fieldPath, object, needReasons)
+        }
+        if (typeof reason !== 'boolean' || !reason) { result[key] = reason }
         return result
-      }, true)
+      }, {})
+      const hasKeys = !!Object.keys(result).length
+      if (!needReasons || !hasKeys) {
+        result = !hasKeys
+      }
+      return result
     },
     validateEntity (entity) {
       switch (entity.type) {
@@ -104,54 +188,17 @@ export default {
         }
       }
     },
-    validateSettings (settings) {
-      return this.validateObjectBySchema(settings, schemas.settings) &&
-        !!settings.clientId &&
-        !!settings.host &&
-        (
-          isNil(settings.keepalive) ||
-          (settings.keepalive >= 0 && settings.keepalive <= 0xffff)
-        ) &&
-        (
-          !settings.will || (!!settings.will && (
-            (!!settings.will.topic && !!settings.will.payload) ||
-            (!settings.will.topic && !settings.will.payload)
-          ))
-        ) &&
-        (!settings.properties ||
-          (
-            !!settings.properties && (
-              (isNil(settings.properties.sessionExpiryInterval) || (settings.properties.sessionExpiryInterval >= 0 && settings.properties.sessionExpiryInterval <= 0xffffffff)) &&
-              (isNil(settings.properties.receiveMaximum) || (settings.properties.receiveMaximum > 0 && settings.properties.receiveMaximum <= 0xffff)) &&
-              (isNil(settings.properties.maximumPacketSize) || (settings.properties.maximumPacketSize > 0 && settings.properties.maximumPacketSize <= 0xffffffff)) &&
-              (isNil(settings.properties.topicAliasMaximum) || (settings.properties.topicAliasMaximum >= 0 && settings.properties.topicAliasMaximum <= 0xffff))
-            )
-          )
-        )
+    validateSettings (settings, needReasons = false) {
+      return this.validateObjectBySchema(settings, 'settings', needReasons)
     },
-    validatePublisher (publisher) {
-      return this.validateObjectBySchema(publisher, schemas.publisher) &&
-      !!publisher.topic && !!publisher.options &&
-      (!publisher.options.properties ||
-        (
-          !!publisher.options.properties &&
-          (isNil(publisher.options.properties.messageExpiryInterval) || (publisher.options.properties.messageExpiryInterval >= 0 && publisher.options.properties.messageExpiryInterval <= 0xffffffff)) &&
-          (isNil(publisher.options.properties.topicAlias) || (publisher.options.properties.topicAlias > 0 && publisher.options.properties.topicAlias <= 0xffff))
-        )
-      )
+    validatePublisher (publisher, needReasons = false) {
+      return this.validateObjectBySchema(publisher, 'publisher', needReasons)
     },
-    validateSubscriber (subscriber) {
-      return this.validateObjectBySchema(subscriber, schemas.subscriber) &&
-        !!subscriber.topic && !!subscriber.options &&
-        (!subscriber.options.properties ||
-          (
-            !!subscriber.options.properties &&
-            (isNil(subscriber.options.properties.subscriptionIdentifier) || (subscriber.options.properties.subscriptionIdentifier > 0 && subscriber.options.properties.subscriptionIdentifier <= 268435455))
-          )
-        )
+    validateSubscriber (subscriber, needReasons = false) {
+      return this.validateObjectBySchema(subscriber, 'subscriber', needReasons)
     },
-    validateEntityRecord (settings) {
-      return this.validateObjectBySchema(settings, schemas.entity)
+    validateEntityRecord (settings, needReasons = false) {
+      return this.validateObjectBySchema(settings, 'entity', needReasons)
     }
   }
 }

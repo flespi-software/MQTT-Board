@@ -1,6 +1,6 @@
 {
   "name": "mqtt-board",
-  "version": "2.4.3",
+  "version": "2.5.0",
   "description": "Client based on MQTT.js and Vue.js",
   "productName": "MQTT Board",
   "cordovaId": "org.cordova.quasar.app",

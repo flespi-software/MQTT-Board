@@ -56,7 +56,11 @@
           @subscriber:stop="index => unsubscribeMessageHandler(activeClient.id, index)"
           @publish="publishFreeMessage"
         />
-        <q-btn color="red" :disable="!subscribers.length && !publishers.length" unelevated @click="closeAllHandler" label="remove all" class="absolute-bottom" style="bottom: 7px; left: 4px; width: calc(100% - 8px);"/>
+        <template v-if="needCloseAll">
+          <q-btn color="grey-7" unelevated @click="needCloseAll = false" label="Close" class="absolute-bottom" style="bottom: 7px; left: 4px; width: calc(50% - 8px);"/>
+          <q-btn color="red" unelevated @click="() => { closeAllHandler(), needCloseAll = false }" label="remove" class="absolute-bottom" style="bottom: 7px; left: calc(50% + 4px); width: calc(50% - 8px);"/>
+        </template>
+        <q-btn v-else color="red" :disable="!subscribers.length && !publishers.length" unelevated @click="needCloseAll = true" label="remove all" class="absolute-bottom" style="bottom: 7px; left: 4px; width: calc(100% - 8px);"/>
       </q-drawer>
 
       <q-page-container>
@@ -357,7 +361,8 @@ export default {
       isInited: false,
       republishMessage: null,
       wrapperWidth: 0,
-      firstViewedPanelIndex: 0
+      firstViewedPanelIndex: 0,
+      needCloseAll: false
     }
   },
   computed: {

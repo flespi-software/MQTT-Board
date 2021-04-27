@@ -28,8 +28,7 @@
 </template>
 
 <script>
-import isNil from 'lodash/isNil'
-import validateTopic from '../mixins/validateTopic.js'
+import validateEntities from '../mixins/validateEntities.js'
 export default {
   props: ['entities', 'active'],
   data () {
@@ -64,13 +63,10 @@ export default {
   },
   methods: {
     isValidPublisher (settings) {
-      return !!settings.topic && this.validateTopic(settings.topic) &&
-        (isNil(settings.options.properties.messageExpiryInterval) || (settings.options.properties.messageExpiryInterval >= 0 && settings.options.properties.messageExpiryInterval <= 0xffffffff)) &&
-        (isNil(settings.options.properties.topicAlias) || (settings.options.properties.topicAlias > 0 && settings.options.properties.topicAlias <= 0xffff))
+      return !Object.keys(this.validatePublisher(settings, true)).length
     },
     isValidSubscriber (settings) {
-      return !!settings.topic && this.validateTopic(settings.topic) &&
-        (isNil(settings.options.properties.subscriptionIdentifier) || (settings.options.properties.subscriptionIdentifier > 0 && settings.options.properties.subscriptionIdentifier <= 268435455))
+      return !Object.keys(this.validateSubscriber(settings, true)).length
     },
     getItemClasses (entity) {
       const classes = [`bg-${entity.rendered ? `${this.colorByType[entity.type]}-6` : 'grey-13'}`]
@@ -80,6 +76,6 @@ export default {
       return classes
     }
   },
-  mixins: [validateTopic]
+  mixins: [validateEntities]
 }
 </script>

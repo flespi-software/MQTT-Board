@@ -29,42 +29,76 @@
       </q-card-section>
       <q-card-section class="publisher__main q-pb-none">
         <div>
-          <q-input color="grey-9" v-model="config.topic" label="Topic" :error="!isValidPublisher" outlined class="q-mb-xs" hide-bottom-space/>
+          <q-input no-error-icon color="grey-9" v-model="config.topic" label="Topic" :error="validateSetting('topic')" :error-message="getValidateMessage('topic')" outlined class="q-mb-xs" hide-bottom-space>
+            <q-icon slot="after" name="mdi-information-outline"><q-tooltip>{{getDescription('topic')}}</q-tooltip></q-icon>
+          </q-input>
           <q-input
             color="grey-9" outlined class="q-mb-xs q-textarea--fix" hide-bottom-space autogrow
             type="textarea"
             v-model="config.payload"
             label="Message"
-          />
-          <q-expansion-item :value="true" class="q-my-sm bg-grey-2" label="Options">
-            <div class="q-pa-sm">
-              <div class="q-px-md q-py-sm">
-                <div class="q-mb-sm">
+          >
+            <q-icon slot="after" name="mdi-information-outline"><q-tooltip>{{getDescription('payload')}}</q-tooltip></q-icon>
+          </q-input>
+          <q-expansion-item :value="true" class="bg-grey-2" label="Options">
+            <div>
+              <div class="q-mx-md" style="line-height: 34px;">
+                <div style="width: calc(100% - 36px);display:inline-flex;">
                   QoS
                   <q-btn-toggle flat rounded toggle-text-color="grey-9" text-color="grey-6" class="q-ml-sm" v-model="config.options.qos" :options="[{label: '0', value: 0},{label: '1', value: 1},{label: '2', value: 2}]"/>
                 </div>
+                <q-icon size="24px" color="grey-7" style="margin-left: 12px" slot="after" name="mdi-information-outline"><q-tooltip>{{getDescription('options.qos')}}</q-tooltip></q-icon>
               </div>
-              <q-checkbox style="display: flex;" color="grey-9" class="q-mt-sm q-mb-sm" v-model="config.options.retain" label="Retain"/>
-              <q-checkbox style="display: flex;" color="grey-9" class="q-mt-sm q-mb-sm" v-model="config.options.dup" label="Duplicate flag"/>
+              <div class="q-mr-md q-ml-sm">
+                <q-checkbox style="width: calc(100% - 36px)" color="grey-9" v-model="config.options.retain" label="Retain"/>
+                <q-icon size="24px" color="grey-7" style="margin-left: 12px" slot="after" name="mdi-information-outline"><q-tooltip max-width="200px">{{getDescription('options.retain')}}</q-tooltip></q-icon>
+              </div>
+              <div class="q-mr-md q-ml-sm">
+                <q-checkbox style="width: calc(100% - 36px)" color="grey-9" v-model="config.options.dup" label="Duplicate flag"/>
+                <q-icon size="24px" color="grey-7" style="margin-left: 12px" slot="after" name="mdi-information-outline"><q-tooltip max-width="200px">{{getDescription('options.dup')}}</q-tooltip></q-icon>
+              </div>
               <q-expansion-item v-if="version === 5" class="q-mt-sm q-mb-sm bg-grey-4" label="Properties">
-                <div class="q-px-md q-py-sm">
-                  <q-checkbox color="grey-9" class="q-mt-sm q-mb-sm" v-model="config.options.properties.payloadFormatIndicator" label="Payload format indicator"/>
+                <div class="q-px-md q-pb-sm">
+                  <div>
+                    <q-checkbox style="width: calc(100% - 36px)" color="grey-9" class="q-mt-sm q-mb-sm" v-model="config.options.properties.payloadFormatIndicator" label="Payload format indicator"/>
+                    <q-icon size="24px" color="grey-7" style="margin-left: 12px" slot="after" name="mdi-information-outline"><q-tooltip>{{getDescription('options.properties.payloadFormatIndicator')}}</q-tooltip></q-icon>
+                  </div>
                   <q-input
-                    color="grey-9" type="number" label="Message expiry interval" clearable outlined class="q-mb-xs" hide-bottom-space
+                    color="grey-9" type="number" label="Message expiry interval" outlined class="q-mb-xs" hide-bottom-space
                     v-model.number="config.options.properties.messageExpiryInterval"
-                    @clear="config.options.properties.messageExpiryInterval = undefined"
-                    :error="!isNil(config.options.properties.messageExpiryInterval) && (config.options.properties.messageExpiryInterval < 0 || config.options.properties.messageExpiryInterval > 0xffffffff)"
-                  />
+                    @input="(val) => { if (!val) { config.options.properties.messageExpiryInterval = undefined } }"
+                    :error="validateSetting('options.properties.messageExpiryInterval')"
+                    :error-message="getValidateMessage('options.properties.messageExpiryInterval')"
+                    no-error-icon
+                  >
+                    <q-icon slot="after" name="mdi-information-outline"><q-tooltip>{{getDescription('options.properties.messageExpiryInterval')}}</q-tooltip></q-icon>
+                  </q-input>
                   <q-input
-                    color="grey-9" type="number" label="Topic alias" clearable outlined class="q-mb-xs" hide-bottom-space
+                    color="grey-9" type="number" label="Topic alias" outlined class="q-mb-xs" hide-bottom-space
                     v-model.number="config.options.properties.topicAlias"
-                    @clear="config.options.properties.topicAlias = undefined"
-                    :error="!isNil(config.options.properties.topicAlias) && (config.options.properties.topicAlias <= 0 || config.options.properties.topicAlias > 0xffff)"
-                  />
-                  <q-input color="grey-9" v-model="config.options.properties.responseTopic" label="Response topic" outlined class="q-mb-xs" hide-bottom-space/>
-                  <q-input color="grey-9" outlined class="q-textarea--fix q-mb-xs" hide-bottom-space type="textarea" autogrow v-model="config.options.properties.correlationData" label="Correlation data"/>
+                    @input="(val) => { if (!val) { config.options.properties.topicAlias = undefined } }"
+                    :error="validateSetting('options.properties.topicAlias')"
+                    :error-message="getValidateMessage('options.properties.topicAlias')"
+                    no-error-icon
+                  >
+                    <q-icon slot="after" name="mdi-information-outline"><q-tooltip>{{getDescription('options.properties.topicAlias')}}</q-tooltip></q-icon>
+                  </q-input>
+                  <q-input color="grey-9" v-model="config.options.properties.responseTopic" label="Response topic" outlined class="q-mb-xs" hide-bottom-space>
+                    <q-icon slot="after" name="mdi-information-outline"><q-tooltip>{{getDescription('options.properties.responseTopic')}}</q-tooltip></q-icon>
+                  </q-input>
+                  <q-input color="grey-9" outlined class="q-textarea--fix q-mb-xs" hide-bottom-space type="textarea" autogrow v-model="config.options.properties.correlationData" label="Correlation data">
+                    <q-icon slot="after" name="mdi-information-outline"><q-tooltip max-width="200px">{{getDescription('options.properties.correlationData')}}</q-tooltip></q-icon>
+                  </q-input>
+                  <q-input color="grey-9" outlined class="q-mb-xs" hide-bottom-space v-model="config.options.properties.contentType" label="Content type">
+                    <q-icon slot="after" name="mdi-information-outline"><q-tooltip>{{getDescription('options.properties.contentType')}}</q-tooltip></q-icon>
+                  </q-input>
                   <div class="q-mb-sm">
-                    <div class="q-mt-md">User Properties</div>
+                    <div class="q-mt-md q-mb-sm">
+                      <div style="width: calc(100% - 36px);display:inline-flex;">User Properties</div>
+                      <q-icon size="24px" color="grey-7" style="margin-left: 12px" slot="after" name="mdi-information-outline">
+                        <q-tooltip>{{getDescription('options.properties.userProperties')}}</q-tooltip>
+                      </q-icon>
+                    </div>
                     <div>
                       <q-list v-if="config.options.properties.userProperties" class="q-mb-xs">
                         <q-item v-for="(value, name) in config.options.properties.userProperties" :key="`${name}: ${value}`" style="min-height: 17px;">
@@ -77,7 +111,6 @@
                       <q-btn :disable="!publishUserProperty.name || !publishUserProperty.value" style="width: 100%" class="q-mt-sm" color="grey-9" @click="addPublishUserProperty()">Add</q-btn>
                     </div>
                   </div>
-                  <q-input color="grey-9" outlined class="q-mb-xs" hide-bottom-space v-model="config.options.properties.contentType" label="Content type"/>
                 </div>
               </q-expansion-item>
             </div>
@@ -89,7 +122,9 @@
 </template>
 
 <script>
-import validateTopic from '../mixins/validateTopic.js'
+import validateEntities from '../mixins/validateEntities.js'
+import { publisher as declarations } from '../mixins/declarations.js'
+import get from 'lodash/get'
 import isNil from 'lodash/isNil'
 
 export default {
@@ -100,6 +135,7 @@ export default {
   ],
   data () {
     return {
+      declarations,
       config: this.value,
       publishUserProperty: {
         value: '',
@@ -108,10 +144,11 @@ export default {
     }
   },
   computed: {
+    validationModel () {
+      return this.validatePublisher(this.config, true)
+    },
     isValidPublisher () {
-      return !!this.config.topic && this.validateTopic(this.config.topic) &&
-        (isNil(this.config.options.properties.messageExpiryInterval) || (this.config.options.properties.messageExpiryInterval >= 0 && this.config.options.properties.messageExpiryInterval <= 0xffffffff)) &&
-        (isNil(this.config.options.properties.topicAlias) || (this.config.options.properties.topicAlias > 0 && this.config.options.properties.topicAlias <= 0xffff))
+      return !Object.keys(this.validationModel).length
     }
   },
   methods: {
@@ -140,6 +177,15 @@ export default {
       if (!Object.keys(this.config.options.properties.userProperties).length) {
         this.$set(this.config.options.properties, 'userProperties', null)
       }
+    },
+    validateSetting (path) {
+      return !!get(this.validationModel, path, false)
+    },
+    getValidateMessage (path) {
+      return get(this.validationModel, path, '')
+    },
+    getDescription (path) {
+      return get(this.declarations, `${path}.desc`, '')
     }
   },
   watch: {
@@ -156,7 +202,7 @@ export default {
       }
     }
   },
-  mixins: [validateTopic]
+  mixins: [validateEntities]
 }
 </script>
 
