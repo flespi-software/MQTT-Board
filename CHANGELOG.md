@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.5.1] - 2021-04-27
+[feature] topic as area
 ### [2.5.0] - 2021-04-27
 [feature] new validate engine
 [feature] mqtt helpers in settings, subscribers and publishers

@@ -29,7 +29,7 @@
       </q-card-section>
       <q-card-section class="publisher__main q-pb-none">
         <div>
-          <q-input no-error-icon color="grey-9" v-model="config.topic" label="Topic" :error="validateSetting('topic')" :error-message="getValidateMessage('topic')" outlined class="q-mb-xs" hide-bottom-space>
+          <q-input no-error-icon color="grey-9" autogrow type="aria" v-model="config.topic" label="Topic" :error="validateSetting('topic')" :error-message="getValidateMessage('topic')" outlined class="q-mb-xs" hide-bottom-space>
             <q-icon slot="after" name="mdi-information-outline"><q-tooltip>{{getDescription('topic')}}</q-tooltip></q-icon>
           </q-input>
           <q-input

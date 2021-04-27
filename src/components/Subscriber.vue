@@ -30,7 +30,7 @@
       <q-card-section class="item__main q-py-none">
         <div class="q-pt-md">
           <q-input
-            :disable="status"
+            :disable="status" autogrow type="aria"
             color="grey-9" outlined class="q-mb-xs" hide-bottom-space
             v-model="config.topic"
             label="Topic"
