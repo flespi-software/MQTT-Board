@@ -215,6 +215,7 @@ import get from 'lodash/get'
 import debounce from 'lodash/debounce'
 import { LocalStorage, openURL } from 'quasar'
 import animate from '../mixins/animate'
+import migrations from '../mixins/migrations'
 import Subscriber from './Subscriber.vue'
 import Publisher from './Publisher.vue'
 import Unresolved from './Unresolved.vue'
@@ -234,6 +235,7 @@ const
     return Object.keys(clients).map(clientId => {
       const client = clients[clientId]
       return {
+        appVersion: version,
         status: client.status,
         config: client.config,
         publishers: client.publishers,
@@ -721,6 +723,7 @@ export default {
     initExternalClients (savedClients) {
       if (savedClients) {
         savedClients.forEach(client => {
+          client = this.migrateClient(client)
           const key = Object.keys(this.clients).length
           const currentClient = {}
           currentClient.config = client.config
@@ -1234,6 +1237,6 @@ export default {
       this.isNeedScroll = false
     }
   },
-  mixins: [validateEntities]
+  mixins: [validateEntities, migrations]
 }
 </script>

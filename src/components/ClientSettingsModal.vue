@@ -287,13 +287,13 @@ export default {
     removeConnectUserProperty (name) {
       this.$delete(this.currentSettings.properties.userProperties, name)
       if (!Object.keys(this.currentSettings.properties.userProperties).length) {
-        this.currentSettings.properties.userProperties = null
+        this.currentSettings.properties.userProperties = undefined
       }
     },
     removeWillConnectUserProperty (name) {
       this.$delete(this.currentSettings.will.properties.userProperties, name)
       if (!Object.keys(this.currentSettings.will.properties.userProperties).length) {
-        this.currentSettings.will.properties.userProperties = null
+        this.currentSettings.will.properties.userProperties = undefined
       }
     },
     openWindow (url, title) {

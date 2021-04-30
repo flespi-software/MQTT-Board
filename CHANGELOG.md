@@ -1,5 +1,8 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.5.2] - 2021-04-30
+[feature] client migrations
+[fix] styles
 ### [2.5.1] - 2021-04-27
 [feature] topic as area
 ### [2.5.0] - 2021-04-27

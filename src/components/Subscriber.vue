@@ -57,12 +57,12 @@
                 </div>
                 <q-icon size="24px" color="grey-7" style="margin-left: 12px" slot="after" name="mdi-information-outline"><q-tooltip max-width="200px">{{getDescription('options.qos')}}</q-tooltip></q-icon>
               </div>
-              <div class="q-mr-md q-ml-sm">
-                <q-checkbox :disable="status" v-if="version === 5" style="width: calc(100% - 36px)" color="grey-9" v-model="config.options.nl" label="No local"/>
+              <div class="q-mr-md q-ml-sm" v-if="version === 5">
+                <q-checkbox :disable="status" style="width: calc(100% - 36px)" color="grey-9" v-model="config.options.nl" label="No local"/>
                 <q-icon size="24px" color="grey-7" style="margin-left: 12px" slot="after" name="mdi-information-outline"><q-tooltip max-width="200px">{{getDescription('options.nl')}}</q-tooltip></q-icon>
               </div>
-              <div class="q-mr-md q-ml-sm">
-                <q-checkbox :disable="status" v-if="version === 5" style="width: calc(100% - 36px)" color="grey-9" v-model="config.options.rap" label="Retain as Published"/>
+              <div class="q-mr-md q-ml-sm" v-if="version === 5">
+                <q-checkbox :disable="status" style="width: calc(100% - 36px)" color="grey-9" v-model="config.options.rap" label="Retain as Published"/>
                 <q-icon size="24px" color="grey-7" style="margin-left: 12px" slot="after" name="mdi-information-outline"><q-tooltip max-width="200px">{{getDescription('options.rap')}}</q-tooltip></q-icon>
               </div>
               <div class="q-mx-md" style="line-height: 34px;" v-if="version === 5">
@@ -387,7 +387,7 @@ export default {
     removeSubscriberUserProperty (name) {
       this.$delete(this.config.options.properties.userProperties, name)
       if (!Object.keys(this.config.options.properties.userProperties).length) {
-        this.$set(this.config.options.properties, 'userProperties', null)
+        this.$set(this.config.options.properties, 'userProperties', undefined)
       }
     },
     addUnsubscribeUserProperty () {
@@ -403,7 +403,7 @@ export default {
     removeUnsubscribeUserProperty (name) {
       this.$delete(this.config.unsubscribeProperties.userProperties, name)
       if (!Object.keys(this.config.unsubscribeProperties.userProperties).length) {
-        this.$set(this.config.unsubscribeProperties, 'userProperties', null)
+        this.$set(this.config.unsubscribeProperties, 'userProperties', undefined)
       }
     },
     showSharedSubscriptionNotification () {

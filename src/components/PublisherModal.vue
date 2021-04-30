@@ -171,7 +171,7 @@ export default {
     removePublishUserProperty (name) {
       this.$delete(this.config.options.properties.userProperties, name)
       if (!Object.keys(this.config.options.properties.userProperties).length) {
-        this.$set(this.config.options.properties, 'userProperties', null)
+        this.$set(this.config.options.properties, 'userProperties', undefined)
       }
     },
     show () { this.$refs.modal.show() },
