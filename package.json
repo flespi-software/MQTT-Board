@@ -16,7 +16,7 @@
     "@quasar/extras": "^1.6.4",
     "compare-versions": "^3.6.0",
     "flespi-io-js": "github:flespi-software/flespi-io-js#5a430095b9f3795a3c0b82d2dec90ec961c8fc46",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "mqtt": "^3.0.0",
     "quasar": "^1.14.0",
     "vue-virtual-scroll-list": "^1.4.7"
