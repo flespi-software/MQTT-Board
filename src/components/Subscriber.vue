@@ -42,7 +42,7 @@
             <q-icon slot="after" name="mdi-information-outline"><q-tooltip>{{getDescription('topic')}}</q-tooltip></q-icon>
             <q-btn slot="append" color="yellow-9" icon="mdi-alert" @click="showSharedSubscriptionNotification" flat round v-if="config.topic.indexOf('$share') === 0"/>
             <q-btn slot="append" color="red-9" icon="icon-flespi2-02-01" flat round v-if="isFlespiMode" @click="flespiTopicOpened = true">
-              <q-tooltip>Flespi topic generator</q-tooltip>
+              <q-tooltip>flespi topic generator</q-tooltip>
             </q-btn>
           </q-input>
           <q-btn-toggle v-close-popup flat rounded toggle-text-color="grey-9" text-color="grey-6" v-model="config.mode" :options="modeSelectOptions" @input="changeModeHandler" style="width: 100%" class="q-mt-md"/>

@@ -5,7 +5,7 @@
         <q-toolbar :class="{[`bg-${color}`]: true, 'text-white': !!color}"  style="position: absolute; z-index: 1">
           <q-btn round v-if="activeClient && clientsCloseable" flat dense icon="mdi-close" @click="clearActiveClient"/>
           <q-toolbar-title>
-            <img v-if="!activeClient && whiteLabel === ''" src="statics/mqttboard.png" alt="MQTT Board" style="height: 30px">
+            <img v-if="!activeClient && whiteLabel === ''" src="mqttboard.png" alt="MQTT Board" style="height: 30px">
             <span v-if="activeClient">
               {{`${activeClient.config.clientName || activeClient.config.clientId}`}}
               <q-tooltip v-if="activeClient.config.clientName">{{`${activeClient.config.clientId}`}}</q-tooltip>

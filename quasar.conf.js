@@ -1,6 +1,6 @@
 // Configuration for your app
 // https://quasar.dev/quasar-cli/quasar-conf-js
-
+const ESLintPlugin = require('eslint-webpack-plugin')
 module.exports = function (ctx) {
   return {
     // app boot file (/src/boot)
@@ -16,7 +16,7 @@ module.exports = function (ctx) {
     // https://github.com/quasarframework/quasar/tree/dev/extras
     extras: [
       // 'ionicons-v4',
-      'mdi-v4',
+      'mdi-v5',
       // 'fontawesome-v5',
       // 'eva-icons',
       // 'themify',
@@ -38,7 +38,7 @@ module.exports = function (ctx) {
       //            (fastest compile time; minimum bundle size; most tedious)
       // * true   - Import everything from Quasar
       //            (not treeshaking Quasar; biggest bundle size; convenient)
-      all: false,
+      importStrategy: 'auto',
 
       components: [
         'QLayout',
@@ -102,16 +102,9 @@ module.exports = function (ctx) {
       // extractCSS: false,
 
       // https://quasar.dev/quasar-cli/cli-documentation/handling-webpack
-      extendWebpack (cfg) {
-        cfg.module.rules.push({
-          enforce: 'pre',
-          test: /\.(js|vue)$/,
-          loader: 'eslint-loader',
-          exclude: /node_modules/,
-          options: {
-            formatter: require('eslint').CLIEngine.getFormatter('stylish')
-          }
-        })
+      chainWebpack (chain) {
+        chain.plugin('eslint-webpack-plugin')
+          .use(ESLintPlugin, [{ extensions: [ 'js', 'vue' ] }])
       }
     },
 
@@ -147,27 +140,27 @@ module.exports = function (ctx) {
         theme_color: '#333333',
         icons: [
           {
-            src: 'statics/icons/apple-icon-120x120.png',
+            src: 'icons/apple-icon-120x120.png',
             sizes: '120x120',
             type: 'image/png'
           },
           {
-            src: 'statics/icons/ms-icon-144x144.png',
+            src: 'icons/ms-icon-144x144.png',
             sizes: '144x144',
             type: 'image/png'
           },
           {
-            src: 'statics/icons/apple-icon-152x152.png',
+            src: 'icons/apple-icon-152x152.png',
             sizes: '152x152',
             type: 'image/png'
           },
           {
-            src: 'statics/icons/icon-192x192.png',
+            src: 'icons/icon-192x192.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: 'statics/icons/ms-icon-310x310.png',
+            src: 'icons/ms-icon-310x310.png',
             sizes: '310x310',
             type: 'image/png'
           }
