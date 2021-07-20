@@ -1,9 +1,8 @@
 {
   "name": "mqtt-board",
-  "version": "2.5.2",
+  "version": "2.6.1",
   "description": "Client based on MQTT.js and Vue.js",
   "productName": "MQTT Board",
-  "cordovaId": "org.cordova.quasar.app",
   "capacitorId": "",
   "author": "Sergey Buntsevich <scarry92@yandex.ru>",
   "main": "index.js",
@@ -13,33 +12,38 @@
     "deploy": "quasar build -m spa && mkdir -p deploy && cp -R dist/spa/* misc LICENSE package.json README.md deploy && node_modules/git-directory-deploy/bin/git-directory-deploy.sh -ddeploy -bgh-pages -rhttps://git.gurtam.net/flespi/frontend/mqtt-board.git && rm -rf deploy && git push github gh-pages"
   },
   "dependencies": {
-    "@quasar/extras": "^1.6.4",
+    "@quasar/extras": "^1.10.7",
     "compare-versions": "^3.6.0",
-    "flespi-io-js": "github:flespi-software/flespi-io-js#5a430095b9f3795a3c0b82d2dec90ec961c8fc46",
-    "lodash": "^4.17.20",
-    "mqtt": "^3.0.0",
-    "quasar": "^1.14.0",
+    "core-js": "^3.14.0",
+    "flespi-io-js": "github:flespi-software/flespi-io-js",
+    "lodash": "^4.17.21",
+    "mqtt": "^4.2.6",
+    "quasar": "^1.15.21",
     "vue-virtual-scroll-list": "^1.4.7"
   },
   "devDependencies": {
-    "@quasar/app": "^1.9.6",
-    "@vue/eslint-config-standard": "^5.1.2",
-    "babel-eslint": "^10.1.0",
-    "eslint": "^6.8.0",
-    "eslint-loader": "^3.0.4",
-    "eslint-plugin-import": "^2.20.2",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.1",
-    "eslint-plugin-vue": "^6.2.2",
+    "@quasar/app": "^2.2.10",
+    "babel-eslint": "^10.0.1",
+    "eslint": "^7.21.0",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-vue": "^7.7.0",
+    "eslint-webpack-plugin": "^2.4.0",
     "git-directory-deploy": "^1.5.1"
   },
-  "engines": {
-    "node": ">= 8.9.0",
-    "npm": ">= 5.6.0",
-    "yarn": ">= 1.6.0"
-  },
   "browserslist": [
-    "last 1 version, not dead, ie >= 11"
-  ]
+    "last 10 Chrome versions",
+    "last 10 Firefox versions",
+    "last 4 Edge versions",
+    "last 7 Safari versions",
+    "last 8 Android versions",
+    "last 8 ChromeAndroid versions",
+    "last 8 FirefoxAndroid versions",
+    "last 10 iOS versions",
+    "last 5 Opera versions"
+  ],
+  "engines": {
+    "node": ">= 10.18.1",
+    "npm": ">= 6.13.4",
+    "yarn": ">= 1.21.1"
+  }
 }
