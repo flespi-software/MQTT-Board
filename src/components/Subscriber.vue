@@ -15,7 +15,7 @@
                     <q-icon name="mdi-eye-off-outline" />
                   </q-item-section>
                   <q-item-section>
-                    <q-item-label>Hide pannel</q-item-label>
+                    <q-item-label>Hide panel</q-item-label>
                   </q-item-section>
                 </q-item>
                 <q-item v-close-popup @click="removeSubscriber()" clickable v-ripple>
@@ -189,17 +189,12 @@
           :itemprops="getMessageProps"
         />
         <div class="subscriber__list subscriber__list--tree" v-else-if="config.mode === 1 && Object.keys(renderedMessages).length && subscribed">
-          <div style="height: 60%" class="scroll">
-            <tree :topic="treeSelectedTopic" :data="renderedMessages" @change="treeValueChangeHandler"/>
+          <div :style="{height: treeModeValue ? '60%' : '100%'}" class="scroll">
+            <tree :topic="treeSelectedTopic" :data="renderedMessages" :expandByValue="true" @change="treeValueChangeHandler"/>
           </div>
-          <div class="scroll tree__message">
+          <div class="scroll tree__message" v-if="treeModeValue">
             <template v-for="(message, key, index) in treeModeValue">
-              <message :key="`tree-message-${key}-${index}`" :message="message" v-if="typeof message.payload !== 'undefined'" :highlight="config.highlight" @action-send="(message) => { $emit('action-send', message) }" />
-              <div :key="`tree-message-empty-${index}`" v-else style="height: 100%" class='text-center'>
-                <div style="font-size: 1.5rem;" class="q-pt-sm text-grey-9">No messages</div>
-                <div class="text-grey-8">{{message.topic}}</div>
-                <q-icon color="red" name="mail" size="5rem"/>
-              </div>
+              <message :key="`tree-message-${key}-${index}`" :message="message" :highlight="config.highlight" @action-send="(message) => { $emit('action-send', message) }" />
             </template>
           </div>
         </div>
@@ -294,13 +289,13 @@ export default {
     treeModeValue () {
       let result = null
       if (this.config.mode === TREE_MODE) {
-        if (this.treeSelectedTopic === null) { return { '': { topic: '*Empty*' } } }
+        if (this.treeSelectedTopic === null) { return null }
         const path = this.treeSelectedTopic.split('/')
         result = path.reduce((result, pathElement, pathIndex) => {
           if (pathIndex === path.length - 1) {
             if (!result[pathElement]) {
               this.treeValueChangeHandler(null)
-              return { '': { topic: '*Empty*' } }
+              return null
             }
             return result[pathElement].value && Object.keys(result[pathElement].value).reduce((res, key) => {
               res[key] = JSON.parse(result[pathElement].value[key])
@@ -310,7 +305,7 @@ export default {
           return result[pathElement].children
         }, this.messages)
         if (!result || !Object.keys(result).length) {
-          result = { '': { topic: this.treeSelectedTopic } }
+          result = null
         }
       }
       return result

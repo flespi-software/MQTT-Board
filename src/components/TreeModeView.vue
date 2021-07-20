@@ -18,7 +18,7 @@
         </template>
         <span :class="{'text-grey-9': true, 'text-italic': !key, 'text-grey-10': data[key].value, 'text-bold': data[key].value}">{{key || '*Empty*'}}</span>
       </div>
-      <tree-mode-view :key="`nest-${key}`" :nesting="nesting + 1" :topic="topic" v-if="showObj[key] && data[key].children" :data='data[key].children' @change="(value) => { $emit('change', value) }"/>
+      <tree-mode-view :key="`nest-${key}`" :nesting="nesting + 1" :expandByValue="expand" :topic="topic" v-if="showObj[key] && data[key].children" :data='data[key].children' @change="(value) => { $emit('change', value) }"/>
     </template>
     <div
       @click="limit += 1000"
@@ -48,18 +48,27 @@ export default {
     nesting: {
       type: Number,
       default: 0
+    },
+    expandByValue: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
     const showObj = {}
     const keys = Object.keys(this.data)
     const len = keys.length
+    let expand = this.expandByValue
     for (let i = 0, l = len; i < l; i++) {
-      showObj[keys[i]] = false
+      if (expand && (this.data[keys[i]].value || keys.length > 1)) {
+        expand = false
+      }
+      showObj[keys[i]] = expand
     }
     return {
       showObj: showObj,
-      limit: 10000
+      limit: 10000,
+      expand
     }
   },
   computed: {

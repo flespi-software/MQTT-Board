@@ -20,7 +20,7 @@
                     <q-icon name="mdi-eye-off-outline" />
                   </q-item-section>
                   <q-item-section>
-                    <q-item-label>Hide pannel</q-item-label>
+                    <q-item-label>Hide panel</q-item-label>
                   </q-item-section>
                 </q-item>
               </q-list>

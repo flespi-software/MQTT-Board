@@ -17,7 +17,7 @@
             <sub v-if="activeClient && $q.platform.is.desktop && activeClient.cid" style="border-radius: 5px;font-size: .7rem; padding: 2px;" title="cid">{{activeClient.cid}}</sub>
             <sup v-if="!activeClient && whiteLabel === ''" style="position: relative; font-size: .9rem; padding-left: 4px">{{version}}</sup>
           </q-toolbar-title>
-          <q-btn round flat dark v-if="activeClient" icon="mdi-settings" @click.stop="editClientHandler(activeClient.id)"/>
+          <q-btn round flat dark v-if="activeClient" icon="mdi-cog" @click.stop="editClientHandler(activeClient.id)"/>
           <q-btn round flat v-if="activeClient" icon="mdi-plus">
             <q-menu anchor="bottom right" self="top right" content-class="mqtt-board__popup">
               <q-list>
@@ -34,7 +34,7 @@
             </q-menu>
           </q-btn>
           <q-btn round flat dark v-if="activeClient" icon="mdi-menu" @click.stop="drawerRight = !drawerRight"/>
-          <q-btn v-if="!activeClient && !whiteLabel" dense flat @click="openURL('https://github.com/flespi-software/MQTT-Board')" color="white" icon="mdi-github-circle" style="margin-right: 60px" :label="$q.platform.is.mobile ? '' : 'Fork me!'"/>
+          <q-btn v-if="!activeClient && !whiteLabel" dense flat @click="openURL('https://github.com/flespi-software/MQTT-Board')" color="white" icon="mdi-github" style="margin-right: 60px" :label="$q.platform.is.mobile ? '' : 'Fork me!'"/>
         </q-toolbar>
         <q-btn fab v-if="!activeClient" @click.native="addClientHandler" icon="mdi-plus" :color="accentColor" style="position: absolute; right: 16px; top: 21px; z-index: 2;"/>
       </q-header>
@@ -103,7 +103,7 @@
                       <q-btn round flat v-else size=".7rem" icon="mdi-play" @click.stop="connectClientHandler(index)">
                         <q-tooltip>Activate client</q-tooltip>
                       </q-btn>
-                      <q-btn round flat size=".7rem" icon="mdi-settings" @click.stop="editClientHandler(index)"/>
+                      <q-btn round flat size=".7rem" icon="mdi-cog" @click.stop="editClientHandler(index)"/>
                       <q-btn round flat size=".7rem" icon="mdi-delete" @click.stop="deleteClientHandler(index)"/>
                     </q-card-actions>
                   </q-card>
@@ -404,13 +404,13 @@ export default {
   methods: {
     openURL: openURL,
     getСolsCount (wrapperWidth) {
-      const pannelMinWidth = 350
-      let pannelsMinCount = Math.floor(wrapperWidth / pannelMinWidth)
-      pannelsMinCount = 12 / Math.ceil(12 / pannelsMinCount)
-      if (pannelsMinCount > this.renderedEntities.length) {
-        pannelsMinCount = this.renderedEntities.length
+      const panelMinWidth = 350
+      let panelsMinCount = Math.floor(wrapperWidth / panelMinWidth)
+      panelsMinCount = 12 / Math.ceil(12 / panelsMinCount)
+      if (panelsMinCount > this.renderedEntities.length) {
+        panelsMinCount = this.renderedEntities.length
       }
-      const colsCount = this.wrapperWidth < 600 ? 1 : pannelsMinCount
+      const colsCount = this.wrapperWidth < 600 ? 1 : panelsMinCount
       return colsCount
     },
     /* settings modal handlers start */

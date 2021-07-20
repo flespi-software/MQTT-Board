@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.6.1] - 2021-07-20
+[feature] auto expand tree to valued leaf
 ### [2.6.0] - 2021-06-17
 [update] deps
 ### [2.5.2] - 2021-04-30
@@ -19,7 +21,7 @@ All notable changes to this project will be documented in this file.
 ### [2.4.0] - 2021-02-25
 [feature] scroll view
 [rebase] right menu functions
-[fix] pannels width
+[fix] panels width
 ### [2.3.5] - 2020-12-28
 [fix] mobile scroll
 ### [2.3.4] - 2020-11-03
@@ -69,7 +71,7 @@ All notable changes to this project will be documented in this file.
 [fix] version select
 ### [2.0.6] - 2019-12-05
 [fix] number field value
-[fix] responsive pannels layout
+[fix] responsive panels layout
 ### [2.0.5] - 2019-11-29
 [update] copy function
 ### [2.0.4] - 2019-11-26

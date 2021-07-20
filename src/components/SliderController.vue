@@ -7,7 +7,7 @@
         color="white" icon="mdi-chevron-left" dense flat size="21px"
         @click="$emit('swipe', 'right')"
       >
-        <q-tooltip>Previous pannel</q-tooltip>
+        <q-tooltip>Previous panel</q-tooltip>
       </q-btn>
     </div>
     <div class="flex relative-position">
@@ -15,7 +15,7 @@
         color="white" icon="mdi-dots-horizontal" dense flat size="10px"
         @click="$emit('swipe-to', 0)"
       >
-        <q-tooltip>Go to first pannel</q-tooltip>
+        <q-tooltip>Go to first panel</q-tooltip>
       </q-btn>
       <div v-for="item in shownItems" :key="item.queue" @click="$emit('swipe-to', item.queue)" class="q-py-xs row inline" :class="getItemClasses(item.queue)">
         <q-btn round size="4px" class="q-mx-xs" :color="colors[item.type]" unelevated>
@@ -32,7 +32,7 @@
         color="white" icon="mdi-dots-horizontal" dense flat size="10px"
         @click="$emit('swipe-to', entities.length - 1)"
       >
-        <q-tooltip>Go to last pannel</q-tooltip>
+        <q-tooltip>Go to last panel</q-tooltip>
       </q-btn>
     </div>
     <div>
@@ -41,7 +41,7 @@
         color="white" icon="mdi-chevron-right" dense flat size="21px"
         @click="$emit('swipe', 'left')"
       >
-        <q-tooltip>Next pannel</q-tooltip>
+        <q-tooltip>Next panel</q-tooltip>
       </q-btn>
     </div>
   </div>
