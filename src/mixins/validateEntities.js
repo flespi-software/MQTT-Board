@@ -126,10 +126,15 @@ const customValidators = {
       return validateTopic(value) || 'Topic is invalid'
     },
     function (value, path, object) {
-      return (
+      return ((
         value.indexOf(',') === -1 ||
         (value.indexOf(',') !== -1 && object.options.properties.subscriptionIdentifier)
-      ) || 'You need to set up subscription identifier in the properties below'
+      ) &&
+      (
+        value.indexOf('$filter') !== 0 ||
+        (value.indexOf('$filter') === 0 && object.options.properties.subscriptionIdentifier)
+      )) ||
+      'You need to set up subscription identifier in the properties below'
     }
   ]
 }
