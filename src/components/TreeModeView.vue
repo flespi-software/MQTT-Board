@@ -16,7 +16,12 @@
           <q-icon color="grey-9" v-if="showObj[key]" name="mdi-menu-down" style="vertical-align: baseline" />
           <q-icon color="grey-9" v-else name="mdi-menu-right" style="vertical-align: baseline" />
         </template>
-        <span :class="{'text-grey-9': true, 'text-italic': !key, 'text-grey-10': data[key].value, 'text-bold': data[key].value}">{{key || '*Empty*'}}</span>
+        <span :class="{'text-grey-9': true, 'text-italic': !key, 'text-grey-10': data[key].value, 'text-bold': data[key].value}" style="white-space: nowrap;">
+          {{key || '*Empty*'}}
+          <q-icon color="grey-9" v-if="getRetainFlag(key)" name="mdi-content-save-outline" style="vertical-align: baseline">
+            <q-tooltip>Retain message</q-tooltip>
+          </q-icon>
+        </span>
       </div>
       <tree-mode-view :key="`nest-${key}`" :nesting="nesting + 1" :expandByValue="expand" :topic="topic" v-if="showObj[key] && data[key].children" :data='data[key].children' @change="(value) => { $emit('change', value) }"/>
     </template>
@@ -95,6 +100,15 @@ export default {
     toggle (key, index) {
       this.$set(this.showObj, key, !this.showObj[key])
       this.$emit('change', this.data[key].topic)
+    },
+    getRetainFlag (key) {
+      const value = this.data[key].value
+      if (!value) { return false }
+      return Object.values(value).reduce((res, packet) => {
+        if (!res) { return res }
+        res = packet.retain
+        return res
+      }, true)
     }
   }
 }

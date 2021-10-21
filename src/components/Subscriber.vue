@@ -298,7 +298,7 @@ export default {
               return null
             }
             return result[pathElement].value && Object.keys(result[pathElement].value).reduce((res, key) => {
-              res[key] = JSON.parse(result[pathElement].value[key])
+              res[key] = result[pathElement].value[key]
               return res
             }, {})
           }

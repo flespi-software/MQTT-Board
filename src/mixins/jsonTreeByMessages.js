@@ -25,7 +25,7 @@ function jsonTreeByMessages (messages, treeField, dest) {
         const valueByTreeField = payload.properties && payload.properties.userProperties && payload.properties.userProperties[treeField]
           ? payload.properties.userProperties[treeField]
           : ''
-        Vue.set(currentNesting[pathElement].value, valueByTreeField, JSON.stringify(payload))
+        Vue.set(currentNesting[pathElement].value, valueByTreeField, payload)
       }
     })
   }
