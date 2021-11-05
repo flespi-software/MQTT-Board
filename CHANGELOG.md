@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.6.4] - 2021-11-05
+[fix] payload autogrow
 ### [2.6.3] - 2021-10-21
 [feature] tree mode retain message flag
 ### [2.6.2] - 2021-08-23

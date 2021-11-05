@@ -18,6 +18,7 @@
               <q-icon slot="after" name="mdi-information-outline"><q-tooltip>{{getDescription('topic')}}</q-tooltip></q-icon>
             </q-input>
             <q-input
+              ref="messageInput"
               color="grey-9" outlined class="q-mb-xs q-textarea--fix" hide-bottom-space autogrow
               type="textarea"
               v-model="config.payload"
@@ -185,6 +186,9 @@ export default {
     getDescription (path) {
       return get(this.declarations, `${path}.desc`, '')
     }
+  },
+  mounted () {
+    this.$nextTick(() => this.$refs.messageInput.__adjustHeight())
   },
   mixins: [validateEntities]
 }
