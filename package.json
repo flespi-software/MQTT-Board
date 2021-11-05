@@ -1,6 +1,6 @@
 {
   "name": "mqtt-board",
-  "version": "2.6.3",
+  "version": "2.6.4",
   "description": "Client based on MQTT.js and Vue.js",
   "productName": "MQTT Board",
   "capacitorId": "",
