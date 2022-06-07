@@ -292,17 +292,18 @@ export default {
         if (this.treeSelectedTopic === null) { return null }
         const path = this.treeSelectedTopic.split('/')
         result = path.reduce((result, pathElement, pathIndex) => {
-          if (pathIndex === path.length - 1) {
-            if (!result[pathElement]) {
-              this.treeValueChangeHandler(null)
-              return null
-            }
-            return result[pathElement].value && Object.keys(result[pathElement].value).reduce((res, key) => {
+          if (!result || !result[pathElement]) {
+            this.treeValueChangeHandler(null)
+            result = null
+          } else if (pathIndex === path.length - 1) {
+            result = result[pathElement].value && Object.keys(result[pathElement].value).reduce((res, key) => {
               res[key] = result[pathElement].value[key]
               return res
             }, {})
+          } else {
+            result = result[pathElement].children
           }
-          return result[pathElement].children
+          return result
         }, this.messages)
         if (!result || !Object.keys(result).length) {
           result = null

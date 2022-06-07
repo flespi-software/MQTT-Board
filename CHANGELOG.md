@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.6.5] - 2022-06-07
+[fix] tree value calculating after clearing
 ### [2.6.4] - 2021-11-05
 [fix] payload autogrow
 ### [2.6.3] - 2021-10-21
