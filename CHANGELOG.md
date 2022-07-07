@@ -1,5 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.6.7] - 2022-06-07
+[fix] read config before creation
+### [2.6.6] - 2022-06-07
+[feature] flespipp setting
 ### [2.6.5] - 2022-06-07
 [fix] tree value calculating after clearing
 ### [2.6.4] - 2021-11-05

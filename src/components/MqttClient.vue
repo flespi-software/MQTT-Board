@@ -1136,7 +1136,7 @@ export default {
     },
     makeFlespiRestBus (clientId) {
       const client = this.clients[clientId]
-      const selectorsAsync = new SelectorsAsync({ flespiApp: `mqtt-board(client: ${client.config.clientId})` })
+      const selectorsAsync = new SelectorsAsync({ flespiApp: `mqtt-board(client: ${client?.config?.clientId})` })
       selectorsAsync.bus.auth.getRegions()
         .then((regions) => {
           regions = get(regions, 'data.result', [])
