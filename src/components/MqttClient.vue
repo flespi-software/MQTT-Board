@@ -398,12 +398,12 @@ export default {
       return menu
     },
     colsCount () {
-      return this.getСolsCount(this.wrapperWidth)
+      return this.getColsCount(this.wrapperWidth)
     }
   },
   methods: {
     openURL: openURL,
-    getСolsCount (wrapperWidth) {
+    getColsCount (wrapperWidth) {
       const panelMinWidth = 350
       let panelsMinCount = Math.floor(wrapperWidth / panelMinWidth)
       panelsMinCount = 12 / Math.ceil(12 / panelsMinCount)
@@ -1136,7 +1136,7 @@ export default {
     },
     makeFlespiRestBus (clientId) {
       const client = this.clients[clientId]
-      const selectorsAsync = new SelectorsAsync()
+      const selectorsAsync = new SelectorsAsync({ flespiApp: `mqtt-board(client: ${client.config.clientId})` })
       selectorsAsync.bus.auth.getRegions()
         .then((regions) => {
           regions = get(regions, 'data.result', [])
@@ -1160,7 +1160,7 @@ export default {
     onWrapperResize ({ width }) {
       this.wrapperWidth = width
       const el = this.$refs.wrapper,
-        colsCount = this.getСolsCount(width),
+        colsCount = this.getColsCount(width),
         entityOffsetWidth = width / colsCount,
         entityScrollLeft = entityOffsetWidth * this.firstViewedPanelIndex
       el.scrollLeft = entityScrollLeft
