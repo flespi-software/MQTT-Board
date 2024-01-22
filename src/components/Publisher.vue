@@ -4,7 +4,7 @@
       <q-card-section class="q-pa-none">
         <q-toolbar class="q-pr-none text-white bg-indigo">
           <q-toolbar-title>Publisher</q-toolbar-title>
-          <q-btn round :disable="!isValidPublisher" flat icon="mdi-send" @click="$emit('publish')">
+          <q-btn round :disable="!isValidPublisher" flat icon="mdi-send" @click="publishEmit">
             <q-tooltip>Publish</q-tooltip>
           </q-btn>
           <q-btn round flat icon="mdi-dots-vertical">
@@ -187,6 +187,22 @@ export default {
     },
     getDescription (path) {
       return get(this.declarations, `${path}.desc`, '')
+    },
+    publishEmit () {
+      if (this.config.topic.indexOf('+') >= 0 || this.config.topic.indexOf('#') >= 0) {
+        this.$q.dialog({
+          title: 'Wildcard topic!',
+          message: `Do you really want to publish to wildcard topic "${this.config.topic}"?`,
+          cancel: true,
+          ok: true,
+          color: 'white',
+          class: 'text-white bg-red'
+        }).onOk(() => {
+          this.$emit('publish')
+        })
+      } else {
+        this.$emit('publish')
+      }
     }
   },
   watch: {

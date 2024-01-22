@@ -75,7 +75,8 @@
               <q-expansion-item v-if="version === 5" class="q-mt-sm bg-grey-4" label="Properties">
                 <div class="q-px-md q-py-sm">
                   <q-input
-                    :disable="status" color="grey-9" label="Subscription identifier" type="number" outlined class="q-my-xs" hide-bottom-space
+                    placeholder="123"
+                    :disable="status" color="grey-9" label="Subscription identifier (numeric)" type="number" outlined class="q-my-xs" hide-bottom-space
                     v-model.number="config.options.properties.subscriptionIdentifier"
                     @input="(val) => { if (!val) { config.options.properties.subscriptionIdentifier = undefined } }"
                     :error="validateSetting('options.properties.subscriptionIdentifier')"

@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.6.9] - 2023-02-17
+[feature] сonfirm publishing to wildcard topics
 ### [2.6.8] - 2022-06-07
 [fix] update config before init client
 ### [2.6.7] - 2022-06-07
