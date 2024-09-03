@@ -126,7 +126,7 @@
           </q-expansion-item>
           <q-expansion-item class="q-mt-sm q-mb-sm bg-grey-2" label="Will">
             <div class="q-px-md q-pb-sm">
-              <q-input color="grey-9" no-error-icon v-model="currentSettings.will.topic" :error="validateSetting('will.topic')" :error-message="getValidateMessage('will.topic')" label="Will topic" outlined class="q-mb-xs" hide-bottom-space>
+              <q-input color="grey-9" no-error-icon v-model="currentSettings.will.topic" :error="validateSetting('will.topic')" :error-message="getValidateMessage('will.topic')" label="Will topic" outlined class="q-mb-xs topic-font" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" hide-bottom-space>
                 <q-icon slot="after" name="mdi-information-outline"><q-tooltip>{{getDescription('will.topic')}}</q-tooltip></q-icon>
               </q-input>
               <q-input color="grey-9" no-error-icon v-model="currentSettings.will.payload" :error="validateSetting('will.payload')" :error-message="getValidateMessage('will.payload')" type="textarea" label="Will payload" outlined class="q-mb-xs q-textarea--fix" hide-bottom-space autogrow>

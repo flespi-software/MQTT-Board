@@ -10,18 +10,19 @@
           overflow: $q.platform.is.desktop ? '' : 'hidden',
           textOverflow: $q.platform.is.desktop ? '' : 'ellipsis'
         }"
-        @click="toggle(key, index)" class="cursor-pointer" :class="{'bg-grey-2': topic && topic === data[key].topic}"
+        @click="toggle(key, index)" class="cursor-pointer row" :class="{'bg-grey-2': topic && topic === data[key].topic}"
       >
         <template v-if="data[key].children">
           <q-icon color="grey-9" v-if="showObj[key]" name="mdi-menu-down" style="vertical-align: baseline" />
           <q-icon color="grey-9" v-else name="mdi-menu-right" style="vertical-align: baseline" />
         </template>
         <span :class="{'text-grey-9': true, 'text-italic': !key, 'text-grey-10': data[key].value, 'text-bold': data[key].value}" style="white-space: nowrap;">
-          {{key || '*Empty*'}}
+          <div class="inline-block topic-font-element" style="white-space: pre-wrap;">{{key || '*Empty*'}}</div>
           <q-icon color="grey-9" v-if="getRetainFlag(key)" name="mdi-content-save-outline" style="vertical-align: baseline">
             <q-tooltip>Retain message</q-tooltip>
           </q-icon>
         </span>
+        <div v-if="data[key].value && data[key].value['']" class="inline-block ellipsis text-grey vertical-middle q-px-md float-right text-right" style="font-size:10px;width:150px;" :title="JSON.stringify(data[key].value[''].payload)">{{ data[key].value && data[key].value[''] && data[key].value[''].payload }}</div>
       </div>
       <tree-mode-view :key="`nest-${key}`" :nesting="nesting + 1" :expandByValue="expand" :topic="topic" v-if="showObj[key] && data[key].children" :data='data[key].children' @change="(value) => { $emit('change', value) }"/>
     </template>

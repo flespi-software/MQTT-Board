@@ -1,4 +1,14 @@
 // app global css in Stylus form
+@font-face {
+  font-family: 'SourceCodePro';
+  src: url('./fonts/SourceCodePro-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+.topic-font textarea, .topic-font input, .topic-font-element {
+  font-family: SourceCodePro;
+}
+
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: none;

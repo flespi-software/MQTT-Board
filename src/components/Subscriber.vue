@@ -31,7 +31,7 @@
         <div class="q-pt-md">
           <q-input
             :disable="status" autogrow type="aria"
-            color="grey-9" outlined class="q-mb-xs" hide-bottom-space
+            color="grey-9" outlined class="q-mb-xs topic-font" hide-bottom-space autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
             v-model="config.topic"
             label="Topic"
             :error="validateSetting('topic')"

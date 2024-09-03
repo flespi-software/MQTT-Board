@@ -1,9 +1,7 @@
 <template>
   <q-card class="message q-my-sm q-mx-sm">
     <div class="message__title q-pt-sm q-pl-sm q-pr-sm">
-      <div :title="message.topic" class="message__topic ellipsis">
-        {{message.topic}}
-      </div>
+      <div :title="message.topic" class="message__topic topic-font-element" style="white-space: pre-wrap;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">{{message.topic}}</div>
       <div class="message__sys text-grey-7">
         {{`qos: ${message.qos}, dup: ${message.dup ? '+' : '-'}, retain: ${message.retain ? '+' : '-'}${timestamp}`}}
       </div>
@@ -68,11 +66,11 @@ export default {
 <style lang="stylus" scoped>
   .message
     .message__title
-      height 50px
+      min-height 50px
       position relative
     .message__topic
       font-size 0.8rem
-      font-weight bold
+      font-weight 500
       width: calc(100% - 30px)
     .message__sys
       font-size 0.8rem

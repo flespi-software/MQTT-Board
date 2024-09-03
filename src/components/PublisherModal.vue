@@ -1,6 +1,6 @@
 <template>
-  <q-dialog ref="modal" @show="$emit('show')" @hide="$emit('hide')" content-class="mqtt-board__popup" :maximized="$q.platform.is.mobile">
-     <q-card :style="{width: $q.platform.is.mobile ? '100%' : '50vw'}">
+  <q-dialog ref="modal" @show="$emit('show')" @hide="$emit('hide')" content-class="mqtt-board__popup" :maximized="$q.platform.is.mobile || $q.screen.lt.md">
+     <q-card :style="{width: $q.platform.is.mobile || $q.screen.lt.md ? '100%' : '50vw'}">
       <q-card-section class="q-pa-none">
         <q-toolbar class="q-pr-none bg-indigo text-white">
           <q-toolbar-title>Publisher</q-toolbar-title>
@@ -11,15 +11,15 @@
         </q-toolbar>
       </q-card-section>
       <q-separator />
-      <q-card-section :style="{ height: $q.platform.is.mobile ? 'calc(100% - 50px)' : '70vh'}" class="scroll q-pa-none">
+      <q-card-section :style="{ height: $q.platform.is.mobile || $q.screen.lt.md ? 'calc(100% - 51px)' : '70vh'}" class="scroll q-pa-none">
         <div class="mqtt-client__publisher">
           <div class="q-pa-md">
-            <q-input no-error-icon color="grey-9" autogrow type="aria" v-model="config.topic" label="Topic" :error="validateSetting('topic')" :error-message="getValidateMessage('topic')" outlined class="q-mb-xs" hide-bottom-space>
+            <q-input no-error-icon color="grey-9" autogrow type="aria" v-model="config.topic" label="Topic" :error="validateSetting('topic')" :error-message="getValidateMessage('topic')" outlined class="q-mb-xs topic-font" hide-bottom-space autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
               <q-icon slot="after" name="mdi-information-outline"><q-tooltip>{{getDescription('topic')}}</q-tooltip></q-icon>
             </q-input>
             <q-input
               ref="messageInput"
-              color="grey-9" outlined class="q-mb-xs q-textarea--fix" hide-bottom-space autogrow
+              color="grey-9" outlined class="q-mb-xs q-textarea--fix topic-font" hide-bottom-space autogrow
               type="textarea"
               v-model="config.payload"
               label="Message"
@@ -188,7 +188,7 @@ export default {
     }
   },
   mounted () {
-    this.$nextTick(() => this.$refs.messageInput.__adjustHeight())
+    this.$nextTick(() => this.$refs.messageInput && this.$refs.messageInput.__adjustHeight())
   },
   mixins: [validateEntities]
 }
