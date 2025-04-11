@@ -119,7 +119,8 @@
                 <q-resize-observer @resize="onWrapperResize" :debounce="0" />
                 <template v-for="(entity, index) in renderedEntities">
                   <publisher
-                    :class='[`col-${12 / colsCount}`]'
+                    class="col"
+                    :style='`width:${colSize}px;flex: 0 0 auto;`'
                     ref="entities"
                     v-if="entity.type === 'publisher'"
                     :key="`publ${entity.id}`"
@@ -131,7 +132,8 @@
                     @hide="$set(entity, 'rendered', false)"
                   />
                   <subscriber
-                    :class='[`col-${12 / colsCount}`]'
+                    class="col"
+                    :style='`width:${colSize}px;flex: 0 0 auto;`'
                     ref="entities"
                     v-else-if="entity.type === 'subscriber'"
                     :key="`subs${entity.id}`"
@@ -151,7 +153,8 @@
                     @hide="$set(entity, 'rendered', false)"
                   />
                   <unresolved
-                    :class='[`col-${12 / colsCount}`]'
+                    class="col"
+                    :style='`width:${colSize}px;flex: 0 0 auto;`'
                     ref="entities"
                     v-else-if="entity.type === 'unresolved'"
                     :key="`unresolved${index}`"
@@ -160,7 +163,8 @@
                     @hide="$set(entity, 'rendered', false)"
                   />
                   <logs
-                    :class='[`col-${12 / colsCount}`]'
+                    class="col"
+                    :style='`width:${colSize}px;flex: 0 0 auto;`'
                     ref="entities"
                     v-else-if="entity.type === 'logs'"
                     :key="`subs${index}`"
@@ -399,6 +403,9 @@ export default {
     },
     colsCount () {
       return this.getColsCount(this.wrapperWidth)
+    },
+    colSize () {
+      return Math.floor(this.wrapperWidth / this.colsCount)
     }
   },
   methods: {
@@ -406,7 +413,7 @@ export default {
     getColsCount (wrapperWidth) {
       const panelMinWidth = 350
       let panelsMinCount = Math.floor(wrapperWidth / panelMinWidth)
-      panelsMinCount = 12 / Math.ceil(12 / panelsMinCount)
+      // panelsMinCount = 12 / Math.ceil(12 / panelsMinCount)
       if (panelsMinCount > this.renderedEntities.length) {
         panelsMinCount = this.renderedEntities.length
       }

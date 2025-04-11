@@ -72,6 +72,7 @@ export default {
       font-size 0.8rem
       font-weight 500
       width: calc(100% - 30px)
+      word-break: break-all
     .message__sys
       font-size 0.8rem
       width: calc(100% - 30px)

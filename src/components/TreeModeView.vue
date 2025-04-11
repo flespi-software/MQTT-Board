@@ -1,28 +1,29 @@
 <template>
-  <div :style="$q.platform.is.desktop ? {'display': 'inline-block', minWidth: '100%'} : []" style="user-select: none;">
+  <div :style="$q.platform.is.desktop ? {'display': 'block', width: '100%'} : []" style="user-select: none;line-height:16px;">
     <template v-for="(key, index) in limitedKeys">
       <div
         :key="`${key}`"
         :style="{
           paddingLeft: `${10 * nesting + (data[key].children ? 0 : 14)}px`,
-          display: $q.platform.is.desktop ? 'inline-block' : '',
-          minWidth: $q.platform.is.desktop ? '100%' : '',
+          width: $q.platform.is.desktop ? `calc(100% -10px)` : '',
           overflow: $q.platform.is.desktop ? '' : 'hidden',
-          textOverflow: $q.platform.is.desktop ? '' : 'ellipsis'
+          textOverflow: $q.platform.is.desktop ? '' : 'ellipsis',
+          position: 'relative'
         }"
-        @click="toggle(key, index)" class="cursor-pointer row" :class="{'bg-grey-2': topic && topic === data[key].topic}"
+        @click="toggle(key, index)" class="cursor-pointer hover-highlight" :class="{'bg-grey-2': topic && topic === data[key].topic}"
       >
-        <template v-if="data[key].children">
-          <q-icon color="grey-9" v-if="showObj[key]" name="mdi-menu-down" style="vertical-align: baseline" />
-          <q-icon color="grey-9" v-else name="mdi-menu-right" style="vertical-align: baseline" />
-        </template>
-        <span :class="{'text-grey-9': true, 'text-italic': !key, 'text-grey-10': data[key].value, 'text-bold': data[key].value}" style="white-space: nowrap;">
-          <div class="inline-block topic-font-element" style="white-space: pre-wrap;">{{key || '*Empty*'}}</div>
-          <q-icon color="grey-9" v-if="getRetainFlag(key)" name="mdi-content-save-outline" style="vertical-align: baseline">
+
+        <div :class="{'text-italic': !key, 'text-orange-6': data[key].value}"  style="white-space: nowrap;width:calc(100% - 150px);">
+          <template v-if="data[key].children">
+            <q-icon color="grey-9" v-if="showObj[key]" name="mdi-menu-down" style="vertical-align: baseline" />
+            <q-icon color="grey-9" v-else name="mdi-menu-right" style="vertical-align: baseline" />
+          </template>
+          <div class="topic-font-element inline-block" :style="`white-space: pre-wrap;width:calc(100% - ${data[key].children ? 22 : 10}px);overflow:hidden;text-overflow: ellipsis;`">{{key || '*Empty*'}}</div>
+          <q-icon color="grey-9" v-if="getRetainFlag(key)" name="mdi-content-save-outline" style="vertical-align:top">
             <q-tooltip>Retain message</q-tooltip>
           </q-icon>
-        </span>
-        <div v-if="data[key].value && data[key].value['']" class="inline-block ellipsis text-grey vertical-middle q-px-md float-right text-right" style="font-size:10px;width:150px;" :title="JSON.stringify(data[key].value[''].payload)">{{ data[key].value && data[key].value[''] && data[key].value[''].payload }}</div>
+        </div>
+        <div v-if="data[key].value && data[key].value['']" class="absolute-right ellipsis text-grey vertical-middle q-px-md q-pt-xs text-right" style="font-size:10px;width:150px;" :title="JSON.stringify(data[key].value[''].payload)">{{ data[key].value && data[key].value[''] && data[key].value[''].payload }}</div>
       </div>
       <tree-mode-view :key="`nest-${key}`" :nesting="nesting + 1" :expandByValue="expand" :topic="topic" v-if="showObj[key] && data[key].children" :data='data[key].children' @change="(value) => { $emit('change', value) }"/>
     </template>
@@ -42,7 +43,9 @@
 
 <style lang="stylus">
   .more-button:hover
-      background-color $grey-3
+    background-color $grey-4
+  .hover-highlight:hover
+    background-color $grey-3
 </style>
 
 <script>

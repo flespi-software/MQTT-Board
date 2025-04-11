@@ -1,5 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.6.11] - 2025-04-11
+[fix] tree render
+[fix] space char in monospace font
+### [2.6.10] - 2024-09-03
+[feature] monospace font with whitespace highlight
+[fix] fullscreen publisher modal for small screens
 ### [2.6.9] - 2023-02-17
 [feature] сonfirm publishing to wildcard topics
 ### [2.6.8] - 2022-06-07

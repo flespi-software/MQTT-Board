@@ -182,7 +182,7 @@
           ref="scroller"
           :onscroll="listScroll"
           v-if="messages && messages.length && config.mode === 0"
-          :size="110"
+          :size="150"
           :remain="15"
           class="subscriber__list"
           :item="Message"

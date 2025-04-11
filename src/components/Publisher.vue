@@ -220,7 +220,11 @@ export default {
     }
   },
   mounted () {
-    this.$nextTick(() => this.$refs.messageInput.__adjustHeight())
+    this.$nextTick(() => {
+      this.$nextTick(() => {
+        this.$refs.messageInput.__adjustHeight()
+      })
+    })
   },
   mixins: [validateEntities]
 }
