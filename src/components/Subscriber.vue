@@ -177,7 +177,20 @@
         <q-btn slot="append" color="grey-9" icon="mdi-close" @click="filter = ''" flat round v-if="!!filter"/>
       </q-input>
       <div style="position: relative;" :style="{height: `calc(100% - ${filterMode ? '62px' : '50px'})`}">
-        <virtual-list
+        <q-virtual-scroll
+          v-if="messages && messages.length && config.mode === 0"
+          ref="scroller"
+          class="subscriber__list"
+          :items="renderedMessages"
+          @virtual-scroll="onScroll"
+          virtual-scroll-item-size="140"
+          >
+          <!-- style="max-height: 300px;" -->
+          <template v-slot="{ item }">
+            <message :message="item" :highlight="config.highlight" :key="`subMsg_${item.topic}_${item.properties.userProperties.timestamp}`" @action-send="(item) => { $emit('action-send', item) }" />
+          </template>
+        </q-virtual-scroll>
+        <!-- <virtual-list
           v-autoscroll="needAutoScroll"
           ref="scroller"
           :onscroll="listScroll"
@@ -188,7 +201,7 @@
           :item="Message"
           :itemcount="renderedMessages.length"
           :itemprops="getMessageProps"
-        />
+        /> -->
         <div class="subscriber__list subscriber__list--tree" v-else-if="config.mode === 1 && Object.keys(renderedMessages).length && subscribed">
           <div :style="{height: treeModeValue ? '60%' : '100%'}" class="scroll">
             <tree :topic="treeSelectedTopic" :data="renderedMessages" :expandByValue="true" @change="treeValueChangeHandler"/>
@@ -212,7 +225,7 @@
 <script>
 import FlespiTopicConfigurator from './FlespiTopicConfigurator'
 import Tree from './TreeModeView.vue'
-import VirtualList from 'vue-virtual-scroll-list'
+// import VirtualList from 'vue-virtual-scroll-list'
 import Message from './Message.vue'
 import validateEntities from '../mixins/validateEntities.js'
 import { subscriber as declarations } from '../mixins/declarations.js'
@@ -325,6 +338,13 @@ export default {
       return this.config.mode === 1 && this.status && (!this.subscribed || !!this.processingFlag)
     }
   },
+  mounted () {
+    this.$nextTick(() => {
+      if(this.needAutoScroll && this.renderedMessages.length > 0) {
+        this.$refs.scroller.refresh(this.renderedMessages.length, 'end-force')
+      }
+    })
+  },
   methods: {
     isNil,
     checkProcessing () {
@@ -412,6 +432,16 @@ export default {
         preventClose: true
       })
     },
+    onScroll (e) {
+      console.log(e)
+      if (e.index < (this.renderedMessages.length - 2) && e.direction === 'decrease') {
+        this.needAutoScroll = false
+        console.log('autoscroll', this.needAutoScroll)
+      } else if(e.index >= (this.renderedMessages.length - 2) && e.direction === 'increase') {
+        this.needAutoScroll = true
+        console.log('autoscroll', this.needAutoScroll)
+      }
+    },
     listScroll (e) {
       if (this.status) {
         const el = this.$refs.scroller && this.$refs.scroller.$el
@@ -448,6 +478,14 @@ export default {
     }
   },
   watch: {
+    renderedMessages (val) {
+      this.$nextTick(() => {
+        if(this.needAutoScroll && this.renderedMessages.length > 0) {
+          this.$refs.scroller.refresh(this.renderedMessages.length)
+        } else {
+        }
+      })
+    },
     config: {
       deep: true,
       handler (val) {
@@ -469,7 +507,10 @@ export default {
       }
     }
   },
-  components: { VirtualList, Tree, Message, FlespiTopicConfigurator },
+  components: {
+    // VirtualList,
+    Tree, Message, FlespiTopicConfigurator
+  },
   directives: {
     autoscroll: {
       inserted (el, { value }) {

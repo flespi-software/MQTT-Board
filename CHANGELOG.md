@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [2.6.12] - 2025-04-11
+[fix] new virtual scroll for list view
 ### [2.6.11] - 2025-04-11
 [fix] tree render
 [fix] space char in monospace font

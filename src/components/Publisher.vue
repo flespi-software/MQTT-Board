@@ -29,12 +29,12 @@
       </q-card-section>
       <q-card-section class="publisher__main q-pb-none">
         <div>
-          <q-input no-error-icon color="grey-9" autogrow type="aria" v-model="config.topic" label="Topic" :error="validateSetting('topic')" :error-message="getValidateMessage('topic')" outlined class="q-mb-xs topic-font" hide-bottom-space autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+          <q-input no-error-icon color="grey-9" autogrow type="textarea" v-model="config.topic" label="Topic" :error="validateSetting('topic')" :error-message="getValidateMessage('topic')" outlined class="q-mb-xs topic-font" hide-bottom-space autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
             <q-icon slot="after" name="mdi-information-outline"><q-tooltip>{{getDescription('topic')}}</q-tooltip></q-icon>
           </q-input>
           <q-input
             ref="messageInput"
-            color="grey-9" outlined class="q-mb-xs q-textarea--fix topic-font" hide-bottom-space autogrow
+            color="grey-9" outlined class="q-mb-xs topic-font" hide-bottom-space autogrow
             type="textarea"
             v-model="config.payload"
             label="Message"
@@ -221,9 +221,7 @@ export default {
   },
   mounted () {
     this.$nextTick(() => {
-      this.$nextTick(() => {
-        this.$refs.messageInput.__adjustHeight()
-      })
+      this.$refs.messageInput.__adjustHeight()
     })
   },
   mixins: [validateEntities]
