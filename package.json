@@ -1,34 +1,41 @@
 {
   "name": "mqtt-board",
-  "version": "2.6.12",
+  "version": "3.0.0",
   "description": "Client based on MQTT.js and Vue.js",
   "productName": "MQTT Board",
-  "capacitorId": "",
   "author": "Sergey Buntsevich <scarry92@yandex.ru>",
-  "main": "index.js",
   "private": true,
   "license": "MIT",
   "scripts": {
-    "deploy": "quasar build -m spa && mkdir -p deploy && cp -R dist/spa/* misc LICENSE package.json README.md deploy && node_modules/git-directory-deploy/bin/git-directory-deploy.sh -ddeploy -bgh-pages -rgit@git.gurtam.net:flespi/frontend/mqtt-board.git && rm -rf deploy && git push github gh-pages"
+    "dev": "quasar dev",
+    "build": "quasar build",
+    "deploy": "quasar build -m spa && mkdir -p deploy && cp -R dist/spa/* misc LICENSE package.json README.md deploy && node_modules/git-directory-deploy/bin/git-directory-deploy.sh -ddeploy -bgh-pages -rgit@git.gurtam.net:flespi/frontend/mqtt-board.git && rm -rf deploy && git push github gh-pages",
+    "lint": "eslint --ext .js,.vue ./src",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
-    "@quasar/extras": "^1.10.7",
-    "compare-versions": "^3.6.0",
-    "core-js": "^3.14.0",
-    "flespi-io-js": "github:flespi-software/flespi-io-js",
+    "@quasar/extras": "^1.16.9",
+    "compare-versions": "^6.1.0",
+    "flespi-io-js": "github:flespi-software/flespi-io-js#v3",
     "lodash": "^4.17.21",
-    "mqtt": "^4.2.6",
-    "quasar": "^1.15.21",
-    "vue-virtual-scroll-list": "^1.4.7"
+    "mitt": "^3.0.1",
+    "mqtt": "^5.3.4",
+    "quasar": "^2.14.2",
+    "vue": "^3.4.18",
+    "vue-router": "^4.2.5"
   },
   "devDependencies": {
-    "@quasar/app": "^2.2.10",
-    "babel-eslint": "^10.0.1",
-    "eslint": "^7.21.0",
-    "eslint-config-prettier": "^8.1.0",
-    "eslint-plugin-vue": "^7.7.0",
-    "eslint-webpack-plugin": "^2.4.0",
-    "git-directory-deploy": "^1.5.1"
+    "@playwright/test": "^1.57.0",
+    "@quasar/app-vite": "^2.4.1",
+    "eslint": "^8.56.0",
+    "eslint-plugin-vue": "^9.20.1",
+    "git-directory-deploy": "^1.5.1",
+    "sass": "^1.70.0",
+    "vite": "^5.0.12",
+    "vitest": "^1.6.1"
   },
   "browserslist": [
     "last 10 Chrome versions",
@@ -42,8 +49,7 @@
     "last 5 Opera versions"
   ],
   "engines": {
-    "node": ">= 10.18.1",
-    "npm": ">= 6.13.4",
-    "yarn": ">= 1.21.1"
+    "node": ">= 18.0.0",
+    "npm": ">= 9.0.0"
   }
 }
