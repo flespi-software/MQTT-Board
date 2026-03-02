@@ -1,4 +1,4 @@
-import RestConnector from 'flespi-io-js/dist/rest'
+import RestConnector from 'flespi-io-js/rest'
 import get from 'lodash/get'
 
 class Connector {

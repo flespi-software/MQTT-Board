@@ -16,8 +16,8 @@
         <div v-for="selector in renderConfig.selectors" :key="`${entity}-${selector.name}`">
           <q-select
             class="q-mb-md"
-            :value="model[selector.name]"
-            @input="value => update(selector.name, value)"
+            :model-value="model[selector.name]"
+            @update:model-value="value => update(selector.name, value)"
             :options="renderLists[selector.name]"
             emit-value
             map-options
@@ -40,7 +40,6 @@
             <template v-slot:option="scope">
               <q-item
                 v-bind="scope.itemProps"
-                v-on="scope.itemEvents"
               >
                 <q-item-section>
                   <q-item-label v-html="scope.opt.label || '*Empty*'" />
@@ -52,15 +51,16 @@
         </div>
       </template>
       <template v-if="renderConfig.children">
-        <flespi-selectors :value="value" :config="renderConfig.children" :connector="connector" @input="updateModel" :entities="model" :key="entity" :theme="cTheme" />
+        <flespi-selectors :model-value="modelValue" :config="renderConfig.children" :connector="connector" @update:model-value="updateModel" :entities="model" :key="entity" :theme="cTheme" />
       </template>
     </div>
   </div>
 </template>
 
 <script>
+import { defineComponent } from 'vue'
 import config from './config.json'
-export default {
+export default defineComponent({
   name: 'FlespiSelectors',
   props: {
     config: {
@@ -76,12 +76,13 @@ export default {
         return {}
       }
     },
-    value: String,
+    modelValue: String,
     theme: Object,
     default () {
       return { color: 'grey-9', bgColor: 'white' }
     }
   },
+  emits: ['update:modelValue'],
   data () {
     const entity = undefined // Object.keys(this.config)[0]
     // const state = this.initByEntity(entity)
@@ -127,37 +128,37 @@ export default {
     },
     filterItems (selector, filter, update) {
       if (this.lists[selector.name].inited) {
-        this.$set(this.renderLists, selector.name, filter
+        this.renderLists[selector.name] = filter
           ? this.lists[selector.name].filter(item => item.label.toLowerCase().indexOf(filter.toLowerCase()) > -1)
-          : this.lists[selector.name])
+          : this.lists[selector.name]
         update()
         return
       }
       this.connector[selector.getter.name](...selector.getter.params.map(param => this.model[param] || 'all'))
         .then(list => {
-          this.$set(this.lists, selector.name, list)
-          this.$set(this.renderLists, selector.name, filter
+          this.lists[selector.name] = list
+          this.renderLists[selector.name] = filter
             ? this.lists[selector.name].filter(item => item.label.toLowerCase().indexOf(filter.toLowerCase()) > -1)
-            : this.lists[selector.name])
+            : this.lists[selector.name]
           this.lists[selector.name].inited = true
           update()
         })
     },
     update (selectorName, value) {
-      this.$set(this.model, selectorName, value && value.length ? value : null)
+      this.model[selectorName] = value && value.length ? value : null
       if (this.entity && this.config[this.entity].selectors) {
         this.config[this.entity].selectors.forEach((selector) => {
           if (selector.getter && selector.getter.params && selector.getter.params.includes(selectorName)) {
-            this.$set(this.lists, selector.name, [])
-            this.$set(this.renderLists, selector.name, [])
+            this.lists[selector.name] = []
+            this.renderLists[selector.name] = []
           }
         })
       }
-      this.$emit('input', this.getCurrentTopic(this.topic, this.model))
+      this.$emit('update:modelValue', this.getCurrentTopic(this.topic, this.model))
     },
     updateModel (topic) {
       this.topic = topic
-      this.$emit('input', this.getCurrentTopic(this.topic, this.model))
+      this.$emit('update:modelValue', this.getCurrentTopic(this.topic, this.model))
     },
     getCurrentTopic (topic, model) {
       let currentTopic = topic && topic.topicPattern
@@ -228,22 +229,22 @@ export default {
       this.lists = lists
       this.model = Object.assign(selectorsModel, model.values)
       this.topic = this.config[model.path[0]].topic
-      this.topic && this.$emit('input', this.getCurrentTopic(this.topic, this.model))
+      this.topic && this.$emit('update:modelValue', this.getCurrentTopic(this.topic, this.model))
     },
     changeEntity (entity) {
       const { lists, model } = this.initByEntity(entity)
       this.lists = lists
       this.model = { ...model, ...this.entities }
       this.topic = this.config[entity].topic
-      this.topic && this.$emit('input', this.getCurrentTopic(this.topic, this.model))
+      this.topic && this.$emit('update:modelValue', this.getCurrentTopic(this.topic, this.model))
     }
   },
   created () {
-    this.setModel(this.topicToModelHandler(this.value))
+    this.setModel(this.topicToModelHandler(this.modelValue))
     const topicPattern = this.getCurrentTopic(this.topic, this.model)
     this.$watch('entity', this.changeEntity)
     if (topicPattern) {
-      this.$emit('input', topicPattern)
+      this.$emit('update:modelValue', topicPattern)
     }
   },
   watch: {
@@ -258,16 +259,17 @@ export default {
       }
     }
   }
-}
+})
 </script>
 
-<style lang="stylus">
-  .selectors__settings-splash
-    position absolute
-    top 0
-    bottom 0
-    right 0
-    left 0
-    background-color rgba(255,255,255,0.6)
-    z-index 1
+<style lang="scss">
+  .selectors__settings-splash {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    background-color: rgba(255,255,255,0.6);
+    z-index: 1;
+  }
 </style>

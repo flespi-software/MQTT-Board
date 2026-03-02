@@ -1,0 +1,23 @@
+{
+  "topic": "topic/to/test/#",
+  "mode": 1,
+  "options": {
+    "qos": 1,
+    "nl": false,
+    "rap": false,
+    "rh": 0,
+    "properties": {
+      "subscriptionIdentifier": 33,
+      "userProperties": {
+        "fleet_id": 21,
+        "hash": "ab4287ad"
+      }
+    }
+  },
+  "unsubscribeProperties": {
+    "userProperties": {
+      "fleet_id": 22,
+      "hash": "ab4287ad"
+    }
+  }
+}

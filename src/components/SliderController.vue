@@ -47,44 +47,53 @@
   </div>
 </template>
 
-<style lang="stylus">
-  .wrapper__footer
-    position absolute
-    bottom 0
-    left 0
-    right 0
-    height 50px
-  .item--active
-    background-color $grey-3
-  .item--active-left
-    border-radius 50% 0 0 50%
-  .item--active-right
-    border-radius 0 50% 50% 0
-  .item--active-all
-    border-radius 50%
-  .wrapper__left-more
-    position absolute
-    left -4px
-    top -1px
-    height 100%
-    z-index 1
-    background-color $grey-9
-  .wrapper__right-more
-    position absolute
-    right -4px
-    top -1px
-    height 100%
-    z-index 1
-    background-color $grey-9
+<style lang="scss">
+  .wrapper__footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+  }
+  .item--active {
+    background-color: var(--q-grey-3, #eeeeee);
+  }
+  .item--active-left {
+    border-radius: 50% 0 0 50%;
+  }
+  .item--active-right {
+    border-radius: 0 50% 50% 0;
+  }
+  .item--active-all {
+    border-radius: 50%;
+  }
+  .wrapper__left-more {
+    position: absolute;
+    left: -4px;
+    top: -1px;
+    height: 100%;
+    z-index: 1;
+    background-color: var(--q-grey-9, #424242);
+  }
+  .wrapper__right-more {
+    position: absolute;
+    right: -4px;
+    top: -1px;
+    height: 100%;
+    z-index: 1;
+    background-color: var(--q-grey-9, #424242);
+  }
 </style>
 
 <script>
-export default {
+import { defineComponent } from 'vue'
+export default defineComponent({
   props: {
     entities: Array,
     buttonsDisable: Object,
     active: Array
   },
+  emits: ['swipe', 'swipe-to'],
   data () {
     return {
       colors: {
@@ -143,5 +152,5 @@ export default {
       return classes
     }
   }
-}
+})
 </script>

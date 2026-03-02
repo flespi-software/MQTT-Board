@@ -1,0 +1,21 @@
+{
+  "topic": "topic/to/test",
+  "payload": "{\"test\": true}",
+  "options": {
+    "qos": 1,
+    "retain": true,
+    "dup": true,
+    "properties": {
+      "payloadFormatIndicator": true,
+      "messageExpiryInterval": 86400,
+      "topicAlias": 77,
+      "responseTopic": "topic/to/respond",
+      "correlationData": "link1",
+      "userProperties": {
+        "fleet_id": 20,
+        "hash": "ab4287ad"
+      },
+      "contentType": "json"
+    }
+  }
+}

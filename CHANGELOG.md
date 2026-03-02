@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [3.0.0] - 2026-03-02
+[update] app migrated to vue3
 ### [2.6.12] - 2025-04-11
 [fix] new virtual scroll for list view
 ### [2.6.11] - 2025-04-11

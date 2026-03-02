@@ -28,7 +28,7 @@
           </q-btn>
         </q-toolbar>
       </q-card-section>
-      <q-card-section ref="scroller" class="scroll q-pa-none" style="height: calc(100% - 50px)" @scroll.native="listScroll" v-autoscroll="needAutoScroll">
+      <q-card-section ref="scroller" class="scroll q-pa-none" style="height: calc(100% - 50px)" @scroll="listScroll" v-autoscroll="needAutoScroll">
         <q-card class="log__item q-ma-sm" :class="[`bg-${getColor(log)}-3`]" v-for="(log, index) in logs" :key="`log${index}`">
           <div class="log__title q-py-xs q-px-sm text-bold">
             {{log.type}}
@@ -110,13 +110,15 @@
 </template>
 
 <script>
+import { defineComponent } from 'vue'
 import { date } from 'quasar'
 import JsonTree from './JsonTree.vue'
-export default {
+export default defineComponent({
   name: 'Logs',
   props: [
     'logs'
   ],
+  emits: ['hide', 'clear'],
   data () {
     return {
       needAutoScroll: true,
@@ -219,12 +221,12 @@ export default {
   },
   directives: {
     autoscroll: {
-      inserted (el, { value }) {
+      mounted (el, { value }) {
         if (value) {
           el.scrollTop = el.scrollHeight - el.clientHeight
         }
       },
-      componentUpdated (el, { value }) {
+      updated (el, { value }) {
         setTimeout(() => {
           if (value) {
             el.scrollTop = el.scrollHeight - el.clientHeight
@@ -234,14 +236,16 @@ export default {
     }
   },
   components: { JsonTree }
-}
+})
 </script>
 
-<style lang="stylus">
-  .mqtt-client__logs
-    .logs__wrapper
-      border 2px solid #2196f3
-      height calc(100% - 16px)
-      position relative
-      overflow auto
+<style lang="scss">
+  .mqtt-client__logs {
+    .logs__wrapper {
+      border: 2px solid #2196f3;
+      height: calc(100% - 16px);
+      position: relative;
+      overflow: auto;
+    }
+  }
 </style>

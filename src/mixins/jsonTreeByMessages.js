@@ -1,4 +1,3 @@
-import Vue from 'vue'
 function jsonTreeByMessages (messages, treeField, dest) {
   function write (topic, payload, dest) {
     const path = topic.split('/')
@@ -6,26 +5,26 @@ function jsonTreeByMessages (messages, treeField, dest) {
     let currentTopic = ''
     path.forEach((pathElement, pathIndex, path) => {
       if (!currentNesting[pathElement]) {
-        Vue.set(currentNesting, pathElement, { children: undefined, topic: '', value: undefined })
+        currentNesting[pathElement] = { children: undefined, topic: '', value: undefined }
       }
       if (pathIndex !== 0) {
         currentTopic += '/'
       }
       currentTopic += `${pathElement}`
-      Vue.set(currentNesting[pathElement], 'topic', currentTopic)
+      currentNesting[pathElement].topic = currentTopic
       if (pathIndex !== path.length - 1) {
         if (!currentNesting[pathElement].children) {
-          Vue.set(currentNesting[pathElement], 'children', {})
+          currentNesting[pathElement].children = {}
         }
         currentNesting = currentNesting[pathElement].children
       } else {
         if (!currentNesting[pathElement].value) {
-          Vue.set(currentNesting[pathElement], 'value', {})
+          currentNesting[pathElement].value = {}
         }
         const valueByTreeField = payload.properties && payload.properties.userProperties && payload.properties.userProperties[treeField]
           ? payload.properties.userProperties[treeField]
           : ''
-        Vue.set(currentNesting[pathElement].value, valueByTreeField, payload)
+        currentNesting[pathElement].value[valueByTreeField] = payload
       }
     })
   }
@@ -54,15 +53,15 @@ function jsonTreeByMessages (messages, treeField, dest) {
         const valueByTreeField = payload.properties && payload.properties.userProperties && payload.properties.userProperties[treeField]
           ? payload.properties.userProperties[treeField]
           : ''
-        Vue.delete(valueByPath.value, valueByTreeField)
+        delete valueByPath.value[valueByTreeField]
         if (!Object.keys(valueByPath.value).length) {
-          Vue.set(valueByPath, 'value', undefined)
+          valueByPath.value = undefined
         }
       }
       if (!hasChildren) {
-        Vue.set(valueByPath, 'children', undefined)
+        valueByPath.children = undefined
         if (!valueByPath.value) {
-          Vue.delete(nesting.container, nesting.name)
+          delete nesting.container[nesting.name]
         }
       }
     })

@@ -28,9 +28,11 @@
 </template>
 
 <script>
+import { defineComponent } from 'vue'
 import validateEntities from '../mixins/validateEntities.js'
-export default {
+export default defineComponent({
   props: ['entities', 'active'],
+  emits: ['pick', 'publish', 'subscriber:stop', 'subscriber:play'],
   data () {
     return {
       colorByType: {
@@ -77,5 +79,5 @@ export default {
     }
   },
   mixins: [validateEntities]
-}
+})
 </script>

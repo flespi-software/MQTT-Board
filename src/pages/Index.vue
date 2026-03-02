@@ -8,11 +8,12 @@
 </style>
 
 <script>
-import MqttClient from '../components/MqttClient'
+import { defineComponent } from 'vue'
+import MqttClient from '../components/MqttClient.vue'
 import { defaultSettings } from '../mixins/defaults.js'
 import merge from 'lodash/merge'
 import cloneDeep from 'lodash/cloneDeep'
-export default {
+export default defineComponent({
   name: 'PageIndex',
   data () {
     return {
@@ -40,5 +41,5 @@ export default {
   components: {
     MqttClient
   }
-}
+})
 </script>

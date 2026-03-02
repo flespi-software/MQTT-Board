@@ -1,5 +1,5 @@
 <template>
-  <q-dialog :value='opened' content-class="mqtt-board__popup" :maximized="$q.platform.is.mobile">
+  <q-dialog :model-value='opened' content-class="mqtt-board__popup" :maximized="$q.platform.is.mobile">
      <q-card :style="{minWidth: $q.platform.is.mobile ? '100%' : '30vw'}">
       <q-card-section class="q-pa-none">
         <q-toolbar :class="{[`bg-${color}`]: true, 'text-white': !!color}">
@@ -10,7 +10,7 @@
       </q-card-section>
       <q-separator />
       <q-card-section :style="{ height: $q.platform.is.mobile ? 'calc(100% - 96px)' : ''}" class="scroll">
-        <flespi-selector :value="this.currentTopic" :connector="bus" @input="update" :theme="{ color: 'orange' }"/>
+        <flespi-selector :model-value="this.currentTopic" :connector="bus" @update:model-value="update" :theme="{ color: 'orange' }"/>
       </q-card-section>
       <q-separator />
       <q-card-actions align="right" :class="{[`bg-${color}`]: true, 'text-white': !!color}">
@@ -22,26 +22,28 @@
 </template>
 
 <script>
-import FlespiSelector from './selectors/Selectors'
-export default {
+import { defineComponent } from 'vue'
+import FlespiSelector from './selectors/Selectors.vue'
+export default defineComponent({
   name: 'FlespiTopicConfigurator',
   props: {
     color: {
       type: String,
       default: 'grey-9'
     },
-    value: String,
+    modelValue: String,
     bus: Object,
     opened: Boolean
   },
+  emits: ['update:modelValue', 'close'],
   data () {
     return {
-      currentTopic: this.value
+      currentTopic: this.modelValue
     }
   },
   methods: {
     saveSettingsHandler () {
-      this.$emit('input', this.currentTopic)
+      this.$emit('update:modelValue', this.currentTopic)
       this.$emit('close')
     },
     update (topic) {
@@ -52,7 +54,7 @@ export default {
     }
   },
   components: { FlespiSelector }
-}
+})
 </script>
 
 <style>

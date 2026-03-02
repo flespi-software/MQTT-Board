@@ -1,4 +1,5 @@
-import Vue from 'vue'
+import mitt from 'mitt'
+
 /*
   Message format: `MQTTBoard|${postkey}|${commandName}=>${payload}`
   => SetSettings({settings, entities, whiteLabel, useLS, needInitNewClient, secure, color, accentColor, configuredClients})
@@ -7,11 +8,11 @@ import Vue from 'vue'
 */
 class IntegrationBus {
   constructor () {
-    this.bus = new Vue()
+    this.emitter = mitt()
     this.postkey = window.name
     window.addEventListener('message', (event) => {
-      let cmd = '',
-        payload = null
+      let cmd = ''
+      let payload = null
       if (typeof event.data === 'string' && event.data.indexOf('MQTTBoard|') === 0) {
         let data = event.data.split('|')
         data = data[this.postkey ? 2 : 1].split('=>')
@@ -23,22 +24,31 @@ class IntegrationBus {
         }
       }
       if (cmd) {
-        this.bus.$emit(cmd, payload)
+        this.emitter.emit(cmd, payload)
       }
     })
   }
 
-  on () {
-    this.bus.$on(...arguments)
+  on (event, handler) {
+    this.emitter.on(event, handler)
+  }
+
+  off (event, handler) {
+    this.emitter.off(event, handler)
   }
 
   send (cmd, payload) {
     cmd = `MQTTBoard${this.postkey ? `|${this.postkey}` : ''}|${cmd}${payload ? `=>${JSON.stringify(payload)}` : ''}`
-    window.parent && window.parent !== window && window.parent.postMessage(cmd, '*')
-    window.opener && window.opener.postMessage(cmd, '*')
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage(cmd, '*')
+    }
+    if (window.opener) {
+      window.opener.postMessage(cmd, '*')
+    }
   }
 }
-export default ({ Vue }) => {
+
+export default ({ app }) => {
   const bus = new IntegrationBus()
-  Vue.prototype.$integrationBus = bus
+  app.config.globalProperties.$integrationBus = bus
 }

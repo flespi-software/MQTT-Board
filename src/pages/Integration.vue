@@ -9,6 +9,7 @@
       :needInitNewClient="!!settings"
       :whiteLabel="whiteLabel"
       :secure="secure"
+      :color="color"
       :accentColor="accentColor"
       :configuredClients="configuredClients"
       :clientsCloseable="clientsCloseable"
@@ -21,9 +22,11 @@
 </style>
 
 <script>
-import MqttClient from '../components/MqttClient'
-export default {
+import { defineComponent } from 'vue'
+import MqttClient from '../components/MqttClient.vue'
+export default defineComponent({
   name: 'PageIntegration',
+  emits: ['change'],
   data () {
     return {
       inited: false,
@@ -64,5 +67,5 @@ export default {
   components: {
     MqttClient
   }
-}
+})
 </script>

@@ -1,5 +1,5 @@
 import { version } from '../../package.json'
-import compareVersions from 'compare-versions'
+import { compare } from 'compare-versions'
 import get from 'lodash/get'
 import set from 'lodash/set'
 const migrations = {
@@ -33,7 +33,7 @@ export default {
       const fromVersion = client.appVersion || '2.5.0'
       const toVersion = version
       versions.forEach((version) => {
-        if (compareVersions.compare(version, fromVersion, '>') && compareVersions.compare(version, toVersion, '<=')) {
+        if (compare(version, fromVersion, '>') && compare(version, toVersion, '<=')) {
           try {
             migrations[version](client)
           } catch (e) {

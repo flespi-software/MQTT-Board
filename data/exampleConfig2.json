@@ -1,0 +1,30 @@
+{
+  "settings": {
+    "clientId": "mqtt-board-example",
+    "host": "wss://localhost:9017",
+    "keepalive": 60,
+    "protocolVersion": 5,
+    "clean": true,
+    "username": "FlespiToken XXXXXXXXXXXXXXXXX",
+    "password": "",
+    "properties": {
+      "requestResponseInformation": false,
+      "requestProblemInformation": false
+    },
+    "will": {
+      "qos": 0,
+      "retain": false,
+      "properties": {
+        "payloadFormatIndicator": false
+      }
+    }
+  },
+  "useLS": false,
+  "entities": [],
+  "whiteLabel": "Integration Test: config2",
+  "secure": true,
+  "clientsCloseable": true,
+  "color": "orange-6",
+  "accentColor": "brown-6",
+  "configuredClients": []
+}

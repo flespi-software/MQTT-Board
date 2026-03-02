@@ -1,0 +1,10 @@
+{
+  "useLS": false,
+  "entities": [],
+  "whiteLabel": "Integration Test: default config",
+  "secure": true,
+  "clientsCloseable": true,
+  "color": "pink-4",
+  "accentColor": "pink-13",
+  "configuredClients": []
+}

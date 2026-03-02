@@ -19,3 +19,7 @@ yarn-error.log*
 *.ntvs*
 *.njsproj
 *.sln
+
+playwright-report
+test-results
+CLAUDE.md

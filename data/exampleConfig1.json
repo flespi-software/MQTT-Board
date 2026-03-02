@@ -1,0 +1,61 @@
+{
+  "settings": {
+    "clientId": "mqtt-board-example",
+    "host": "wss://localhost:9017",
+    "keepalive": 60,
+    "protocolVersion": 5,
+    "clean": true,
+    "username": "FlespiToken XXXXXXXXXXXXXXXXX",
+    "password": "",
+    "properties": {
+      "requestResponseInformation": false,
+      "requestProblemInformation": false
+    },
+    "will": {
+      "qos": 0,
+      "retain": false,
+      "properties": {
+        "payloadFormatIndicator": false
+      }
+    }
+  },
+  "useLS": false,
+  "entities": [
+    {
+      "type": "subscriber",
+      "rendered": true,
+      "settings": {
+        "topic": "config1/example/#",
+        "mode": 0,
+        "options": {
+          "qos": 0,
+          "nl": false,
+          "rap": false,
+          "rh": 2,
+          "properties": {}
+        },
+        "unsubscribeProperties": {}
+      }
+    },
+    {
+      "type": "publisher",
+      "rendered": true,
+      "settings": {
+        "topic": "config1/example",
+        "payload": "default configuration test",
+        "options": {
+          "qos": 0,
+          "retain": false,
+          "dup": false,
+          "properties": {}
+        }
+      }
+    }
+  ],
+  "whiteLabel": "Integration Test: config1",
+  "secure": true,
+  "clientsCloseable": false,
+  "color": "cyan-4",
+  "accentColor": "amber-6",
+  "configuredClients": []
+}

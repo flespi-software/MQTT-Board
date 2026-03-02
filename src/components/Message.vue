@@ -20,11 +20,13 @@
 </template>
 
 <script>
+import { defineComponent } from 'vue'
 import { date, copyToClipboard } from 'quasar'
 import JsonTree from './JsonTree.vue'
-export default {
+export default defineComponent({
   name: 'Message',
   props: ['message', 'highlight'],
+  emits: ['action-send'],
   computed: {
     canCopy () {
       return !(typeof this.payload === 'string' && !this.payload.length) && !!copyToClipboard
@@ -60,27 +62,33 @@ export default {
     }
   },
   components: { JsonTree }
-}
+})
 </script>
 
-<style lang="stylus" scoped>
-  .message
-    .message__title
-      min-height 50px
-      position relative
-    .message__topic
-      font-size 0.8rem
-      font-weight 500
-      width: calc(100% - 30px)
-      word-break: break-all
-    .message__sys
-      font-size 0.8rem
-      width: calc(100% - 30px)
-    .message__payload
-      height calc(100% - 20px)
-      word-break break-all
-      font-size 0.85rem
-    .message__properties
-      word-break break-all
-      font-size: 0.7rem
+<style lang="scss" scoped>
+  .message {
+    .message__title {
+      min-height: 50px;
+      position: relative;
+    }
+    .message__topic {
+      font-size: 0.8rem;
+      font-weight: 500;
+      width: calc(100% - 30px);
+      word-break: break-all;
+    }
+    .message__sys {
+      font-size: 0.8rem;
+      width: calc(100% - 30px);
+    }
+    .message__payload {
+      height: calc(100% - 20px);
+      word-break: break-all;
+      font-size: 0.85rem;
+    }
+    .message__properties {
+      word-break: break-all;
+      font-size: 0.7rem;
+    }
+  }
 </style>

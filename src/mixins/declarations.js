@@ -109,7 +109,7 @@ const settings = {
           min: 0
         },
         payloadFormatIndicator: {
-          desc: 'Identifier of the Payload Format Indicator where false - unspecified, true - String',
+          desc: 'Payload Format Indicator: false (default) - indicates that the payload is unspecified bytes, true - indicates that the payload is UTF-8 encoded character data.',
           type: 'Boolean'
         },
         messageExpiryInterval: {
@@ -209,7 +209,7 @@ const settings = {
       properties: {
         payloadFormatIndicator: {
           type: 'Boolean',
-          desc: 'Identifier of the Payload Format Indicator where false - unspecified, true - String'
+          desc: 'Payload Format Indicator: false (default) - indicates that the payload is unspecified bytes, true - indicates that the payload is UTF-8 encoded character data.'
         },
         messageExpiryInterval: {
           desc: 'Lifetime of the Application Message in seconds',
