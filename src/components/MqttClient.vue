@@ -262,6 +262,7 @@ const
 
 export default {
   name: 'MqttClient',
+  emits: ['change'],
   props: {
     initSettings: {
       type: Object

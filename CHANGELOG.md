@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [3.0.1] - 2026-03-03
+[fix] fixed emits declaration for MqttClient component
 ### [3.0.0] - 2026-03-02
 [update] app migrated to vue3
 ### [2.6.12] - 2025-04-11
