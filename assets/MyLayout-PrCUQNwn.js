@@ -1,1 +1,0 @@
-import{Q as a,a as r}from"./QLayout-DIUT9xaI.js";import{_ as n,d as s,r as c,c as _,o as p,w as e,a as o}from"./index-CTI3hAnG.js";const u=s({name:"MyLayout"});function f(i,l,d,m,w,y){const t=c("router-view");return p(),_(r,{view:"lHh Lpr lFf"},{default:e(()=>[o(a,null,{default:e(()=>[o(t)]),_:1})]),_:1})}const C=n(u,[["render",f]]);export{C as default};
