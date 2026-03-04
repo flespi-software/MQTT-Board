@@ -8,7 +8,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
-    baseURL: 'http://localhost:9000',
+    baseURL: 'http://localhost:8080',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure'
   },
@@ -18,14 +18,15 @@ export default defineConfig({
       use: {
         viewport: null,
         launchOptions: {
-          args: ['--start-maximized']
+          args: ['--start-maximized'],
+          slowMo: process.env.SLOW_MO ? parseInt(process.env.SLOW_MO) : 0
         }
       }
     }
   ],
   webServer: {
     command: 'npm run dev',
-    url: 'http://localhost:9000',
+    url: 'http://localhost:8080',
     reuseExistingServer: !process.env.CI,
     timeout: 120000
   }

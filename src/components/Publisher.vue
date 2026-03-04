@@ -2,7 +2,11 @@
   <div class="mqtt-client__publisher">
     <q-card class="publisher__item q-ma-sm">
       <q-card-section class="q-pa-none">
-        <q-toolbar class="q-pr-none text-white bg-indigo">
+        <q-toolbar class="q-pr-none q-pl-none text-white bg-indigo">
+          <q-btn v-if="showBack" flat dense icon="mdi-menu-left" class="bg-indigo-7 pane-move-btn" @click="$emit('move-back')">
+            <q-tooltip>Move to the left</q-tooltip>
+          </q-btn>
+          <div v-else class="pane-move-btn-spacer"></div>
           <q-toolbar-title>Publisher</q-toolbar-title>
           <q-btn round :disable="!isValidPublisher" flat icon="mdi-send" @click="publishEmit">
             <q-tooltip>Publish</q-tooltip>
@@ -24,6 +28,9 @@
                 </q-item>
               </q-list>
             </q-menu>
+          </q-btn>
+          <q-btn v-if="showForth" flat dense icon="mdi-menu-right" class="bg-indigo-7 pane-move-btn" @click="$emit('move-forth')">
+            <q-tooltip>Move to the right</q-tooltip>
           </q-btn>
         </q-toolbar>
       </q-card-section>
@@ -146,9 +153,11 @@ export default {
   name: 'Publisher',
   props: [
     'modelValue',
-    'version'
+    'version',
+    'showBack',
+    'showForth'
   ],
-  emits: ['update:modelValue', 'hide', 'remove', 'publish'],
+  emits: ['update:modelValue', 'hide', 'remove', 'publish', 'move-back', 'move-forth'],
   data () {
     return {
       declarations,
@@ -246,6 +255,17 @@ export default {
 </script>
 
 <style lang="scss">
+  .pane-move-btn.q-btn {
+    border-radius: 0 !important;
+    min-width: 20px !important;
+    width: 20px !important;
+    align-self: stretch;
+    height: auto;
+  }
+  .pane-move-btn-spacer {
+    width: 16px;
+    flex-shrink: 0;
+  }
   .q-textarea--fix {
     &.q-textarea.q-field--labeled textarea.q-field__native {
       min-height: 27px;

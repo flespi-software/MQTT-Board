@@ -117,58 +117,56 @@
             <div v-else-if="renderedEntities.length">
               <div ref="wrapper" v-touch-swipe.horizontal="swipeHandler" @scroll="wrapperScroll" class="no-wrap row client__wrapper">
                 <q-resize-observer @resize="onWrapperResize" :debounce="0" />
-                <template v-for="(entity, index) in renderedEntities" :key="`entity-${entity.type}-${entity.id || index}`">
-                  <publisher
-                    class="col"
-                    :style='`width:${colSize}px;flex: 0 0 auto;`'
-                    ref="entities"
-                    v-if="entity.type === 'publisher'"
-                    :modelValue="publishers[entity.index]"
-                    @update:modelValue="(val) => { inputPublisher(entity.index, val) }"
-                    :version="activeClient.config.protocolVersion"
-                    @remove="removePublisher(entity.index)"
-                    @publish="publishMessageHandler(activeClient.id, entity.index)"
-                    @hide="entity.rendered = false"
-                  />
-                  <subscriber
-                    class="col"
-                    :style='`width:${colSize}px;flex: 0 0 auto;`'
-                    ref="entities"
-                    v-else-if="entity.type === 'subscriber'"
-                    :modelValue="subscribers[entity.index]"
-                    @update:modelValue="(val) => { inputSubscriber(entity.index, val) }"
-                    :status="subscribersStatuses[entity.index]"
-                    :subscribed="subscribersConnectivityStatuses[entity.index]"
-                    :messages="subscribersMessages[entity.index]"
-                    :client="activeClient"
-                    @remove="removeSubscriber(entity.index)"
-                    @subscribe="subscribeMessageHandler(activeClient.id, entity.index)"
-                    @unsubscribe="unsubscribeMessageHandler(activeClient.id, entity.index)"
-                    @play="playSubscriberHandler(entity.index)"
-                    @pause="pauseSubscriberHandler(entity.index)"
-                    @clear="clearMessagesHandler(entity.index)"
-                    @action-send="sendFromSubscriberHandler"
-                    @hide="entity.rendered = false"
-                  />
-                  <unresolved
-                    class="col"
-                    :style='`width:${colSize}px;flex: 0 0 auto;`'
-                    ref="entities"
-                    v-else-if="entity.type === 'unresolved'"
-                    :messages="notResolvedMessages"
-                    @clear="clearUnresolvedMessages"
-                    @hide="entity.rendered = false"
-                  />
-                  <logs
-                    class="col"
-                    :style='`width:${colSize}px;flex: 0 0 auto;`'
-                    ref="entities"
-                    v-else-if="entity.type === 'logs'"
-                    :logs="activeClient.logs"
-                    @clear="clearLogs"
-                    @hide="entity.rendered = false"
-                  />
-                </template>
+                <TransitionGroup name="pane-swap" :css="true">
+                  <div v-for="(entity, index) in renderedEntities" :key="`entity-${entity.type}-${entity.id || index}`" class="col" :style='`width:${colSize}px;flex: 0 0 auto;height:100%;`' ref="entities">
+                    <publisher
+                      v-if="entity.type === 'publisher'"
+                      :modelValue="publishers[entity.index]"
+                      @update:modelValue="(val) => { inputPublisher(entity.index, val) }"
+                      :version="activeClient.config.protocolVersion"
+                      :showBack="renderedEntities.length > 1 && index > 0 && renderedEntities[index - 1].type !== 'logs'"
+                      :showForth="renderedEntities.length > 1 && index < renderedEntities.length - 1 && renderedEntities[index + 1]?.type !== 'unresolved'"
+                      @remove="removePublisher(entity.index)"
+                      @publish="publishMessageHandler(activeClient.id, entity.index)"
+                      @hide="entity.rendered = false"
+                      @move-back="swapRenderedEntities(index, -1)"
+                      @move-forth="swapRenderedEntities(index, 1)"
+                    />
+                    <subscriber
+                      v-else-if="entity.type === 'subscriber'"
+                      :modelValue="subscribers[entity.index]"
+                      @update:modelValue="(val) => { inputSubscriber(entity.index, val) }"
+                      :status="subscribersStatuses[entity.index]"
+                      :subscribed="subscribersConnectivityStatuses[entity.index]"
+                      :messages="subscribersMessages[entity.index]"
+                      :client="activeClient"
+                      :showBack="renderedEntities.length > 1 && index > 0 && renderedEntities[index - 1].type !== 'logs'"
+                      :showForth="renderedEntities.length > 1 && index < renderedEntities.length - 1 && renderedEntities[index + 1]?.type !== 'unresolved'"
+                      @remove="removeSubscriber(entity.index)"
+                      @subscribe="subscribeMessageHandler(activeClient.id, entity.index)"
+                      @unsubscribe="unsubscribeMessageHandler(activeClient.id, entity.index)"
+                      @play="playSubscriberHandler(entity.index)"
+                      @pause="pauseSubscriberHandler(entity.index)"
+                      @clear="clearMessagesHandler(entity.index)"
+                      @action-send="sendFromSubscriberHandler"
+                      @hide="entity.rendered = false"
+                      @move-back="swapRenderedEntities(index, -1)"
+                      @move-forth="swapRenderedEntities(index, 1)"
+                    />
+                    <unresolved
+                      v-else-if="entity.type === 'unresolved'"
+                      :messages="notResolvedMessages"
+                      @clear="clearUnresolvedMessages"
+                      @hide="entity.rendered = false"
+                    />
+                    <logs
+                      v-else-if="entity.type === 'logs'"
+                      :logs="activeClient.logs"
+                      @clear="clearLogs"
+                      @hide="entity.rendered = false"
+                    />
+                  </div>
+                </TransitionGroup>
               </div>
               <slider-controller
                 :entities="renderedEntities"
@@ -208,6 +206,15 @@
     left: 0;
     right: 0;
     overflow: hidden;
+  }
+  .client__wrapper > .col > .mqtt-client__publisher,
+  .client__wrapper > .col > .mqtt-client__subscriber,
+  .client__wrapper > .col > .mqtt-client__logs,
+  .client__wrapper > .col > .mqtt-client__not-resolved-msgs {
+    height: 100%;
+  }
+  .pane-swap-move {
+    transition: transform 0.3s ease;
   }
 </style>
 
@@ -386,6 +393,11 @@ export default {
           renderedEntities.push(entityWithConfig)
         }
       }
+      renderedEntities.sort((a, b) => {
+        if (a.type === 'unresolved') return 1
+        if (b.type === 'unresolved') return -1
+        return 0
+      })
       return renderedEntities
     },
     menuEnitites () {
@@ -924,6 +936,25 @@ export default {
       return this.entities.findIndex((entity) => {
         return obj.type === entity.type && obj.index === entity.index
       })
+    },
+    swapRenderedEntities (renderedIndex, direction) {
+      const neighborRenderedIndex = renderedIndex + direction
+      if (neighborRenderedIndex < 0 || neighborRenderedIndex >= this.renderedEntities.length) { return }
+      const currentEntity = this.renderedEntities[renderedIndex]
+      const neighborEntity = this.renderedEntities[neighborRenderedIndex]
+      if (currentEntity.type === 'logs' || neighborEntity.type === 'logs') { return }
+      if (currentEntity.type === 'unresolved' || neighborEntity.type === 'unresolved') { return }
+      const currentIdx = this.entities.indexOf(currentEntity)
+      const neighborIdx = this.entities.indexOf(neighborEntity)
+      if (currentIdx === -1 || neighborIdx === -1) { return }
+      this.entities.splice(currentIdx, 1, neighborEntity)
+      this.entities.splice(neighborIdx, 1, currentEntity)
+      this.saveClients()
+      const newIndex = neighborRenderedIndex
+      const lastVisible = this.firstViewedPanelIndex + this.colsCount - 1
+      if (newIndex < this.firstViewedPanelIndex || newIndex > lastVisible) {
+        this.$nextTick(() => { this.scrollToEntity(newIndex) })
+      }
     },
     addPublisher (config) {
       config = merge({}, defaultPublisher, config)

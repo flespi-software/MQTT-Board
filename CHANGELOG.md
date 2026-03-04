@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [3.1.0] - 2026-03-04
+[update] added move buttons for publisher and subscriber panes
 ### [3.0.1] - 2026-03-03
 [fix] fixed emits declaration for MqttClient component
 ### [3.0.0] - 2026-03-02

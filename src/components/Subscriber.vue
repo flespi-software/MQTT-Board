@@ -2,7 +2,11 @@
   <div class="mqtt-client__subscriber">
     <q-card class="subscriber__item q-ma-sm" v-if="!status && isPlayed === null">
       <q-card-section class="q-pa-none">
-        <q-toolbar class="q-pr-none text-white bg-orange">
+        <q-toolbar class="q-pr-none q-pl-none text-white bg-orange">
+          <q-btn v-if="showBack" flat dense icon="mdi-menu-left" class="bg-orange-7 pane-move-btn" @click="$emit('move-back')">
+            <q-tooltip>Move to the left</q-tooltip>
+          </q-btn>
+          <div v-else class="pane-move-btn-spacer"></div>
           <q-toolbar-title>Subscriber</q-toolbar-title>
           <q-btn round flat :disable="!isValidSubscriber" icon="mdi-play" @click="subscribeMessageHandler">
             <q-tooltip>Subscribe</q-tooltip>
@@ -24,6 +28,9 @@
                 </q-item>
               </q-list>
             </q-menu>
+          </q-btn>
+          <q-btn v-if="showForth" flat dense icon="mdi-menu-right" class="bg-orange-7 pane-move-btn" @click="$emit('move-forth')">
+            <q-tooltip>Move to the right</q-tooltip>
           </q-btn>
         </q-toolbar>
       </q-card-section>
@@ -141,7 +148,11 @@
       </q-card-section>
     </q-card>
     <q-card v-else class="subscriber__item q-ma-sm">
-      <q-toolbar v-if="!filterMode" class="q-pr-none text-white bg-orange" style="border-top-right-radius: 0; border-top-left-radius: 0;">
+      <q-toolbar v-if="!filterMode" class="q-pr-none q-pl-none text-white bg-orange" style="border-top-right-radius: 0; border-top-left-radius: 0;">
+        <q-btn v-if="showBack" flat dense icon="mdi-menu-left" class="bg-orange-7 pane-move-btn" @click="$emit('move-back')">
+          <q-tooltip>Move to the left</q-tooltip>
+        </q-btn>
+        <div v-else class="pane-move-btn-spacer"></div>
         <q-toolbar-title style="width: calc(100% - 150px)">
           <span>
             {{config.topic}}
@@ -169,6 +180,9 @@
               </q-item>
             </q-list>
           </q-menu>
+        </q-btn>
+        <q-btn v-if="showForth" flat dense icon="mdi-menu-right" class="bg-orange-7 pane-move-btn" @click="$emit('move-forth')">
+          <q-tooltip>Move to the right</q-tooltip>
         </q-btn>
       </q-toolbar>
       <q-input
@@ -239,9 +253,11 @@ export default {
     'messages',
     'status',
     'client',
-    'subscribed'
+    'subscribed',
+    'showBack',
+    'showForth'
   ],
-  emits: ['update:modelValue', 'hide', 'remove', 'subscribe', 'unsubscribe', 'play', 'pause', 'clear', 'action-send'],
+  emits: ['update:modelValue', 'hide', 'remove', 'subscribe', 'unsubscribe', 'play', 'pause', 'clear', 'action-send', 'move-back', 'move-forth'],
   data () {
     return {
       declarations,
@@ -524,6 +540,17 @@ export default {
 </script>
 
 <style lang="scss">
+  .pane-move-btn.q-btn {
+    border-radius: 0 !important;
+    min-width: 20px !important;
+    width: 20px !important;
+    align-self: stretch;
+    height: auto;
+  }
+  .pane-move-btn-spacer {
+    width: 16px;
+    flex-shrink: 0;
+  }
   .mqtt-client__subscriber {
     .subscriber__item {
       border: 2px solid orange;

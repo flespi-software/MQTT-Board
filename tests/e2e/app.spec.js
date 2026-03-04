@@ -174,7 +174,7 @@ test.describe('MQTT Board App', () => {
     })
 
     test('should have menu toggle button', async ({ page }) => {
-      await expect(page.locator('.q-toolbar .q-btn').filter({ has: page.locator('[class*="mdi-menu"]') })).toBeVisible()
+      await expect(page.locator('.q-toolbar .q-btn').filter({ has: page.locator('.mdi-menu') })).toBeVisible()
     })
 
     test('should have close button', async ({ page }) => {
@@ -281,7 +281,7 @@ test.describe('MQTT Board App', () => {
       // If not, open it via the menu button
       const drawer = page.locator('.q-drawer')
       if (!await drawer.isVisible()) {
-        await page.locator('.q-toolbar .q-btn').filter({ has: page.locator('[class*="mdi-menu"]') }).click()
+        await page.locator('.q-toolbar .q-btn').filter({ has: page.locator('.mdi-menu') }).click()
         await expect(drawer).toBeVisible()
       }
 
@@ -299,7 +299,7 @@ test.describe('MQTT Board App', () => {
       // The right drawer with Panes should already be visible on desktop viewport
       const drawer = page.locator('.q-drawer')
       if (!await drawer.isVisible()) {
-        await page.locator('.q-toolbar .q-btn').filter({ has: page.locator('[class*="mdi-menu"]') }).click()
+        await page.locator('.q-toolbar .q-btn').filter({ has: page.locator('.mdi-menu') }).click()
         await expect(drawer).toBeVisible()
       }
 
@@ -324,7 +324,7 @@ test.describe('MQTT Board App', () => {
 
     test('should toggle drawer when clicking menu button', async ({ page }) => {
       // Click menu toggle
-      await page.locator('.q-toolbar .q-btn').filter({ has: page.locator('[class*="mdi-menu"]') }).click()
+      await page.locator('.q-toolbar .q-btn').filter({ has: page.locator('.mdi-menu') }).click()
 
       // Drawer should be visible
       await expect(page.locator('.q-drawer')).toBeVisible()
@@ -336,7 +336,7 @@ test.describe('MQTT Board App', () => {
       await page.locator('.q-menu').getByText('Publisher').click()
 
       // Open drawer
-      await page.locator('.q-toolbar .q-btn').filter({ has: page.locator('[class*="mdi-menu"]') }).click()
+      await page.locator('.q-toolbar .q-btn').filter({ has: page.locator('.mdi-menu') }).click()
 
       await expect(page.getByRole('button', { name: /remove all/i })).toBeVisible()
     })
