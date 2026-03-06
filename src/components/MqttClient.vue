@@ -371,7 +371,6 @@ export default {
       renderInterval: 0,
       messagesLimitCount: 3000,
       notResolvedMessages: [],
-      isNeedScroll: false,
       isInited: false,
       republishMessage: null,
       wrapperWidth: 0,
@@ -966,7 +965,7 @@ export default {
         this.entities.push(publisher)
       }
       this.saveClients()
-      this.isNeedScroll = true
+      this.$nextTick(() => { this.scrollToEnd() })
     },
     addSubscriber (config, clientId) {
       clientId = typeof clientId === 'number' || typeof clientId === 'string'
@@ -986,7 +985,7 @@ export default {
         clientObj.entities.push(subscriber)
       }
       this.saveClients()
-      if (this.activeClient) { this.isNeedScroll = true }
+      if (this.activeClient) { this.$nextTick(() => { this.scrollToEnd() }) }
     },
     removePublisher (key) {
       this.publishers.splice(key, 1)
@@ -1140,6 +1139,15 @@ export default {
       }
       this.scrollToEntity(index)
     },
+    scrollToEnd () {
+      const el = this.$refs.wrapper
+      animate.start({
+        from: el.scrollLeft,
+        to: el.scrollWidth,
+        duration: 300,
+        apply (pos) { el.scrollLeft = pos }
+      })
+    },
     scrollToEntity (index) {
       if (!this.$refs.wrapper) { return }
       const el = this.$refs.wrapper,
@@ -1267,18 +1275,6 @@ export default {
   },
   components: {
     ClientSettingsModal, SliderController, Subscriber, Publisher, Unresolved, Logs, PublisherModal, EntitiesMenu
-  },
-  updated () {
-    if (this.isNeedScroll) {
-      const el = this.$refs.wrapper
-      animate.start({
-        from: el.scrollLeft,
-        to: el.scrollWidth,
-        duration: 300,
-        apply (pos) { el.scrollLeft = pos }
-      })
-      this.isNeedScroll = false
-    }
   },
   mixins: [validateEntities, migrations]
 }

@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [3.1.1] - 2026-03-06
+[fix] scrolling to the newly added publisher or subscriber pane
 ### [3.1.0] - 2026-03-04
 [update] added move buttons for publisher and subscriber panes
 ### [3.0.1] - 2026-03-03
