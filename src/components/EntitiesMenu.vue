@@ -1,12 +1,18 @@
 <template>
   <q-list>
     <q-item-label header>Panes</q-item-label>
-    <div class="scroll absolute full-width" style="height: calc(100% - 48px);">
+    <div class="scroll absolute full-width" style="height: calc(100% - 48px);" @dragover.prevent @drop.prevent="onDropContainer">
       <q-item
         v-for="(entity, index) in visibleItems" :key="`${entity.type}-${entity.id}`"
         :active="entity.rendered" clickable @click="$emit('pick', index)"
         class="q-ma-xs rounded-borders" style="overflow: hidden;"
-        :class="getItemClasses(entity)"
+        :class="[getItemClasses(entity), { 'entities-menu__drag-over': dragOverIndex === index }]"
+        :draggable="isDraggable(entity)"
+        @dragstart="onDragStart(index, $event)"
+        @dragend="onDragEnd"
+        @dragover.prevent="onDragOver(index, entity, $event)"
+        @dragleave="onDragLeave(index)"
+        @drop.prevent="onDrop(index)"
       >
         <div class="absolute-top-left absolute-bottom-left" :class="[`bg-${`${colorByType[entity.type]}-6`}`]" style="width: 10px;"></div>
         <q-item-section>
@@ -32,7 +38,7 @@ import { defineComponent } from 'vue'
 import validateEntities from '../mixins/validateEntities.js'
 export default defineComponent({
   props: ['entities', 'active'],
-  emits: ['pick', 'publish', 'subscriber:stop', 'subscriber:play'],
+  emits: ['pick', 'publish', 'subscriber:stop', 'subscriber:play', 'reorder'],
   data () {
     return {
       colorByType: {
@@ -46,7 +52,9 @@ export default defineComponent({
         publisher: 'Publisher',
         logs: 'Logs',
         unresolved: 'Unresolved'
-      }
+      },
+      dragFromIndex: null,
+      dragOverIndex: null
     }
   },
   computed: {
@@ -76,8 +84,48 @@ export default defineComponent({
         classes.push('q-ml-md')
       }
       return classes
+    },
+    isDraggable (entity) {
+      return entity.type === 'publisher' || entity.type === 'subscriber'
+    },
+    onDragStart (index, event) {
+      this.dragFromIndex = index
+      event.dataTransfer.effectAllowed = 'move'
+    },
+    onDragEnd () {
+      this.dragFromIndex = null
+      this.dragOverIndex = null
+    },
+    onDragOver (index, entity, event) {
+      if (this.dragFromIndex === null || this.dragFromIndex === index) { return }
+      if (!this.isDraggable(entity)) { return }
+      event.dataTransfer.dropEffect = 'move'
+      this.dragOverIndex = index
+    },
+    onDragLeave () {
+      // intentionally empty: dragOverIndex is managed by onDragOver, onDrop, and onDragEnd
+    },
+    onDrop (index) {
+      if (this.dragFromIndex === null || this.dragFromIndex === index) { return }
+      const target = this.visibleItems[index]
+      if (!this.isDraggable(target)) { return }
+      this.$emit('reorder', this.dragFromIndex, index)
+      this.dragFromIndex = null
+      this.dragOverIndex = null
+    },
+    onDropContainer () {
+      if (this.dragOverIndex !== null) {
+        this.onDrop(this.dragOverIndex)
+      }
     }
   },
   mixins: [validateEntities]
 })
 </script>
+
+<style scoped>
+.entities-menu__drag-over {
+  margin-top: 30px;
+  transition: margin-top 0.15s ease;
+}
+</style>

@@ -52,6 +52,7 @@
           :entities="menuEnitites"
           :active="[firstViewedPanelIndex, firstViewedPanelIndex + colsCount - 1]"
           @pick="pickEntity"
+          @reorder="reorderEntities"
           @subscriber:play="index => subscribeMessageHandler(activeClient.id, index)"
           @subscriber:stop="index => unsubscribeMessageHandler(activeClient.id, index)"
           @publish="publishFreeMessage"
@@ -935,6 +936,16 @@ export default {
       return this.entities.findIndex((entity) => {
         return obj.type === entity.type && obj.index === entity.index
       })
+    },
+    reorderEntities (fromMenuIndex, toMenuIndex) {
+      const fromEntity = this.entities[fromMenuIndex]
+      const toEntity = this.entities[toMenuIndex]
+      if (!fromEntity || !toEntity) { return }
+      if (fromEntity.type === 'logs' || fromEntity.type === 'unresolved') { return }
+      if (toEntity.type === 'logs' || toEntity.type === 'unresolved') { return }
+      this.entities.splice(fromMenuIndex, 1)
+      this.entities.splice(toMenuIndex, 0, fromEntity)
+      this.saveClients()
     },
     swapRenderedEntities (renderedIndex, direction) {
       const neighborRenderedIndex = renderedIndex + direction

@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [3.2.0] - 2026-03-09
+[update] drag and drop of publisher and subscriber items in right drawer
 ### [3.1.2] - 2026-03-09
 [fix] fixed auto scrolling to the pane, that is selected in the right drawer, when there are hidden panes before the selected one
 ### [3.1.1] - 2026-03-06
