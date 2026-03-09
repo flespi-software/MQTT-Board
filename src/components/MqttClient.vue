@@ -1137,6 +1137,13 @@ export default {
       if (!entity.rendered) {
         this.entities[index].rendered = true
       }
+      // for correct scrolling subtract the number of hiden panes before the target pane
+      const targetIndex = index
+      for (let i = 0; i < targetIndex; i++) {
+        if (this.entities[i].rendered === false) {
+          index--
+        }
+      }
       this.scrollToEntity(index)
     },
     scrollToEnd () {

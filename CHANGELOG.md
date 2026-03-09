@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [3.1.2] - 2026-03-09
+[fix] fixed auto scrolling to the pane, that is selected in the right drawer, when there are hidden panes before the selected one
 ### [3.1.1] - 2026-03-06
 [fix] scrolling to the newly added publisher or subscriber pane
 ### [3.1.0] - 2026-03-04
