@@ -1,19 +1,5 @@
 <template>
   <q-page class="column no-wrap" :style-fn="pageFn">
-    <div class="row items-center q-px-xs" style="height: 32px; flex-shrink: 0; background: #f5f5f5; border-bottom: 1px solid rgba(0,0,0,0.12);">
-      <q-btn
-        flat dense size="sm"
-        :icon="showBottomPanel ? 'mdi-chevron-down' : 'mdi-chevron-up'"
-        :label="showBottomPanel ? 'Hide logs' : 'Show logs'"
-        @click="showBottomPanel = !showBottomPanel"
-      />
-      <q-btn
-        flat dense size="sm" class="q-ml-sm"
-        :icon="showRightPanel ? 'mdi-chevron-right' : 'mdi-chevron-left'"
-        :label="showRightPanel ? 'Hide config' : 'Show config'"
-        @click="showRightPanel = !showRightPanel"
-      />
-    </div>
     <div class="row" style="width: 100%; min-height: 0; flex: 1 1 0; overflow: hidden;">
       <integration
         host="./#/integration"
@@ -29,14 +15,31 @@
         <json-viewer :data="config" />
       </div>
     </div>
-    <div v-if="showBottomPanel" class="column" style="width: 100%; min-height: 0; flex-basis: 20%; flex-shrink: 0; border-top: 1px solid rgba(0,0,0,0.12);">
-      <div class="row q-gutter-sm q-pa-xs">
+    <div class="column" style="width: 100%; min-height: 0; flex-shrink: 0; border-top: 1px solid rgba(0,0,0,0.12);" :style="{ flexBasis: showBottomPanel ? '20%' : 'auto' }">
+      <div class="row items-center q-px-xs" style="height: 32px; flex-shrink: 0; background: #f5f5f5; border-bottom: 1px solid rgba(0,0,0,0.12); position: relative;">
+        <q-btn
+          flat dense size="sm"
+          :icon="showBottomPanel ? 'mdi-chevron-down' : 'mdi-chevron-up'"
+          :label="showBottomPanel ? 'Hide logs' : 'Show logs'"
+          @click="showBottomPanel = !showBottomPanel"
+        />
+        <div v-if="showRightPanel" style="position: absolute; left: 70%; top: 0; bottom: 0; width: 1px; background: rgba(0,0,0,0.2);" />
+        <q-btn
+          flat dense size="sm"
+          :icon="showRightPanel ? 'mdi-chevron-right' : 'mdi-chevron-left'"
+          :label="showRightPanel ? 'Hide config' : 'Show config'"
+          @click="showRightPanel = !showRightPanel"
+          style="position: absolute;"
+          :style="showRightPanel ? { left: '70%' } : { right: '4px' }"
+        />
+      </div>
+      <div v-if="showBottomPanel" class="row q-gutter-sm q-pa-xs">
         <q-btn label="Set Settings" dense outline @click="setSettings"><q-tooltip><span style="font-size: 16px">Set initial settings to the application</span></q-tooltip></q-btn>
         <q-btn label="Set Active" dense outline @click="setActive"><q-tooltip><span style="font-size: 16px">Activate client by index (starting from 0)</span></q-tooltip></q-btn>
         <q-btn label="Add Publisher" dense outline @click="addPublisherDialog = true"><q-tooltip><span style="font-size: 16px">Add publisher to the active client</span></q-tooltip></q-btn>
         <q-btn label="Add Subscriber" dense outline @click="addSubscriberDialog = true"><q-tooltip><span style="font-size: 16px">Add subscriber to the active client</span></q-tooltip></q-btn>
       </div>
-      <textarea class="col-grow" v-model="message" style="width: 100%; box-sizing: border-box; resize: none;" />
+      <textarea v-if="showBottomPanel" class="col-grow" v-model="message" style="width: 100%; box-sizing: border-box; resize: none;" />
     </div>
     <q-dialog v-model="setSettingsDialog">
       <q-card style="width: 700px; max-width: 90vw;">
