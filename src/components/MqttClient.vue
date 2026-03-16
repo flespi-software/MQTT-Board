@@ -1232,7 +1232,19 @@ export default {
         colsCount = this.getColsCount(width),
         entityOffsetWidth = width / colsCount,
         entityScrollLeft = entityOffsetWidth * this.firstViewedPanelIndex
-      el.scrollLeft = entityScrollLeft
+      if (el.scrollWidth - el.clientWidth >= entityScrollLeft) {
+        el.scrollLeft = entityScrollLeft
+        return
+      }
+      this.$nextTick(() => {
+        requestAnimationFrame(() => {
+          if (!this.$refs.wrapper) return
+          const el = this.$refs.wrapper,
+            colsCount = this.getColsCount(width),
+            entityOffsetWidth = width / colsCount
+          el.scrollLeft = entityOffsetWidth * this.firstViewedPanelIndex
+        })
+      })
     },
     closeAllHandler () {
       for (let i = this.entities.length - 1; i >= 0; i--) {
