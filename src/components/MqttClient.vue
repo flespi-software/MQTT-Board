@@ -1133,6 +1133,7 @@ export default {
           this.errorHandler(clientKey, new Error('Client disconnected'), true)
         }
       }
+      this.saveClients()
     },
     sendFromSubscriberHandler (message) {
       this.republishMessage = cloneDeep(message)

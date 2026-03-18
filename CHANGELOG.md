@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [3.2.3] - 2026-03-18
+[fix] saving of the subscriber's stopped status
 ### [3.2.2] - 2026-03-16
 [update] example page: hide logs and hide config buttons are moved to more appropriate places
 ### [3.2.1] - 2026-03-16

@@ -1,6 +1,6 @@
 {
   "name": "mqtt-board",
-  "version": "3.2.2",
+  "version": "3.2.3",
   "description": "Client based on MQTT.js and Vue.js",
   "productName": "MQTT Board",
   "author": "Sergey Buntsevich <scarry92@yandex.ru>",
