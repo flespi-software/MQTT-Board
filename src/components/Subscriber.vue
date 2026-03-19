@@ -504,7 +504,9 @@ export default {
     status (val) {
       if (val) {
         this.loadingStatus = false
-        this.isPlayed = true
+        if (val === true) { // val may be true, false or "paused"
+          this.isPlayed = true
+        }
       } else {
         this.isPlayed = null
       }
