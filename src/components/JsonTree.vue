@@ -58,7 +58,7 @@ export default {
   },
   methods: {
     toggle (index) {
-      this.$set(this.showObj, index, !this.showObj[index])
+      this.showObj[index] = !this.showObj[index]
     }
   }
 }

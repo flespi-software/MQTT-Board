@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [3.2.5]- 2026-03-31
+[fix] objects and arrays collapsing in json tree
 ### [3.2.4] - 2026-03-19
 [fix] subscriber's resume button is fixed
 ### [3.2.3] - 2026-03-18
