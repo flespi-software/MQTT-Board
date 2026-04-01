@@ -1,6 +1,8 @@
 # Changelog
 All notable changes to this project will be documented in this file.
-### [3.2.5]- 2026-03-31
+### [3.2.6] - 2026-04-01
+[fix] vite configuration in quasar build
+### [3.2.5] - 2026-03-31
 [fix] objects and arrays collapsing in json tree
 ### [3.2.4] - 2026-03-19
 [fix] subscriber's resume button is fixed

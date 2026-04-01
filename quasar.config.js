@@ -30,6 +30,10 @@ export default configure(function (/* ctx */) {
         node: 'node18'
       },
 
+      extendViteConf(config) {
+        config.base = './'
+      },
+
       vueRouterMode: 'hash' // available values: 'hash', 'history'
     },
 
