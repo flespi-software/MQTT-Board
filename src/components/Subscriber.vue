@@ -37,15 +37,26 @@
       <q-card-section class="item__main q-py-none">
         <div class="q-pt-md">
           <q-input
-            :disable="status" autogrow type="aria"
-            color="grey-9" outlined class="q-mb-xs topic-font" hide-bottom-space autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-            v-model="config.topic"
-            label="Topic"
-            :error="validateSetting('topic')"
-            :error-message="getValidateMessage('topic')"
+            ref="topicInput"
             reactive-rules
             no-error-icon
+            autogrow
+            outlined
+            hide-bottom-space
+            type="textarea"
+            color="grey-9"
+            class="q-mb-xs topic-font"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+            v-model="config.topic"
+            label="Topic"
+            :disable="status"
+            :error="validateSetting('topic')"
+            :error-message="getValidateMessage('topic')"
           >
+            <q-resize-observer @resize="adjustInputHeight('topicInput')" />
             <template #after>
               <q-icon name="mdi-information-outline"><q-tooltip>{{getDescription('topic')}}</q-tooltip></q-icon>
             </template>
@@ -357,9 +368,21 @@ export default {
         this.$refs.scroller.refresh(this.renderedMessages.length, 'end-force')
       }
     })
+    // Wait for fonts to load before measuring input heights — scrollHeight-based
+    // auto-sizing produces incorrect results if measured with fallback font metrics
+    document.fonts.ready.then(() => {
+      this.adjustInputHeight('topicInput')
+    })
   },
   methods: {
     isNil,
+    adjustInputHeight (refName) {
+        const inputEl = this.$refs[refName]?.nativeEl
+        if (inputEl) {
+          inputEl.style.height = '1px' // collapse first so scrollHeight reflects true content height, not current element height
+          inputEl.style.height = inputEl.scrollHeight + 'px'
+        }
+    },
     checkProcessing () {
       if (!Object.keys(this.messages).length) {
         this.processingFlag = true

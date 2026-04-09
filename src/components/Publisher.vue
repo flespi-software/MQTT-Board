@@ -36,18 +36,41 @@
       </q-card-section>
       <q-card-section class="publisher__main q-pb-none">
         <div>
-          <q-input no-error-icon color="grey-9" autogrow type="textarea" v-model="config.topic" label="Topic" :error="validateSetting('topic')" :error-message="getValidateMessage('topic')" outlined class="q-mb-xs topic-font" hide-bottom-space autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+          <q-input
+            ref="topicInput"
+            no-error-icon
+            autogrow
+            outlined
+            hide-bottom-space
+            type="textarea"
+            color="grey-9"
+            class="q-mb-xs topic-font"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+            v-model="config.topic"
+            label="Topic"
+            :error="validateSetting('topic')"
+            :error-message="getValidateMessage('topic')"
+          >
+            <q-resize-observer @resize="adjustInputHeight('topicInput')" />
             <template #after>
               <q-icon name="mdi-information-outline"><q-tooltip>{{getDescription('topic')}}</q-tooltip></q-icon>
             </template>
           </q-input>
           <q-input
             ref="messageInput"
-            color="grey-9" outlined class="q-mb-xs topic-font" hide-bottom-space autogrow
+            outlined
+            autogrow
+            hide-bottom-space
             type="textarea"
+            color="grey-9"
+            class="q-mb-xs topic-font"
             v-model="config.payload"
             label="Message"
           >
+            <q-resize-observer @resize="adjustInputHeight('messageInput')" />
             <template #after>
               <q-icon name="mdi-information-outline"><q-tooltip>{{getDescription('payload')}}</q-tooltip></q-icon>
             </template>
@@ -197,6 +220,13 @@ export default {
         name: ''
       }
     },
+    adjustInputHeight (refName) {
+        const inputEl = this.$refs[refName]?.nativeEl
+        if (inputEl) {
+          inputEl.style.height = '1px' // collapse first so scrollHeight reflects true content height, not current element height
+          inputEl.style.height = inputEl.scrollHeight + 'px'
+        }
+    },
     removePublishUserProperty (name) {
       delete this.config.options.properties.userProperties[name]
       if (!Object.keys(this.config.options.properties.userProperties).length) {
@@ -244,10 +274,11 @@ export default {
     }
   },
   mounted () {
-    this.$nextTick(() => {
-      if (this.$refs.messageInput && this.$refs.messageInput.adjustTextareaSize) {
-        this.$refs.messageInput.adjustTextareaSize()
-      }
+    // Wait for fonts to load before measuring input heights — scrollHeight-based
+    // auto-sizing produces incorrect results if measured with fallback font metrics
+    document.fonts.ready.then(() => {
+      this.adjustInputHeight('topicInput')
+      this.adjustInputHeight('messageInput')
     })
   },
   mixins: [validateEntities]

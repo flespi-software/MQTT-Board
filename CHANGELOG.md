@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [3.2.7] - 2026-04-09
+[fix] topic and message inputs height
 ### [3.2.6] - 2026-04-01
 [fix] vite configuration in quasar build
 ### [3.2.5] - 2026-03-31
