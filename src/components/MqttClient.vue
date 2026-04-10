@@ -1108,7 +1108,11 @@ export default {
     },
     clearMessagesHandler (subscriberIndex) {
       const messages = this.subscribersMessages[subscriberIndex]
-      messages.splice(0, messages.length)
+      if (Array.isArray(messages)) {
+        messages.splice(0, messages.length)
+      } else {
+        Object.keys(messages).forEach(key => delete messages[key])
+      }
     },
     async unsubscribeMessageHandler (clientKey, subscriberIndex) {
       await this.unsubscribe(clientKey, subscriberIndex)
