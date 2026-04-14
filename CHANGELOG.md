@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [3.2.10] - 2026-04-14
+[update] dependencies
 ### [3.2.9] - 2026-04-13
 [fix] added explicit main entry point in package.json
 ### [3.2.8] - 2026-04-10
