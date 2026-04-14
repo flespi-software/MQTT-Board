@@ -1,6 +1,6 @@
 {
   "name": "mqtt-board",
-  "version": "3.2.9",
+  "version": "3.2.10",
   "description": "Client based on MQTT.js and Vue.js",
   "productName": "MQTT Board",
   "author": "Sergey Buntsevich <scarry92@yandex.ru>",
@@ -35,8 +35,8 @@
     "eslint-plugin-vue": "^9.20.1",
     "git-directory-deploy": "^1.5.1",
     "sass": "^1.70.0",
-    "vite": "^5.0.12",
-    "vitest": "^1.6.1"
+    "vite": "^8.0.8",
+    "vitest": "^4.1.4"
   },
   "browserslist": [
     "last 10 Chrome versions",
