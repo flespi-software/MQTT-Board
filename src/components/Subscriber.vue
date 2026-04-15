@@ -62,8 +62,8 @@
             </template>
             <template #append>
               <q-btn color="yellow-9" icon="mdi-alert" @click="showSharedSubscriptionNotification" flat round v-if="config.topic.indexOf('$share') === 0"/>
-              <q-btn color="red-9" icon="icon-flespi2-02-01" flat round v-if="isFlespiMode" @click="flespiTopicOpened = true">
-                <q-tooltip>flespi topic generator</q-tooltip>
+              <q-btn color="red-9" icon="icon-flespi2-02-01" flat round v-if="isFlespiMode" @click="flespiTopicModal = true">
+                <q-tooltip>flespi topic constructor</q-tooltip>
               </q-btn>
             </template>
           </q-input>
@@ -240,12 +240,12 @@
         </q-inner-loading>
       </div>
     </q-card>
-    <flespi-topic-configurator v-if="flespiTopicOpened" :opened="flespiTopicOpened" ref="ftopic" v-model="config.topic" color="orange" :bus="client.restBus" @close="flespiTopicOpened = false"/>
+    <flespi-topic-modal v-if="flespiTopicModal" :opened="flespiTopicModal" color="orange" :model-value="config.topic" @update:model-value="config.topic = $event" :connector="client.restBus" @close="flespiTopicModal = false"/>
   </div>
 </template>
 
 <script>
-import FlespiTopicConfigurator from './FlespiTopicConfigurator.vue'
+import FlespiTopicModal from './FlespiTopicModal.vue'
 import Tree from './TreeModeView.vue'
 import Message from './Message.vue'
 import validateEntities from '../mixins/validateEntities.js'
@@ -301,7 +301,7 @@ export default {
       treeSelectedTopic: null,
       processingFlag: null,
       Message,
-      flespiTopicOpened: false
+      flespiTopicModal: false
     }
   },
   computed: {
@@ -356,10 +356,10 @@ export default {
       return !Object.keys(this.validationModel).length
     },
     isNeedLoading () {
-      if (this.config.mode === 1 && this.status && this.subscribed && this.processingFlag === null) {
-        this.checkProcessing()
-      }
       return this.config.mode === 1 && this.status && (!this.subscribed || !!this.processingFlag)
+    },
+    shouldCheckProcessing () {
+      return this.config.mode === 1 && this.status && this.subscribed && this.processingFlag === null
     }
   },
   mounted () {
@@ -511,6 +511,9 @@ export default {
     }
   },
   watch: {
+    shouldCheckProcessing (val) {
+      if (val) { this.checkProcessing() }
+    },
     renderedMessages (val) {
       this.$nextTick(() => {
         if(this.needAutoScroll && this.renderedMessages.length > 0 && this.$refs.scroller) {
@@ -542,7 +545,7 @@ export default {
     }
   },
   components: {
-    Tree, Message, FlespiTopicConfigurator
+    Tree, Message, FlespiTopicModal
   },
   directives: {
     autoscroll: {

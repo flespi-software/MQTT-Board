@@ -1,181 +1,557 @@
 {
-  "devices": {
-    "selectors": [
-      {
-        "name": "devices",
-        "getter": {
-          "name": "getDevices",
-          "params": []
-        },
-        "value": { "label": "all", "value": "+" }
-      }
-    ],
-    "children": {
-      "state": {
-        "topic": {
-          "topicPattern": "flespi/state/gw/devices/${devices}/${fields}",
-          "payloadType": "string"
-        },
-        "selectors": [
-          {
-            "name": "fields",
-            "list": [
-              { "label": "ID", "value": "id" },
-              { "label": "Name", "value": "name" },
-              { "label": "Device type ID", "value": "device_type_id" },
-              { "label": "Configuration", "value": "configuration" },
-              { "label": "Settings", "value": "settings" },
-              { "label": "Messages size", "value": "messages_size" },
-              { "label": "Messages TTL", "value": "messages_ttl" },
-              { "label": "Messages rotate", "value": "messages_rotate" },
-              { "label": "Blocked status", "value": "blocked" },
-              { "label": "Connected status", "value": "connected" },
-              { "label": "CID", "value": "cid" }
-            ],
-            "value": { "label": "all", "value": "+" }
-          }
-        ]
-      },
-      "messages": {
-        "topic": {
-          "topicPattern": "flespi/message/gw/devices/${devices}",
-          "payloadType": "JSON"
-        }
-      },
-      "intervals": {
-        "topic": {
-          "topicPattern": "flespi/interval/gw/calcs/${calcs}/devices/${devices}/${events}",
-          "payloadType": "JSON"
-        },
-        "selectors": [
-          {
-            "name": "calcs",
-            "getter": {
-              "name": "getCalcs",
-              "params": ["devices"]
-            },
-            "value": { "label": "all", "value": "+" }
-          },
-          {
-            "name": "events",
-            "list":  [
-              { "label": "Created", "value": "created" },
-              { "label": "Updated", "value": "updated" },
-              { "label": "Deleted", "value": "deleted" }
-            ],
-            "value": { "label": "all", "value": "+" }
-          }
-        ]
-      },
-      "logs": {
-        "topic": {
-          "topicPattern": "flespi/log/gw/devices/${devices}/${event type}",
-          "payloadType": "JSON"
-        },
-        "selectors": [
-          {
-            "name": "event type",
-            "list":  [
-              { "label": "Created", "value": "created" },
-              { "label": "Updated", "value": "updated" },
-              { "label": "Deleted", "value": "deleted" },
-              { "label": "Blocked", "value": "blocked" },
-              { "label": "Unblocked", "value": "unblocked" },
-              { "label": "Connected", "value": "connected" },
-              { "label": "Disconnected", "value": "disconnected" }
-            ],
-            "value": { "label": "all", "value": "+" }
-          }
-        ]
-      },
-      "telemetry": {
-        "topic": {
-          "topicPattern": "flespi/state/gw/devices/${devices}/telemetry/${parameters}",
-          "payloadType": "string"
-        },
-        "selectors": [
-          {
-            "name": "parameters",
-            "getter": {
-              "name": "getDevicesTelemetry",
-              "params": ["devices"]
-            },
-            "value": { "label": "all", "value": "+" }
-          }
-        ]
-      },
-      "settings": {
-        "topic": {
-          "topicPattern": "flespi/state/gw/devices/${devices}/settings/${name}",
-          "payloadType": "JSON"
-        },
-        "selectors": [
-          {
-            "name": "name",
-            "getter": {
-              "name": "getDevicesSettings",
-              "params": ["devices"]
-            },
-            "value": { "label": "all", "value": "+" }
-          }
-        ]
+  "assets": [
+    {
+      "module": "gw",
+      "method": "getAssets",
+      "selector": "all",
+      "query": {
+        "fields": "id,name"
       }
     }
-  },
-  "analytics": {
-    "selectors": [
-      {
-        "name": "calcs",
-        "getter": {
-          "name": "getCalcs",
-          "params": ["devices"]
-        },
-        "value": { "label": "all", "value": "+" }
-      },
-      {
-        "name": "devices",
-        "getter": {
-          "name": "getDevices",
-          "params": ["calcs"]
-        },
-        "value": { "label": "all", "value": "+" }
-      }
-    ],
-    "children": {
-      "state": {
-        "topic": {
-          "topicPattern": "flespi/state/gw/calcs/${calcs}/devices/${devices}/${statuses}",
-          "payloadType": "JSON"
-        },
-        "selectors": [
-          {
-            "name": "statuses",
-            "list":  [
-              { "label": "Synchronization state", "value": "synced" },
-              { "label": "Last detected interval", "value": "last" },
-              { "label": "Currently active interval", "value": "active" }
-            ],
-            "value": { "label": "all", "value": "+" }
-          }
-        ]
-      },
-      "intervals": {
-        "topic": {
-          "topicPattern": "flespi/interval/gw/calcs/${calcs}/devices/${devices}/${events}",
-          "payloadType": "JSON"
-        },
-        "selectors": [
-          {
-            "name": "events",
-            "list":  [
-              { "label": "Created", "value": "created" },
-              { "label": "Updated", "value": "updated" },
-              { "label": "Deleted", "value": "deleted" }
-            ],
-            "value": { "label": "all", "value": "+" }
-          }
-        ]
-      }
+  ],
+  "calcs": [
+    {
+      "module": "gw",
+      "method": "getCalcs",
+      "selector": "all",
+      "query": {
+        "fields": "id,name"
       }
     }
+  ],
+  "calcs/assets": [
+    {
+      "module": "gw",
+      "method": "getCalcsAssets",
+      "selector": "all",
+      "query": {
+        "fields": "asset_id,name"
+      },
+      "value": "asset_id"
+    }
+  ],
+  "calcs/devices": [
+    {
+      "module": "gw",
+      "method": "getCalcsDevices",
+      "selector": "all",
+      "query": {
+        "fields": "device_id,name"
+      },
+      "value": "device_id"
+    }
+  ],
+  "calcs/geofences": [
+    {
+      "module": "gw",
+      "method": "getCalcsGeofences",
+      "selector": "all",
+      "query": {
+        "fields": "geofence_id,name"
+      },
+      "value": "geofence_id"
+    }
+  ],
+  "calcs/groups": [
+    {
+      "module": "gw",
+      "method": "getCalcsGroups",
+      "selector": "all",
+      "query": {
+        "fields": "group_id,name"
+      },
+      "value": "group_id"
+    }
+  ],
+  "cdns": [
+    {
+      "module": "storage",
+      "method": "getCdns",
+      "selector": "all",
+      "query": {
+        "fields": "id,name"
+      }
+    }
+  ],
+  "channels": [
+    {
+      "module": "gw",
+      "method": "getChannels",
+      "selector": "all",
+      "query": {
+        "fields": "id,name"
+      }
+    }
+  ],
+  "channels/connections": [
+    {
+      "module": "gw",
+      "method": "getChannelsConnections",
+      "selector": "all",
+      "query": {
+        "fields": "connection_id,ident,ip"
+      },
+      "value": "connection_id",
+      "labels": ["ident", "ip"]
+    }
+  ],
+  "channels/connections/ip-address": [
+    {
+      "module": "gw",
+      "method": "getChannelsConnections",
+      "selector": "all",
+      "query": {
+        "fields": "ip"
+      },
+      "value": "ip",
+      "label": "ip"
+    }
+  ],
+  "channels/error/ip-address": [],
+  "channels/idents": [
+    {
+      "module": "gw",
+      "method": "getChannelsIdents",
+      "selector": "all",
+      "query": {
+        "fields": "ident"
+      },
+      "value": "ident",
+      "label": "ident"
+    }
+  ],
+  "containers": [
+    {
+      "module": "storage",
+      "method": "getContainers",
+      "selector": "all",
+      "query": {
+        "fields": "id,name"
+      }
+    }
+  ],
+  "devices": [
+    {
+      "module": "gw",
+      "method": "getDevices",
+      "selector": "all",
+      "query": {
+        "fields": "id,name"
+      }
+    }
+  ],
+  "devices/commands-queue": [
+    {
+      "module": "gw",
+      "method": "getDevicesCommandsQueue",
+      "selector": "all",
+      "query": {
+        "fields": "command_id,name"
+      },
+      "value": "command_id"
+    }
+  ],
+  "devices/connections": [
+    {
+      "module": "gw",
+      "method": "getDevicesConnections",
+      "selector": "all",
+      "query": {
+        "fields": "connection_id,ident,ip"
+      },
+      "value": "connection_id",
+      "labels": ["ident", "ip"]
+    }
+  ],
+  "devices/ip-address": [
+    {
+      "module": "gw",
+      "method": "getDevicesConnections",
+      "selector": "all",
+      "query": {
+        "fields": "ip"
+      },
+      "value": "ip",
+      "label": "ip"
+    }
+  ],
+  "devices/geofences": [
+    {
+      "module": "gw",
+      "method": "getDevicesGeofences",
+      "selector": "all",
+      "query": {
+        "fields": "geofence_id,name"
+      },
+      "value": "geofence_id"
+    }
+  ],
+  "devices/settings": [
+    {
+      "module": "gw",
+      "method": "getDevicesSettings",
+      "selector": "all",
+      "query": {
+        "fields": "name"
+      },
+      "value": "name"
+    }
+  ],
+  "devices/telemetry": [
+    {
+      "module": "gw",
+      "method": "getDevicesTelemetry",
+      "selector": "all",
+      "parse": "objectKeys",
+      "objectField": "telemetry"
+    }
+  ],
+  "geofences": [
+    {
+      "module": "gw",
+      "method": "getGeofences",
+      "selector": "all",
+      "query": {
+        "fields": "id,name"
+      }
+    }
+  ],
+  "grants": [
+    {
+      "module": "platform",
+      "method": "getGrants",
+      "selector": "all",
+      "query": {
+        "fields": "id,name"
+      }
+    }
+  ],
+  "grants/subaccounts": [
+    {
+      "module": "platform",
+      "method": "getGrantsSubaccounts",
+      "selector": "all",
+      "query": {
+        "fields": "subaccount_id,name"
+      },
+      "value": "subaccount_id"
+    }
+  ],
+  "groups": [
+    {
+      "module": "gw",
+      "method": "getGroups",
+      "selector": "all",
+      "query": {
+        "fields": "id,name"
+      }
+    }
+  ],
+  "groups/assets": [
+    {
+      "module": "gw",
+      "method": "getGroupsAssets",
+      "selector": "all",
+      "query": {
+        "fields": "asset_id,name"
+      },
+      "value": "asset_id"
+    }
+  ],
+  "groups/devices": [
+    {
+      "module": "gw",
+      "method": "getGroupsDevices",
+      "selector": "all",
+      "query": {
+        "fields": "device_id,name"
+      },
+      "value": "device_id"
+    }
+  ],
+  "groups/geofences": [
+    {
+      "module": "gw",
+      "method": "getGroupsGeofences",
+      "selector": "all",
+      "query": {
+        "fields": "geofence_id,name"
+      },
+      "value": "geofence_id"
+    }
+  ],
+  "identity-providers": [
+    {
+      "module": "platform",
+      "method": "getIdentityProviders",
+      "selector": "all",
+      "query": {
+        "fields": "id,name"
+      }
+    }
+  ],
+  "limits": [
+    {
+      "module": "platform",
+      "method": "getLimits",
+      "selector": "all",
+      "query": {
+        "fields": "id,name"
+      }
+    }
+  ],
+  "logs": [
+    {
+      "module": "platform",
+      "method": "getCustomer",
+      "query": {
+        "fields": "id,name"
+      }
+    },
+    {
+      "module": "platform",
+      "method": "getSubaccounts",
+      "selector": "all",
+      "query": {
+        "fields": "id,name"
+      }
+    }
+  ],
+  "modems": [
+    {
+      "module": "gw",
+      "method": "getModems",
+      "selector": "all",
+      "query": {
+        "fields": "id,name"
+      }
+    }
+  ],
+  "modems/phone-number": [],
+  "oauth": [
+    {
+      "module": "platform",
+      "method": "getOauth",
+      "selector": "all",
+      "query": {
+        "fields": "id,provider"
+      },
+      "label": "provider"
+    }
+  ],
+  "plugins": [
+    {
+      "module": "gw",
+      "method": "getPlugins",
+      "selector": "all",
+      "query": {
+        "fields": "id,name"
+      }
+    }
+  ],
+  "plugins/devices": [
+    {
+      "module": "gw",
+      "method": "getPluginsDevices",
+      "selector": "all",
+      "query": {
+        "fields": "device_id,name"
+      },
+      "value": "device_id"
+    }
+  ],
+  "plugins/geofences": [
+    {
+      "module": "gw",
+      "method": "getPluginsGeofences",
+      "selector": "all",
+      "query": {
+        "fields": "geofence_id,name"
+      },
+      "value": "geofence_id"
+    }
+  ],
+  "plugins/groups": [
+    {
+      "module": "gw",
+      "method": "getPluginsGroups",
+      "selector": "all",
+      "query": {
+        "fields": "group_id,name"
+      },
+      "value": "group_id"
+    }
+  ],
+  "realms": [
+    {
+      "module": "platform",
+      "method": "getRealms",
+      "selector": "all",
+      "query": {
+        "fields": "id,name"
+      }
+    }
+  ],
+  "realms/identity-providers": [
+    {
+      "module": "platform",
+      "method": "getRealmsIdentityProviders",
+      "selector": "all",
+      "query": {
+        "fields": "identity_provider_id,name"
+      },
+      "value": "identity_provider_id"
+    }
+  ],
+  "realms/roles": [
+    {
+      "module": "platform",
+      "method": "getRealmsRoles",
+      "selector": "all",
+      "query": {
+        "fields": "id,name"
+      }
+    }
+  ],
+  "realms/users": [
+    {
+      "module": "platform",
+      "method": "getRealmsUsers",
+      "selector": "all",
+      "query": {
+        "fields": "id,name"
+      }
+    }
+  ],
+  "realms/users/identity-providers": [
+    {
+      "module": "platform",
+      "method": "getRealmsUsersIdentityProviders",
+      "selector": "all",
+      "query": {
+        "fields": "identity_provider_id"
+      },
+      "value": "identity_provider_id",
+      "label": "identity_provider_id"
+    }
+  ],
+  "sessions": [
+    {
+      "module": "mqtt",
+      "method": "getSessions",
+      "selector": "all",
+      "query": {
+        "fields": "id,client_id"
+      },
+      "label": "client_id"
+    }
+  ],
+  "sessions/client-id": [
+    {
+      "module": "mqtt",
+      "method": "getSessions",
+      "query": {
+        "fields": "client_id"
+      },
+      "value": "client_id",
+      "label": "client_id"
+    }
+  ],
+  "sessions/subscriptions": [
+    {
+      "module": "mqtt",
+      "method": "getSessionsSubscriptions",
+      "selector": "all",
+      "query": {
+        "fields": "topic"
+      },
+      "value": "topic",
+      "label": "topic"
+    }
+  ],
+  "subaccounts": [
+    {
+      "module": "platform",
+      "method": "getSubaccounts",
+      "selector": "all",
+      "query": {
+        "fields": "id,name"
+      }
+    }
+  ],
+  "streams": [
+    {
+      "module": "gw",
+      "method": "getStreams",
+      "selector": "all",
+      "query": {
+        "fields": "id,name"
+      }
+    }
+  ],
+  "streams/channels": [
+    {
+      "module": "gw",
+      "method": "getStreamsChannels",
+      "selector": "all",
+      "query": {
+        "fields": "channel_id,name"
+      },
+      "value": "channel_id"
+    }
+  ],
+  "streams/devices": [
+    {
+      "module": "gw",
+      "method": "getStreamsDevices",
+      "selector": "all",
+      "query": {
+        "fields": "device_id,name"
+      },
+      "value": "device_id"
+    }
+  ],
+  "streams/geofences": [
+    {
+      "module": "gw",
+      "method": "getStreamsGeofences",
+      "selector": "all",
+      "query": {
+        "fields": "geofence_id,name"
+      },
+      "value": "geofence_id"
+    }
+  ],
+  "streams/groups": [
+    {
+      "module": "gw",
+      "method": "getStreamsGroups",
+      "selector": "all",
+      "query": {
+        "fields": "group_id,name"
+      },
+      "value": "group_id"
+    }
+  ],
+  "tokens": [
+    {
+      "module": "platform",
+      "method": "getTokens",
+      "selector": "all",
+      "query": {
+        "fields": "id,info"
+      },
+      "label": "info"
+    }
+  ],
+  "webhooks": [
+    {
+      "module": "platform",
+      "method": "getWebhooks",
+      "selector": "all",
+      "query": {
+        "fields": "id,name"
+      }
+    }
+  ]
 }
