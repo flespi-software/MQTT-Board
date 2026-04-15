@@ -1,0 +1,1 @@
+import{$ as e,N as t,R as n,ct as r,l as i,nt as a,z as o}from"./dom-BKtbnQMn.js";import{n as s,t as c}from"./QLayout-BIbitxMn.js";var l=o({name:`MyLayout`});function u(i,o,l,u,d,f){let p=a(`router-view`);return e(),t(c,{view:`lHh Lpr lFf`},{default:r(()=>[n(s,null,{default:r(()=>[n(p)]),_:1})]),_:1})}var d=i(l,[[`render`,u]]);export{d as default};

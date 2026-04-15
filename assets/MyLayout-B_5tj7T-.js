@@ -1,1 +1,0 @@
-import{N as e,R as t,et as n,l as r,lt as i,rt as a,z as o}from"./dom-DFrPErGq.js";import{n as s,t as c}from"./QLayout-BGmUURn-.js";var l=o({name:`MyLayout`});function u(r,o,l,u,d,f){let p=a(`router-view`);return n(),e(c,{view:`lHh Lpr lFf`},{default:i(()=>[t(s,null,{default:i(()=>[t(p)]),_:1})]),_:1})}var d=r(l,[[`render`,u]]);export{d as default};
