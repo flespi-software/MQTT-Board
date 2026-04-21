@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [3.3.1] - 2026-04-21
+[update] added export of FlespiTopicConstructor component
 ### [3.3.0] - 2026-04-15
 [feature] flespi topic constructor
 ### [3.2.10] - 2026-04-14
