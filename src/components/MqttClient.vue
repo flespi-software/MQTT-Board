@@ -17,6 +17,23 @@
             <sub v-if="activeClient && $q.platform.is.desktop && activeClient.cid" style="border-radius: 5px;font-size: .7rem; padding: 2px;" title="cid">{{activeClient.cid}}</sub>
             <sup v-if="!activeClient && whiteLabel === ''" style="position: relative; font-size: .9rem; padding-left: 4px">{{version}}</sup>
           </q-toolbar-title>
+          <div v-if="activeClient" class="max-panes-control q-mx-sm" role="group" aria-label="Max displayed panels">
+            <div
+              v-for="n in maxPossiblePanels"
+              :key="n"
+              class="max-panes-control__bar"
+              :class="{ 'max-panes-control__bar--filled': n <= maxPanes }"
+              role="button"
+              tabindex="0"
+              :aria-label="`Set max displayed panels to ${n}`"
+              :aria-pressed="n === maxPanes"
+              @click="setMaxPanes(n)"
+              @keydown.enter.prevent="setMaxPanes(n)"
+              @keydown.space.prevent="setMaxPanes(n)"
+            >
+              <q-tooltip>Set max displayed panels to {{ n }}</q-tooltip>
+            </div>
+          </div>
           <q-btn round flat dark v-if="activeClient" icon="mdi-cog" @click.stop="editClientHandler(activeClient.id)"/>
           <q-btn round flat v-if="activeClient" icon="mdi-plus">
             <q-menu anchor="bottom right" self="top right" class="mqtt-board__popup">
@@ -217,6 +234,46 @@
   .pane-swap-move {
     transition: transform 0.3s ease;
   }
+  .max-panes-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    padding: 0 4px;
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    line-height: 0;
+  }
+  .max-panes-control__bar {
+    width: 12px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    outline: none;
+    background: transparent;
+    &::before {
+      content: '';
+      display: block;
+      width: 7px;
+      height: 22px;
+      border: 1px solid currentColor;
+      border-radius: 1px;
+      background: transparent;
+      transition: background-color 0.15s ease, opacity 0.15s ease;
+    }
+    &--filled::before {
+      background: currentColor;
+    }
+    &:hover::before {
+      opacity: 0.7;
+    }
+    &:focus-visible::before {
+      outline: 2px solid currentColor;
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
+  }
 </style>
 
 <script>
@@ -240,6 +297,7 @@ import { version } from '../../package.json'
 import validateEntities from '../mixins/validateEntities.js'
 import { defaultSettings, defaultSubscriber, defaultPublisher } from '../mixins/defaults.js'
 import jsonTreeByMessages from '../mixins/jsonTreeByMessages.js'
+import { PANEL_MIN_WIDTH, MOBILE_BREAKPOINT, ABSOLUTE_MAX_PANES, DEFAULT_MAX_PANES } from '../mixins/paneConstants.js'
 import SelectorsAsync from './selectors/async'
 
 const
@@ -250,6 +308,7 @@ const
         appVersion: version,
         status: client.status,
         config: client.config,
+        maxPanes: client.maxPanes,
         publishers: client.publishers,
         subscribers: client.subscribers,
         entities: client.entities.filter(entity => entity.type !== 'unresolved'),
@@ -380,6 +439,14 @@ export default {
     }
   },
   computed: {
+    maxPanes () {
+      return this.activeClient?.maxPanes ?? DEFAULT_MAX_PANES
+    },
+    maxPossiblePanels () {
+      if (this.wrapperWidth < MOBILE_BREAKPOINT) { return 1 }
+      const count = Math.floor(this.wrapperWidth / PANEL_MIN_WIDTH)
+      return Math.min(ABSOLUTE_MAX_PANES, Math.max(1, count))
+    },
     renderedEntities () {
       const renderedEntities = []
       for (const entity of this.entities) {
@@ -424,14 +491,22 @@ export default {
   methods: {
     openURL: openURL,
     getColsCount (wrapperWidth) {
-      const panelMinWidth = 350
-      let panelsMinCount = Math.floor(wrapperWidth / panelMinWidth)
-      // panelsMinCount = 12 / Math.ceil(12 / panelsMinCount)
+      let panelsMinCount = Math.floor(wrapperWidth / PANEL_MIN_WIDTH)
       if (panelsMinCount > this.renderedEntities.length) {
         panelsMinCount = this.renderedEntities.length
       }
-      const colsCount = this.wrapperWidth < 600 ? 1 : panelsMinCount
+      if (panelsMinCount > this.maxPanes) {
+        panelsMinCount = this.maxPanes
+      }
+      const colsCount = this.wrapperWidth < MOBILE_BREAKPOINT ? 1 : panelsMinCount
       return colsCount
+    },
+    setMaxPanes (value) {
+      if (!this.activeClient) { return }
+      const clamped = Math.min(ABSOLUTE_MAX_PANES, Math.max(1, Math.floor(Number(value))))
+      if (!Number.isFinite(clamped)) { return }
+      this.activeClient.maxPanes = clamped
+      this.saveClients()
     },
     /* settings modal handlers start */
     closeSettingsHandler () {
@@ -723,6 +798,7 @@ export default {
         const client = {}
         client.id = key
         client.status = false
+        client.maxPanes = DEFAULT_MAX_PANES
         this.createInitEntities(client)
         client.logs = [{ type: 'created', data: { ...config }, timestamp: Date.now() }]
         client.notResolvedMessages = []
@@ -754,6 +830,7 @@ export default {
           currentClient.id = key
           currentClient.client = null
           currentClient.status = client.status
+          currentClient.maxPanes = client.maxPanes
           currentClient.publishers = client.publishers
           currentClient.subscribers = client.subscribers
           currentClient.entities = client.entities.map((entity, index) => {

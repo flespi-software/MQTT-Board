@@ -2,6 +2,7 @@ import { version } from '../../package.json'
 import { compare } from 'compare-versions'
 import get from 'lodash/get'
 import set from 'lodash/set'
+import { DEFAULT_MAX_PANES } from './paneConstants.js'
 const migrations = {
   '2.5.1': (client) => {
     if (!get(client.config, 'properties.userProperties', undefined)) {
@@ -23,6 +24,9 @@ const migrations = {
         set(subscriber, 'unsubscribePropertie', undefined)
       }
     })
+  },
+  '3.4.0': (client) => {
+    if (typeof client.maxPanes !== 'number') client.maxPanes = DEFAULT_MAX_PANES
   }
 }
 

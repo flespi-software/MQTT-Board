@@ -11,17 +11,12 @@
           <q-btn round :disable="!isValidPublisher" flat icon="mdi-send" @click="publishEmit">
             <q-tooltip>Publish</q-tooltip>
           </q-btn>
+          <q-btn round flat icon="mdi-eye-off-outline" @click="$emit('hide')">
+            <q-tooltip>Hide panel</q-tooltip>
+          </q-btn>
           <q-btn round flat icon="mdi-dots-vertical">
             <q-menu anchor="bottom right" self="top right" class="mqtt-board__popup">
               <q-list>
-                <q-item v-close-popup @click="$emit('hide')" clickable v-ripple>
-                  <q-item-section avatar>
-                    <q-icon name="mdi-eye-off-outline" />
-                  </q-item-section>
-                  <q-item-section>
-                    <q-item-label>Hide panel</q-item-label>
-                  </q-item-section>
-                </q-item>
                 <q-item v-close-popup @click="$emit('remove')" clickable v-ripple>
                   <q-item-section avatar><q-icon color="red" name="mdi-delete-outline" /></q-item-section>
                   <q-item-section><q-item-label>Remove</q-item-label></q-item-section>

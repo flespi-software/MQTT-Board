@@ -54,20 +54,25 @@ test.describe('Pane navigation and visibility sync', () => {
     await clickDrawerItem(page, 0)
     await page.waitForTimeout(500)
 
-    // Hide the Logs pane via its dots menu
+    // Hide the Logs pane via the direct hide button in its toolbar
     const logsPane = page.locator('.mqtt-client__logs')
-    await logsPane.locator('.q-btn').filter({ has: page.locator('[class*="mdi-dots-vertical"]') }).click()
-    await page.locator('.q-menu').getByText('Hide panel').click()
-    await expect(page.locator('.q-menu')).not.toBeVisible()
+    await logsPane.locator('.q-btn').filter({ has: page.locator('[class*="mdi-eye-off-outline"]') }).click()
     await page.waitForTimeout(500)
 
+    // Verify Logs pane is no longer rendered and its drawer row is greyed out
+    await expect(getPanes(page)).toHaveCount(9)
+    await expect(getDrawerItems(page).nth(0)).toHaveClass(/bg-grey-13/)
+
     // --- Step 5: Hide the second pane in the main window ---
-    // After hiding logs, the second pane (index 1) in the main window is a publisher or subscriber
+    // After hiding logs, the second pane (index 1) in the main window is a publisher or subscriber.
+    // In the drawer it corresponds to index 2 (Logs at 0 is hidden, 1st rendered at 1, 2nd rendered at 2).
     const secondPane = getPanes(page).nth(1)
-    await secondPane.locator('.q-btn').filter({ has: page.locator('[class*="mdi-dots-vertical"]') }).click()
-    await page.locator('.q-menu').getByText('Hide panel').click()
-    await expect(page.locator('.q-menu')).not.toBeVisible()
+    await secondPane.locator('.q-btn').filter({ has: page.locator('[class*="mdi-eye-off-outline"]') }).click()
     await page.waitForTimeout(500)
+
+    // Verify second pane is no longer rendered and its drawer row is greyed out
+    await expect(getPanes(page)).toHaveCount(8)
+    await expect(getDrawerItems(page).nth(2)).toHaveClass(/bg-grey-13/)
 
     // --- Step 6: Click 4th drawer item again, verify sync ---
     // (count starts from 1, hidden panes also count in the drawer)

@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [3.4.0] - 2026-04-23
+[update] hide panel button moved from menu to the panel's top bar; added maximum panels on screen setting; maximum displayed panels is limited to 6
 ### [3.3.1] - 2026-04-21
 [update] added export of FlespiTopicConstructor component
 ### [3.3.0] - 2026-04-15
