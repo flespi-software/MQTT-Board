@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [3.4.1] - 2026-04-23
+[fix] bars in the max panels control are made wider; max panels control isn't displayed if only one panel can be displayed on the current screen width
 ### [3.4.0] - 2026-04-23
 [update] hide panel button moved from menu to the panel's top bar; added maximum panels on screen setting; maximum displayed panels is limited to 6
 ### [3.3.1] - 2026-04-21

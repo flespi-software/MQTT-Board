@@ -52,8 +52,10 @@ async function getWrapperWidth (page) {
 }
 
 function expectedBarCount (wrapperWidth) {
-  if (wrapperWidth < 600) { return 1 }
-  return Math.min(DEFAULT_MAX_PANES, Math.max(1, Math.floor(wrapperWidth / PANEL_MIN_WIDTH)))
+  if (wrapperWidth < 600) { return 0 }
+  const maxPossible = Math.min(DEFAULT_MAX_PANES, Math.max(1, Math.floor(wrapperWidth / PANEL_MIN_WIDTH)))
+  // Control is hidden when only one panel can fit.
+  return maxPossible > 1 ? maxPossible : 0
 }
 
 async function readSavedClients (page) {
@@ -242,7 +244,44 @@ test.describe('Max Panels Control', () => {
     await expect(getFilledBars(page)).toHaveCount(expected)
   })
 
-  test('9. per-client isolation: each client remembers its own limit across reload', async ({ page }) => {
+  test('9. control is hidden when the screen is narrow enough to fit only one panel', async ({ page }) => {
+    await page.setViewportSize({ width: 2000, height: 800 })
+    await createClient(page)
+    await activateFirstClient(page)
+    await closeDrawer(page)
+
+    // Wide viewport: control is visible with multiple bars.
+    await expect(getControl(page)).toBeVisible()
+    expect(await getBars(page).count()).toBeGreaterThan(1)
+
+    // Shrink below the mobile breakpoint — only one panel can fit, control hides.
+    await page.setViewportSize({ width: 500, height: 800 })
+    await page.waitForFunction(() => {
+      const el = document.querySelector('.client__wrapper')
+      return el && el.clientWidth < 600
+    }, null, { timeout: 2000 })
+    await expect(getControl(page)).toHaveCount(0)
+
+    // Narrow but above the breakpoint, where Math.floor(width / PANEL_MIN_WIDTH) === 1
+    // (e.g. 600 <= width < 700) — still hidden.
+    await page.setViewportSize({ width: 650, height: 800 })
+    await page.waitForFunction(() => {
+      const el = document.querySelector('.client__wrapper')
+      return el && el.clientWidth >= 600 && el.clientWidth < 700
+    }, null, { timeout: 2000 })
+    await expect(getControl(page)).toHaveCount(0)
+
+    // Grow back wide enough to fit two or more panels — control reappears.
+    await page.setViewportSize({ width: 1400, height: 800 })
+    await page.waitForFunction(() => {
+      const el = document.querySelector('.client__wrapper')
+      return el && el.clientWidth >= 700
+    }, null, { timeout: 2000 })
+    await expect(getControl(page)).toBeVisible()
+    expect(await getBars(page).count()).toBeGreaterThan(1)
+  })
+
+  test('10. per-client isolation: each client remembers its own limit across reload', async ({ page }) => {
     await page.setViewportSize({ width: 2200, height: 800 })
 
     // Client A

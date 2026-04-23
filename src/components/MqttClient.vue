@@ -17,7 +17,7 @@
             <sub v-if="activeClient && $q.platform.is.desktop && activeClient.cid" style="border-radius: 5px;font-size: .7rem; padding: 2px;" title="cid">{{activeClient.cid}}</sub>
             <sup v-if="!activeClient && whiteLabel === ''" style="position: relative; font-size: .9rem; padding-left: 4px">{{version}}</sup>
           </q-toolbar-title>
-          <div v-if="activeClient" class="max-panes-control q-mx-sm" role="group" aria-label="Max displayed panels">
+          <div v-if="activeClient && maxPossiblePanels > 1" class="max-panes-control q-mx-sm" role="group" aria-label="Max displayed panels">
             <div
               v-for="n in maxPossiblePanels"
               :key="n"
@@ -244,7 +244,7 @@
     line-height: 0;
   }
   .max-panes-control__bar {
-    width: 12px;
+    width: 16px;
     height: 32px;
     display: inline-flex;
     align-items: center;
@@ -255,15 +255,16 @@
     &::before {
       content: '';
       display: block;
-      width: 7px;
+      width: 11px;
       height: 22px;
-      border: 1px solid currentColor;
+      border: 1px dashed currentColor;
       border-radius: 1px;
       background: transparent;
       transition: background-color 0.15s ease, opacity 0.15s ease;
     }
     &--filled::before {
       background: currentColor;
+      border-style: solid;
     }
     &:hover::before {
       opacity: 0.7;
