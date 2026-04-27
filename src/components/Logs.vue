@@ -4,12 +4,13 @@
       <q-card-section class="q-pa-none">
         <q-toolbar class="q-pr-none text-white bg-blue">
           <q-toolbar-title>Logs</q-toolbar-title>
+          <q-btn round flat icon="mdi-eye-off-outline" @click="$emit('hide')">
+            <q-tooltip>Hide panel</q-tooltip>
+          </q-btn>
           <q-btn round flat icon="mdi-playlist-remove" @click="clearLogsHandler">
             <q-tooltip>Clear logs</q-tooltip>
           </q-btn>
-          <q-btn round flat icon="mdi-eye-off-outline" class="q-mr-sm" @click="$emit('hide')">
-            <q-tooltip>Hide panel</q-tooltip>
-          </q-btn>
+          <div class="pane-move-btn-spacer"></div>
         </q-toolbar>
       </q-card-section>
       <q-card-section ref="scroller" class="scroll q-pa-none" style="height: calc(100% - 50px)" @scroll="listScroll" v-autoscroll="needAutoScroll">

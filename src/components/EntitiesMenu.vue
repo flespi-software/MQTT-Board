@@ -1,6 +1,6 @@
 <template>
   <q-list>
-    <q-item-label header>Panes</q-item-label>
+    <q-item-label header class="text-bold text-h6">Panels</q-item-label>
     <div class="scroll absolute full-width" style="height: calc(100% - 48px);" @dragover.prevent @drop.prevent="onDropContainer">
       <q-item
         v-for="(entity, index) in visibleItems" :key="`${entity.type}-${entity.id}`"

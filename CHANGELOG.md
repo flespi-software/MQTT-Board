@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [3.4.2] - 2026-04-27
+[update] order of the "clear logs" and "hide panel" buttons in the logs panel is swapped; the open state of the right drawer is now stored per client and restored on page reload; close button added to the right drawer in overlay mode
 ### [3.4.1] - 2026-04-23
 [fix] bars in the max panels control are made wider; max panels control isn't displayed if only one panel can be displayed on the current screen width
 ### [3.4.0] - 2026-04-23

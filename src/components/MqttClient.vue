@@ -1,6 +1,7 @@
 <template>
  <div class="absolute-full">
     <q-layout view="hhh LpR lff" container>
+      <q-resize-observer @resize="onLayoutResize" :debounce="0" />
       <q-header reveal>
         <q-toolbar :class="{[`bg-${color}`]: true, 'text-white': !!color}"  style="position: absolute; z-index: 1">
           <q-btn round v-if="activeClient && clientsCloseable" flat dense icon="mdi-close" @click="clearActiveClient"/>
@@ -38,7 +39,7 @@
           <q-btn round flat v-if="activeClient" icon="mdi-plus">
             <q-menu anchor="bottom right" self="top right" class="mqtt-board__popup">
               <q-list>
-                <q-item-label header>Add pane</q-item-label>
+                <q-item-label header>Add panel</q-item-label>
                 <q-item v-close-popup @click="addPublisher()" clickable v-ripple>
                   <q-item-section avatar><q-icon name="mdi-publish" /></q-item-section>
                   <q-item-section><q-item-label>Publisher</q-item-label></q-item-section>
@@ -61,9 +62,22 @@
         v-if="activeClient"
         v-model="drawerRight"
         bordered
-        :breakpoint="500"
+        :breakpoint="DRAWER_BREAKPOINT"
         content-class="bg-grey-3 absolute"
       >
+        <q-btn
+          v-if="isDrawerOverlay"
+          round unelevated
+          size="md"
+          color="grey-4"
+          text-color="grey-9"
+          icon="mdi-chevron-right"
+          class="absolute"
+          style="top: 8px; left: 8px; z-index: 1"
+          @click="drawerRight = false"
+        >
+          <q-tooltip>Close</q-tooltip>
+        </q-btn>
         <entities-menu
            class="full-width relative-position" style="height: calc(100% - 98px); top: 50px;"
           :entities="menuEnitites"
@@ -146,7 +160,7 @@
                       :showForth="renderedEntities.length > 1 && index < renderedEntities.length - 1 && renderedEntities[index + 1]?.type !== 'unresolved'"
                       @remove="removePublisher(entity.index)"
                       @publish="publishMessageHandler(activeClient.id, entity.index)"
-                      @hide="entity.rendered = false"
+                      @hide="hideEntity(entity)"
                       @move-back="swapRenderedEntities(index, -1)"
                       @move-forth="swapRenderedEntities(index, 1)"
                     />
@@ -167,7 +181,7 @@
                       @pause="pauseSubscriberHandler(entity.index)"
                       @clear="clearMessagesHandler(entity.index)"
                       @action-send="sendFromSubscriberHandler"
-                      @hide="entity.rendered = false"
+                      @hide="hideEntity(entity)"
                       @move-back="swapRenderedEntities(index, -1)"
                       @move-forth="swapRenderedEntities(index, 1)"
                     />
@@ -175,13 +189,13 @@
                       v-else-if="entity.type === 'unresolved'"
                       :messages="notResolvedMessages"
                       @clear="clearUnresolvedMessages"
-                      @hide="entity.rendered = false"
+                      @hide="hideEntity(entity)"
                     />
                     <logs
                       v-else-if="entity.type === 'logs'"
                       :logs="activeClient.logs"
                       @clear="clearLogs"
-                      @hide="entity.rendered = false"
+                      @hide="hideEntity(entity)"
                     />
                   </div>
                 </TransitionGroup>
@@ -310,6 +324,7 @@ const
         status: client.status,
         config: client.config,
         maxPanes: client.maxPanes,
+        drawerRight: client.drawerRight,
         publishers: client.publishers,
         subscribers: client.subscribers,
         entities: client.entities.filter(entity => entity.type !== 'unresolved'),
@@ -326,7 +341,8 @@ const
   MQTT_BOARD_LOCALSTORAGE_NAME = 'clients',
   CLIENT_STATUS_ACTIVE = true,
   CLIENT_STATUS_INACTIVE = false,
-  CLIENT_STATUS_USER_INACTIVE = null
+  CLIENT_STATUS_USER_INACTIVE = null,
+  DRAWER_BREAKPOINT = 500
 
 export default {
   name: 'MqttClient',
@@ -416,7 +432,8 @@ export default {
   data () {
     return {
       version: version,
-      drawerRight: this.$q.platform.is.desktop,
+      DRAWER_BREAKPOINT,
+      layoutWidth: typeof window !== 'undefined' ? window.innerWidth : 0,
       clients: {},
       statuses: {},
       activeClient: null,
@@ -440,6 +457,21 @@ export default {
     }
   },
   computed: {
+    drawerRight: {
+      get () {
+        const explicit = this.activeClient?.drawerRight
+        if (explicit !== undefined) { return explicit }
+        return this.$q.platform.is.desktop && this.layoutWidth > DRAWER_BREAKPOINT
+      },
+      set (value) {
+        if (!this.activeClient) { return }
+        this.activeClient.drawerRight = value
+        this.saveClients()
+      }
+    },
+    isDrawerOverlay () {
+      return this.layoutWidth > 0 && this.layoutWidth <= DRAWER_BREAKPOINT
+    },
     maxPanes () {
       return this.activeClient?.maxPanes ?? DEFAULT_MAX_PANES
     },
@@ -832,6 +864,7 @@ export default {
           currentClient.client = null
           currentClient.status = client.status
           currentClient.maxPanes = client.maxPanes
+          currentClient.drawerRight = client.drawerRight
           currentClient.publishers = client.publishers
           currentClient.subscribers = client.subscribers
           currentClient.entities = client.entities.map((entity, index) => {
@@ -1226,10 +1259,15 @@ export default {
       const logs = this.activeClient.logs
       logs.splice(0, logs.length)
     },
+    hideEntity (entity) {
+      entity.rendered = false
+      this.saveClients()
+    },
     pickEntity (index) {
       const entity = this.entities[index]
       if (!entity.rendered) {
         this.entities[index].rendered = true
+        this.saveClients()
       }
       // for correct scrolling subtract the number of hiden panes before the target pane
       const targetIndex = index
@@ -1308,6 +1346,9 @@ export default {
             this.clients[clientId].restBus = null
           }
         })
+    },
+    onLayoutResize ({ width }) {
+      this.layoutWidth = width
     },
     onWrapperResize ({ width }) {
       this.wrapperWidth = width

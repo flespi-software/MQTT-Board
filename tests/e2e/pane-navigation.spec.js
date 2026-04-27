@@ -87,9 +87,61 @@ test.describe('Pane navigation and visibility sync', () => {
 
     await verifySync(page)
   })
+
+  test('hidden state of a panel persists across page reload', async ({ page }) => {
+    await page.goto('/')
+    await page.evaluate(() => localStorage.clear())
+    await page.reload()
+
+    // Create and activate client
+    await page.locator('.q-btn--fab').click()
+    await expect(page.locator('.q-dialog')).toBeVisible()
+    const hostInput = page.getByLabel('Host')
+    await hostInput.clear()
+    await hostInput.fill(BROKER_HOST)
+    const usernameInput = page.getByLabel('Username')
+    await usernameInput.clear()
+    await usernameInput.fill(BROKER_USERNAME)
+    await page.getByRole('button', { name: /save/i }).click()
+    await page.locator('.client__item .q-card').click()
+    await expect(page.getByText(/online/i).first()).toBeVisible({ timeout: 15000 })
+
+    // Default entities: logs, subscriber, publisher → 3 panes rendered
+    await expect(getPanes(page)).toHaveCount(3)
+    await expect(page.locator('.mqtt-client__publisher')).toHaveCount(1)
+
+    // Hide the publisher panel via its toolbar hide button
+    const publisherPane = page.locator('.mqtt-client__publisher').first()
+    await publisherPane.locator('.q-btn').filter({ has: page.locator('[class*="mdi-eye-off-outline"]') }).click()
+    await expect(getPanes(page)).toHaveCount(2)
+    await expect(page.locator('.mqtt-client__publisher')).toHaveCount(0)
+
+    // Verify the publisher entity's rendered=false flag is persisted (saveClients is debounced ~500ms)
+    await expect.poll(async () => {
+      const saved = await readSavedClients(page)
+      const publisherEntity = saved?.[0]?.entities?.find(e => e.type === 'publisher')
+      return publisherEntity?.rendered
+    }, { timeout: 2000 }).toBe(false)
+
+    // Reload and re-activate the client
+    await page.reload()
+    await page.locator('.client__item .q-card').click()
+    await expect(page.getByText(/online/i).first()).toBeVisible({ timeout: 15000 })
+
+    // Publisher should still be hidden after reload
+    await expect(getPanes(page)).toHaveCount(2)
+    await expect(page.locator('.mqtt-client__publisher')).toHaveCount(0)
+  })
 })
 
 // ----- Helper functions -----
+
+async function readSavedClients (page) {
+  const raw = await page.evaluate(() => localStorage.getItem('clients'))
+  if (!raw) { return null }
+  const json = raw.startsWith('__q_objt|') ? raw.slice('__q_objt|'.length) : raw
+  return JSON.parse(json)
+}
 
 async function addPane (page, type) {
   await page.locator('.q-toolbar .q-btn').filter({ has: page.locator('[class*="mdi-plus"]') }).click()
