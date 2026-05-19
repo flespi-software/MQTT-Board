@@ -569,6 +569,10 @@ export default {
     width: 20px !important;
     align-self: stretch;
     height: auto;
+    opacity: 0;
+    .q-icon {
+      opacity: 0;
+    }
   }
   .pane-move-btn-spacer {
     width: 16px;
@@ -584,6 +588,14 @@ export default {
         position: relative;
         height: calc(100% - 50px);
         overflow: auto;
+      }
+
+      .q-toolbar:hover {
+        .pane-move-btn.q-btn,
+        .q-icon {
+          opacity: 1;
+          transition: opacity 0.4s ease-in-out;
+        }
       }
     }
 

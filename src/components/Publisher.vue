@@ -287,6 +287,13 @@ export default {
     width: 20px !important;
     align-self: stretch;
     height: auto;
+    opacity: 0;
+    .q-icon {
+      opacity: 0;
+    }
+    &:hover .q-icon {
+      opacity: 1;
+    }
   }
   .pane-move-btn-spacer {
     width: 16px;
@@ -302,6 +309,14 @@ export default {
       border: 2px solid #3f51b5;
       height: calc(100% - 16px);
       position: relative;
+
+      .q-toolbar:hover {
+        .pane-move-btn.q-btn,
+        .q-icon {
+          opacity: 1;
+          transition: opacity 0.4s ease-in-out;
+        }
+      }
     }
     .publisher__remove {
       position: absolute;
