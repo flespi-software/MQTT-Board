@@ -216,7 +216,7 @@
           virtual-scroll-item-size="140"
           >
           <template v-slot="{ item }">
-            <message :message="item" :highlight="config.highlight" :key="`subMsg_${item.topic}_${item.properties.userProperties.timestamp}`" @action-send="(item) => { $emit('action-send', item) }" />
+            <message :message="item" :highlight="config.highlight" :key="`subMsg_${item.topic}_${item._seq}`" @action-send="(item) => { $emit('action-send', item) }" />
           </template>
         </q-virtual-scroll>
         <div class="subscriber__list subscriber__list--tree" v-else-if="config.mode === 1 && Object.keys(renderedMessages).length && subscribed">
@@ -250,7 +250,8 @@ import isNil from 'lodash/isNil'
 
 const
   LIST_MODE = 0,
-  TREE_MODE = 1
+  TREE_MODE = 1,
+  SCROLL_BOTTOM_THRESHOLD = 5
 
 export default {
   name: 'Subscriber',
@@ -290,7 +291,7 @@ export default {
           value: TREE_MODE
         }
       ],
-      needAutoScroll: true,
+      stickToBottom: true,
       isPlayed: this.status || null,
       filter: '',
       treeSelectedTopic: null,
@@ -318,6 +319,11 @@ export default {
         }
       }
       return res
+    },
+    // current sequence number of the last message, used to trigger scroll to bottom after new messages arrive
+    lastMessageSeq () {
+      if (!Array.isArray(this.messages) || !this.messages.length) { return null }
+      return this.messages[this.messages.length - 1]._seq
     },
     treeModeValue () {
       let result = null
@@ -358,9 +364,18 @@ export default {
     }
   },
   mounted () {
+    // Snap to the true bottom whenever QVirtualScroll's content height grows after a scrollTo(..., 'end-force').
+    // The last item's real size only becomes known after it renders, so the post-scrollTo resize is our signal to correct
+    // the gap left by size-estimate-based positioning.
+    this.bottomStickRO = new ResizeObserver(() => {
+      if (this.stickToBottom && this.$refs.scroller) {
+        const el = this.$refs.scroller.$el
+        el.scrollTop = el.scrollHeight
+      }
+    })
     this.$nextTick(() => {
-      if(this.needAutoScroll && this.renderedMessages.length > 0 && this.$refs.scroller) {
-        this.$refs.scroller.refresh(this.renderedMessages.length, 'end-force')
+      if (this.stickToBottom && this.renderedMessages.length > 0 && this.$refs.scroller) {
+        this.$refs.scroller.refresh(this.renderedMessages.length - 1)
       }
     })
     // Wait for fonts to load before measuring input heights — scrollHeight-based
@@ -368,6 +383,9 @@ export default {
     document.fonts.ready.then(() => {
       this.adjustInputHeight('topicInput')
     })
+  },
+  beforeUnmount () {
+    this.bottomStickRO?.disconnect()
   },
   methods: {
     isNil,
@@ -412,14 +430,14 @@ export default {
       }
       this.$emit('subscribe')
     },
-    unsubscribeMessageHandler (key, settings) {
+    unsubscribeMessageHandler () {
       this.isPlayed = null
       this.treeSelectedTopic = null
-      this.clearScrollParams()
+      this.stickToBottom = true
       this.$emit('unsubscribe')
       this.processingFlag = null
     },
-    removeSubscriber (key) {
+    removeSubscriber () {
       this.$emit('remove')
     },
     addSubscriberUserProperty () {
@@ -464,27 +482,17 @@ export default {
       })
     },
     onScroll (e) {
-      if (e.index < (this.renderedMessages.length - 2) && e.direction === 'decrease') {
-        this.needAutoScroll = false
-      } else if(e.index >= (this.renderedMessages.length - 2) && e.direction === 'increase') {
-        this.needAutoScroll = true
-      }
-    },
-    listScroll (e) {
-      if (this.status) {
-        const el = this.$refs.scroller && this.$refs.scroller.$el
-        if (!el) { return false }
-        if (el.scrollTop < el.scrollHeight - el.clientHeight) {
-          this.needAutoScroll = false
-        } else {
-          this.needAutoScroll = true
+      if (e.direction === 'decrease') {
+        // user scrolled up — pause auto-stick to bottom
+        this.stickToBottom = false
+      } else if (e.direction === 'increase') {
+        // scrolled down — re-enable auto-stick once the bottom is reached
+        const el = (e.ref && e.ref.$el) || (this.$refs.scroller && this.$refs.scroller.$el)
+        if (!el) { return }
+        if (el.scrollHeight - el.scrollTop - el.clientHeight <= SCROLL_BOTTOM_THRESHOLD) {
+          this.stickToBottom = true
         }
       }
-    },
-    clearScrollParams () {
-      this.currentScrollTop = 0
-      this.allScrollTop = 0
-      this.needAutoScroll = true
     },
     clearMessagesHandler () {
       this.$emit('clear')
@@ -509,10 +517,13 @@ export default {
     shouldCheckProcessing (val) {
       if (val) { this.checkProcessing() }
     },
-    renderedMessages (val) {
+    lastMessageSeq () {
       this.$nextTick(() => {
-        if(this.needAutoScroll && this.renderedMessages.length > 0 && this.$refs.scroller) {
-          this.$refs.scroller.refresh(this.renderedMessages.length)
+        if (this.stickToBottom && this.renderedMessages.length > 0 && this.$refs.scroller) {
+          // re-observe to schedule the callback for the next layout cycle ("snap to the true bottom after next layout")
+          this.bottomStickRO.disconnect()
+          this.bottomStickRO.observe(this.$refs.scroller.$el)
+          this.$refs.scroller.scrollTo(this.renderedMessages.length - 1, 'end-force')
         }
       })
     },
@@ -541,22 +552,6 @@ export default {
   },
   components: {
     Tree, Message, FlespiTopicModal
-  },
-  directives: {
-    autoscroll: {
-      mounted (el, { value }) {
-        if (value) {
-          el.scrollTop = el.scrollHeight - el.clientHeight
-        }
-      },
-      updated (el, { value }) {
-        setTimeout(() => {
-          if (value) {
-            el.scrollTop = el.scrollHeight - el.clientHeight
-          }
-        }, 50)
-      }
-    }
   },
   mixins: [validateEntities]
 }

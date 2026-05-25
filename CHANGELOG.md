@@ -1,7 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [3.4.4] - 2026-05-25
+[fix] autoscroll to the bottom
+[fix] virtual messages list in subscriber panels in case when there is no timestamp userProperty in application message (not-flespi MQTT broker)
 ### [3.4.3] - 2026-05-19
-[update] - "move to the left" and "move to the right" buttons of publisher and subscriber panels are now displayed on panel's toolbar hover
+[update] "move to the left" and "move to the right" buttons of publisher and subscriber panels are now displayed on panel's toolbar hover
 ### [3.4.2] - 2026-04-27
 [update] order of the "clear logs" and "hide panel" buttons in the logs panel is swapped; the open state of the right drawer is now stored per client and restored on page reload; close button added to the right drawer in overlay mode
 ### [3.4.1] - 2026-04-23

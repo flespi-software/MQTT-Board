@@ -448,6 +448,7 @@ export default {
       editedClientId: null,
       renderInterval: 0,
       messagesLimitCount: 3000,
+      messageSeq: 0,
       notResolvedMessages: [],
       isInited: false,
       republishMessage: null,
@@ -660,6 +661,8 @@ export default {
       try {
         packet.payload = JSON.parse(packet.payload)
       } catch (e) {}
+      // assing monotonously increasing sequence number, it will be used as a virtual scroll kessage key in subscriber
+      packet._seq = ++this.messageSeq
       const clientObj = this.clients[clientId]
       /* if subscribersStatuses contains true or paused statuses */
       if (clientObj.subscribersStatuses.length && clientObj.subscribersStatuses.filter(status => !!status).length) {
