@@ -99,7 +99,7 @@ import { defineComponent } from 'vue'
 import { date } from 'quasar'
 import JsonTree from './JsonTree.vue'
 export default defineComponent({
-  name: 'Logs',
+  name: 'LogsPanel',
   props: [
     'logs'
   ],

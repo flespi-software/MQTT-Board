@@ -57,7 +57,7 @@ import { defineComponent } from 'vue'
 import Message from './Message.vue'
 
 export default defineComponent({
-  name: 'Unresolved',
+  name: 'UnresolvedPanel',
   props: ['messages'],
   emits: ['hide', 'clear'],
   data () {

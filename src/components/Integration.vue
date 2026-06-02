@@ -4,6 +4,7 @@
 
 <script>
 export default {
+  name: 'IntegrationFrame',
   props: {
     host: {
       type: String,

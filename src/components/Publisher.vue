@@ -168,7 +168,7 @@ import get from 'lodash/get'
 import isNil from 'lodash/isNil'
 
 export default {
-  name: 'Publisher',
+  name: 'PublisherPanel',
   props: [
     'modelValue',
     'version',

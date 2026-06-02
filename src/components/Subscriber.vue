@@ -254,7 +254,7 @@ const
   SCROLL_BOTTOM_THRESHOLD = 5
 
 export default {
-  name: 'Subscriber',
+  name: 'SubscriberPanel',
   props: [
     'modelValue',
     'messages',

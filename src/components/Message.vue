@@ -24,7 +24,7 @@ import { defineComponent } from 'vue'
 import { date, copyToClipboard } from 'quasar'
 import JsonTree from './JsonTree.vue'
 export default defineComponent({
-  name: 'Message',
+  name: 'MessageCard',
   props: ['message', 'highlight'],
   emits: ['action-send'],
   computed: {
