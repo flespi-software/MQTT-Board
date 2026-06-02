@@ -3,6 +3,7 @@ All notable changes to this project will be documented in this file.
 ### [3.4.5] - 2026-06-02
 [fix] linter
 [fix] reusing of fetched flespi topics schema is added into tests
+[update] dependencies
 ### [3.4.4] - 2026-05-25
 [fix] autoscroll to the bottom
 [fix] virtual messages list in subscriber panels in case when there is no timestamp userProperty in application message (not-flespi MQTT broker)
