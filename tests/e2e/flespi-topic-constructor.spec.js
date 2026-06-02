@@ -6,7 +6,31 @@ const BROKER_USERNAME = process.env.MQTT_TOKEN
 test.describe('Flespi Topic Constructor', () => {
   test.skip(!BROKER_USERNAME, 'MQTT_TOKEN env var is required. Run with: MQTT_TOKEN=<your-token> npx playwright test')
 
+  // The flespi topic constructor builds its tree from a static schema served by
+  // `toolbox/topics`, which the app fetches on open and caches in sessionStorage
+  // under 'flespi_mqtt_topics'. That request is slow (~6s) and is re-issued for
+  // every isolated test context, causing the tree to render past the assertion
+  // timeout under CI's serial workers. Fetch the schema once for the whole suite
+  // and seed it into each test's sessionStorage so the app uses the cache and
+  // skips the slow network round-trip entirely.
+  let topicsConfig
+  test.beforeAll(async ({ request }) => {
+    const response = await request.get('https://flespi.io/const/values?names=toolbox/topics', {
+      headers: { Authorization: `FlespiToken ${BROKER_USERNAME}` }
+    })
+    if (response.ok()) {
+      topicsConfig = await response.json()
+    }
+  })
+
   test.beforeEach(async ({ page }) => {
+    // Seed the cached schema before any app script runs (applies across goto/reload).
+    if (topicsConfig) {
+      await page.addInitScript(data => {
+        sessionStorage.setItem('flespi_mqtt_topics', JSON.stringify(data))
+      }, topicsConfig)
+    }
+
     await page.goto('/')
     await page.evaluate(() => localStorage.clear())
     await page.reload()
@@ -42,7 +66,7 @@ test.describe('Flespi Topic Constructor', () => {
     const dialog = page.locator('.q-dialog')
     await expect(dialog).toBeVisible()
     await expect(dialog.getByText('flespi topic constructor')).toBeVisible()
-    await expect(dialog.locator('.q-tree .q-tree__node').first()).toBeVisible({ timeout: 10000 })
+    await expect(dialog.locator('.q-tree .q-tree__node').first()).toBeVisible({ timeout: 30000 })
 
     return dialog
   }
