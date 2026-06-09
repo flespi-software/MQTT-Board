@@ -143,6 +143,10 @@ const settings = {
       type: 'String',
       required: true
     },
+    treeField: {
+      desc: 'Name of user property used to group messages within a topic. By default each topic keeps only one (the latest) message. When the group by field is set, the tree keeps the latest message for each distinct value of this property (e.g. group by "cid" to see the most recent message for each subsccount under the same topic).',
+      type: 'String'
+    },
     options: {
       qos: {
         desc: 'Maximum QoS field. This gives the maximum QoS level at which the Server can send Application Messages to the Client',

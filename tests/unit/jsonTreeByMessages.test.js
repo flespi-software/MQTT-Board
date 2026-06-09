@@ -151,6 +151,38 @@ describe('jsonTreeByMessages', () => {
     })
   })
 
+  describe('keepEmptyTopics (filter tree mode)', () => {
+    it('should keep the topic node when an empty payload arrives', () => {
+      const writeMsg = { topic: 'test/node', payload: 'value' }
+      const clearMsg = { topic: 'test/node', payload: '' }
+
+      jsonTreeByMessages(writeMsg, '', dest, true)
+      jsonTreeByMessages(clearMsg, '', dest, true)
+
+      expect(dest.test).toBeDefined()
+      expect(dest.test.children.node).toBeDefined()
+      expect(dest.test.children.node.topic).toBe('test/node')
+    })
+
+    it('should create a topic node even when the only message is empty', () => {
+      const clearMsg = { topic: 'a/b/c', payload: '' }
+
+      jsonTreeByMessages(clearMsg, '', dest, true)
+
+      expect(dest.a.children.b.children.c.topic).toBe('a/b/c')
+    })
+
+    it('should still clear by default when flag is omitted', () => {
+      const writeMsg = { topic: 'test/node', payload: 'value' }
+      const clearMsg = { topic: 'test/node', payload: '' }
+
+      jsonTreeByMessages(writeMsg, '', dest)
+      jsonTreeByMessages(clearMsg, '', dest)
+
+      expect(dest.test).toBeUndefined()
+    })
+  })
+
   describe('edge cases', () => {
     it('should handle empty topic', () => {
       const message = { topic: '', payload: 'value' }

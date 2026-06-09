@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [3.5.0] - 2026-06-09
+[feature] topics tree filter for subscriber in list mode
 ### [3.4.5] - 2026-06-02
 [fix] linter
 [fix] reusing of fetched flespi topics schema is added into tests

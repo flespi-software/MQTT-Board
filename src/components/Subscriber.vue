@@ -31,13 +31,8 @@
       </q-card-section>
       <q-card-section class="item__main q-py-none">
         <div class="q-pt-md">
-          <q-input
+          <q-input outlined autogrow hide-bottom-space no-error-icon reactive-rules
             ref="topicInput"
-            reactive-rules
-            no-error-icon
-            autogrow
-            outlined
-            hide-bottom-space
             type="textarea"
             color="grey-9"
             class="q-mb-xs topic-font"
@@ -62,8 +57,28 @@
               </q-btn>
             </template>
           </q-input>
-          <q-btn-toggle v-close-popup flat rounded toggle-text-color="grey-9" text-color="grey-6" v-model="config.mode" :options="modeSelectOptions" @update:model-value="changeModeHandler" style="width: 100%" class="q-mt-md"/>
-          <q-input color="grey-9" outlined class="q-my-xs" hide-bottom-space v-model="config.treeField" label="Field to group by" v-if="config.mode === 1 && version === 5" hint="User properties field name by which messages will be grouped."/>
+          <q-btn-toggle v-close-popup flat rounded
+            toggle-text-color="grey-9"
+            text-color="grey-6"
+            style="width: 100%"
+            class="q-mt-md"
+            v-model="config.mode"
+            :options="modeSelectOptions"
+            @update:model-value="changeModeHandler"
+            />
+          <q-input outlined hide-bottom-space
+            v-if="config.mode === 1 && version === 5"
+            color="grey-9"
+            class="q-my-xs"
+            v-model="config.treeField"
+            label="Field to group by"
+            hint="User properties field name by which messages will be grouped.">
+            <template #after>
+              <q-icon name="mdi-information-outline">
+                <q-tooltip max-width="200px">{{getDescription('treeField')}}</q-tooltip>
+              </q-icon>
+            </template>
+          </q-input>
           <q-toggle v-model="config.highlight" color="grey-9" label="Highlight messages content" class="q-my-md" />
           <q-expansion-item :model-value="true" class="q-mt-sm q-mb-sm bg-grey-2" label="Options">
             <div>
@@ -154,18 +169,20 @@
       </q-card-section>
     </q-card>
     <q-card v-else class="subscriber__item q-ma-sm">
-      <q-toolbar v-if="!filterMode" class="q-pr-none q-pl-none text-white bg-orange" style="border-top-right-radius: 0; border-top-left-radius: 0;">
+      <q-toolbar class="q-pr-none q-pl-none text-white bg-orange" style="border-top-right-radius: 0; border-top-left-radius: 0;">
         <q-btn v-if="showBack" flat dense icon="mdi-menu-left" class="bg-orange-7 pane-move-btn" @click="$emit('move-back')">
           <q-tooltip>Move to the left</q-tooltip>
         </q-btn>
-        <div v-else class="pane-move-btn-spacer"></div>
+        <div v-else class="pane-move-btn-spacer"/>
         <q-toolbar-title style="width: calc(100% - 150px)">
           <span>
             {{config.topic}}
             <q-tooltip>{{config.topic}}</q-tooltip>
           </span>
         </q-toolbar-title>
-        <q-btn round flat icon="mdi-magnify" @click="filterMode = true" v-if="config.mode === 0"/>
+        <q-btn round flat icon="mdi-file-tree" @click="toggleFilterMode" v-if="config.mode === 0">
+          <q-tooltip>Open topics tree</q-tooltip>
+        </q-btn>
         <q-btn round flat icon="mdi-stop" @click="unsubscribeMessageHandler()" title="Unsubscribe"/>
         <q-btn round flat :icon="isPlayed && status !== 'paused' ? 'mdi-pause' : 'mdi-play'" @click="playStopHandler" :title="isPlayed && status !== 'paused' ? 'Pause' : 'Resume'">
           <q-chip v-if="status === 'paused' && !!modelValue.missedMessages" color="red" dense text-color="white" size=".6rem" class="absolute-top-right" style="top: -5px; right: -5px;" square>
@@ -191,24 +208,52 @@
           <q-tooltip>Move to the right</q-tooltip>
         </q-btn>
       </q-toolbar>
-      <q-input
-        v-else
-        class="q-ma-sm q-my-xs"
-        color="grey-9" outlined hide-bottom-space
-        v-model="filter"
-        label="Filter by topic"
-        autofocus
-      >
-        <template #prepend>
-          <q-btn color="grey-9" icon="mdi-arrow-left" @click="filterMode = false, filter = ''" flat round/>
-        </template>
-        <template #append>
-          <q-btn color="grey-9" icon="mdi-close" @click="filter = ''" flat round v-if="!!filter"/>
-        </template>
-      </q-input>
-      <div style="position: relative;" :style="{height: `calc(100% - ${filterMode ? '62px' : '50px'})`}">
+      <div style="position: relative; height: calc(100% - 50px);">
+        <q-splitter horizontal
+          v-if="config.mode === 0 && filterMode"
+          v-model="filterSplitterRatio"
+          :limits="[10, 90]"
+          separator-class="subscriber__splitter-sep"
+          class="subscriber__list"
+          style="height: auto;"
+        >
+          <template #before>
+            <div class="fit" style="position: relative;">
+              <q-icon v-if="$q.platform.is.desktop" name="mdi-information-outline" size="20px" color="grey-7" class="absolute-top-right cursor-pointer" style="z-index: 1; right: 35px; top: 7px;">
+                <q-tooltip max-width="200px">Ctrl+click to select multiple nodes</q-tooltip>
+              </q-icon>
+              <q-btn dense flat round size="sm" icon="mdi-close" color="grey-7" class="absolute-top-right" style="z-index: 1; right: 10px; top: 5px;" @click="toggleFilterMode">
+                <q-tooltip>Close topics tree</q-tooltip>
+              </q-btn>
+              <div class="scroll fit" style="padding-top: 20px;">
+                <tree selectable
+                  v-if="Object.keys(filterTreeData).length"
+                  :data="filterTreeData"
+                  :selectedTopics="selectedFilterTopics"
+                  :expandToTopic="filterExpandTopic"
+                  @select="selectFilterTopic"
+                />
+              </div>
+            </div>
+          </template>
+          <template #after>
+            <q-virtual-scroll
+              v-if="messages && messages.length"
+              ref="scroller"
+              class="fit"
+              :items="renderedMessages"
+              @virtual-scroll="onScroll"
+              virtual-scroll-item-size="140"
+            >
+              <template v-slot="{ item }">
+                <message :message="item" :highlight="config.highlight" :key="`subMsg_${item.topic}_${item._seq}`" @action-send="(item) => { $emit('action-send', item) }" />
+              </template>
+            </q-virtual-scroll>
+            <div v-else class="subscriber__list--empty">No messages</div>
+          </template>
+        </q-splitter>
         <q-virtual-scroll
-          v-if="messages && messages.length && config.mode === 0"
+          v-else-if="messages && messages.length && config.mode === 0"
           ref="scroller"
           class="subscriber__list"
           :items="renderedMessages"
@@ -220,22 +265,42 @@
           </template>
         </q-virtual-scroll>
         <div class="subscriber__list subscriber__list--tree" v-else-if="config.mode === 1 && Object.keys(renderedMessages).length && subscribed">
-          <div :style="{height: treeModeValue ? '60%' : '100%'}" class="scroll">
-            <tree :topic="treeSelectedTopic" :data="renderedMessages" :expandByValue="true" @change="treeValueChangeHandler"/>
-          </div>
-          <div class="scroll tree__message" v-if="treeModeValue">
-            <template v-for="(message, key, index) in treeModeValue" :key="`tree-message-${key}-${index}`">
-              <message :message="message" :highlight="config.highlight" @action-send="(message) => { $emit('action-send', message) }" />
+          <q-splitter horizontal
+            v-model="treeSplitterRatio"
+            :limits="treeModeValue ? [10, 90] : [100, 100]"
+            :disable="!treeModeValue"
+            :separator-class="treeModeValue ? 'subscriber__splitter-sep' : 'hidden'"
+            style="height: 100%;"
+          >
+            <template #before>
+              <div class="scroll fit">
+                <tree :topic="treeSelectedTopic" :data="renderedMessages" :expandByValue="true" @change="treeValueChangeHandler"/>
+              </div>
             </template>
-          </div>
+            <template #after>
+              <div class="scroll fit tree__message" v-if="treeModeValue">
+                <template v-for="(message, key, index) in treeModeValue" :key="`tree-message-${key}-${index}`">
+                  <message :message="message" :highlight="config.highlight" @action-send="(message) => { $emit('action-send', message) }" />
+                </template>
+              </div>
+            </template>
+          </q-splitter>
         </div>
         <div v-else-if="status && subscribed && !processingFlag" class="subscriber__list--empty">No messages</div>
         <q-inner-loading :showing="isNeedLoading">
-          <q-spinner-gears size="150px" color="orange"></q-spinner-gears>
+          <q-spinner-gears size="150px" color="orange"/>
         </q-inner-loading>
       </div>
     </q-card>
-    <flespi-topic-modal v-if="flespiTopicModal" :opened="flespiTopicModal" color="orange" :model-value="config.topic" @update:model-value="config.topic = $event" :connector="client.restBus" @close="flespiTopicModal = false"/>
+    <flespi-topic-modal
+      v-if="flespiTopicModal"
+      color="orange"
+      :opened="flespiTopicModal"
+      :model-value="config.topic"
+      :connector="client.restBus"
+      @update:model-value="config.topic = $event"
+      @close="flespiTopicModal = false"
+    />
   </div>
 </template>
 
@@ -244,6 +309,8 @@ import FlespiTopicModal from './FlespiTopicModal.vue'
 import Tree from './TreeModeView.vue'
 import Message from './Message.vue'
 import validateEntities from '../mixins/validateEntities.js'
+import jsonTreeByMessages from '../mixins/jsonTreeByMessages.js'
+import { fixedTopicPrefix, topicMatchesFilter, sanitizeRatio } from '../mixins/topicFilter.js'
 import { subscriber as declarations } from '../mixins/declarations.js'
 import get from 'lodash/get'
 import isNil from 'lodash/isNil'
@@ -293,7 +360,10 @@ export default {
       ],
       stickToBottom: true,
       isPlayed: this.status || null,
-      filter: '',
+      selectedFilterTopics: [],
+      filterTreeData: {}, // filter tree  for subscriber's list mode
+      lastMergedSeq: -1,  // cursor of the last merged message in the filter tree
+      lastMergedLength: 0,
       treeSelectedTopic: null,
       processingFlag: null,
       Message,
@@ -304,12 +374,40 @@ export default {
     isFlespiMode () {
       return this.client.config.host.indexOf('flespi') > -1
     },
+    filterSplitterRatio: {
+      get () {
+      // guard against a null/NaN value persisted from an earlier session (JSON serializes NaN as null) to ensure QSplitter always receives a valid property
+        return sanitizeRatio(this.config.filterSplitterRatio, 20)
+      },
+      set (ratio) {
+        this.config.filterSplitterRatio = ratio
+      }
+    },
+    treeSplitterRatio: {
+      get () {
+        if (!this.treeModeValue) {
+          // when no node is selected the tree should take the full height (ratio 100, splitter disabled)
+          return 100
+        }
+        return sanitizeRatio(this.config.treeSplitterRatio, 60)
+      },
+      set (ratio) {
+        // persist real drags and ignore the normalization emit that can fire while the messages panel is closed
+        if (this.treeModeValue) {
+          this.config.treeSplitterRatio = ratio
+        }
+      }
+    },
+    // if the subscription topic has fixed (non-wildcard) prefix — the filter tree opens with the fixed topic segments opened
+    filterExpandTopic () {
+      return fixedTopicPrefix(this.config.topic)
+    },
     renderedMessages () {
       let res = []
       switch (this.config.mode) {
         case LIST_MODE: {
-          res = this.filter
-            ? this.messages.filter(message => message.topic.indexOf(this.filter) !== -1)
+          res = this.selectedFilterTopics.length
+            ? this.messages.filter(message => topicMatchesFilter(message.topic, this.selectedFilterTopics))
             : this.messages
           break
         }
@@ -433,9 +531,54 @@ export default {
     unsubscribeMessageHandler () {
       this.isPlayed = null
       this.treeSelectedTopic = null
+      this.filterMode = false
+      this.selectedFilterTopics = []
       this.stickToBottom = true
       this.$emit('unsubscribe')
       this.processingFlag = null
+    },
+    toggleFilterMode () {
+      this.filterMode = !this.filterMode
+      if (!this.filterMode) {
+        this.selectedFilterTopics = []
+      }
+    },
+    buildFilterTree () {
+      const tree = {}
+      jsonTreeByMessages(this.messages, '', tree, true)
+      this.filterTreeData = tree
+      this.lastMergedSeq = this.messages.length ? this.messages[this.messages.length - 1]._seq : -1
+      this.lastMergedLength = this.messages.length
+    },
+    updateFilterTree () {
+      if (!this.filterMode || this.config.mode !== LIST_MODE) { return }
+      if (this.messages.length < this.lastMergedLength) {
+        this.buildFilterTree()
+        return
+      }
+      const fresh = this.messages.filter(message => message._seq > this.lastMergedSeq)
+      if (fresh.length) {
+        jsonTreeByMessages(fresh, '', this.filterTreeData, true)
+        this.lastMergedSeq = fresh[fresh.length - 1]._seq
+      }
+      this.lastMergedLength = this.messages.length
+    },
+    selectFilterTopic (topic, multi) {
+      if (multi) {
+        // multi selection: add or remove the topic from the list of selected filters
+        const index = this.selectedFilterTopics.indexOf(topic)
+        if (index === -1) {
+          this.selectedFilterTopics.push(topic)
+        } else {
+          this.selectedFilterTopics.splice(index, 1)
+        }
+      } else if (this.selectedFilterTopics.length === 1 && this.selectedFilterTopics[0] === topic) {
+        // single selection on the same topic: topic is deselected, all messages will be shown again
+        this.selectedFilterTopics = []
+      } else {
+        // single selection on new topic: new topic is selected
+        this.selectedFilterTopics = [topic]
+      }
     },
     removeSubscriber () {
       this.$emit('remove')
@@ -494,6 +637,16 @@ export default {
         }
       }
     },
+    forceScrollToBottom () {
+      this.$nextTick(() => {
+        if (this.stickToBottom && this.renderedMessages.length > 0 && this.$refs.scroller) {
+          // re-observe to schedule the callback for the next layout cycle ("snap to the true bottom after next layout")
+          this.bottomStickRO.disconnect()
+          this.bottomStickRO.observe(this.$refs.scroller.$el)
+          this.$refs.scroller.scrollTo(this.renderedMessages.length - 1, 'end-force')
+        }
+      })
+    },
     clearMessagesHandler () {
       this.$emit('clear')
     },
@@ -518,14 +671,25 @@ export default {
       if (val) { this.checkProcessing() }
     },
     lastMessageSeq () {
-      this.$nextTick(() => {
-        if (this.stickToBottom && this.renderedMessages.length > 0 && this.$refs.scroller) {
-          // re-observe to schedule the callback for the next layout cycle ("snap to the true bottom after next layout")
-          this.bottomStickRO.disconnect()
-          this.bottomStickRO.observe(this.$refs.scroller.$el)
-          this.$refs.scroller.scrollTo(this.renderedMessages.length - 1, 'end-force')
-        }
-      })
+      this.updateFilterTree()
+      this.forceScrollToBottom()
+    },
+    filterMode (open) {
+      if (open) {
+        this.buildFilterTree()
+      } else {
+        this.filterTreeData = {}
+        this.lastMergedSeq = -1
+        this.lastMergedLength = 0
+      }
+    },
+    selectedFilterTopics: {
+      deep: true,
+      handler () {
+        // stick to the bottom when navigating through the topic filter
+        this.stickToBottom = true
+        this.forceScrollToBottom()
+      }
     },
     config: {
       deep: true,
@@ -603,8 +767,25 @@ export default {
       height: auto !important;
 
       .tree__message {
-        height: 40%;
         box-shadow: 0 1px 5px rgba(0,0,0,0.2), 0 2px 2px rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12);
+      }
+    }
+
+    // drag handle between the topics tree and the messages list, with three centered dots hinting that the divider is draggable
+    .subscriber__splitter-sep {
+      height: 5px !important;
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 2px;
+        height: 2px;
+        border-radius: 50%;
+        background: var(--q-grey-7, #757575);
+        transform: translate(-50%, -50%);
+        box-shadow: -5px 0 0 var(--q-grey-7, #757575), 5px 0 0 var(--q-grey-7, #757575);
       }
     }
 

@@ -43,6 +43,8 @@ const defaultSettings = {
     mode: 0,
     treeField: '',
     highlight: true,
+    filterSplitterRatio: 20,
+    treeSplitterRatio: 60,
     options: {
       qos: 0,
       nl: false,

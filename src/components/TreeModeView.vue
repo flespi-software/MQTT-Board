@@ -1,6 +1,6 @@
 <template>
   <div :style="$q.platform.is.desktop ? {'display': 'block', width: '100%'} : []" style="user-select: none;line-height:16px;">
-    <template v-for="(key, index) in limitedKeys" :key="`${key}`">
+    <template v-for="key in limitedKeys" :key="`${key}`">
       <div
         :style="{
           paddingLeft: `${10 * nesting + (data[key].children ? 0 : 14)}px`,
@@ -9,22 +9,45 @@
           textOverflow: $q.platform.is.desktop ? '' : 'ellipsis',
           position: 'relative'
         }"
-        @click="toggle(key, index)" class="cursor-pointer hover-highlight" :class="{'bg-grey-2': topic && topic === data[key].topic}"
+        class="cursor-pointer"
+        :class="{'hover-highlight': $q.platform.is.desktop, 'bg-grey-2': (topic && topic === data[key].topic) || (selectable && selectedTopics.includes(data[key].topic))}"
+        @click="onRowClick(key, $event)"
       >
 
-        <div :class="{'text-italic': !key, 'text-orange-6': data[key].value}"  style="white-space: nowrap;width:calc(100% - 150px);">
+        <div
+          style="white-space: nowrap;width:calc(100% - 150px);"
+          :class="{'text-italic': !key, 'text-orange-6': data[key].value}"
+        >
           <template v-if="data[key].children">
-            <q-icon color="grey-9" v-if="showObj[key]" name="mdi-menu-down" style="vertical-align: baseline" />
-            <q-icon color="grey-9" v-else name="mdi-menu-right" style="vertical-align: baseline" />
+            <q-icon color="grey-9" v-if="showObj[key]" name="mdi-menu-down" style="vertical-align: baseline" @click="onTriangleClick(key, $event)" />
+            <q-icon color="grey-9" v-else name="mdi-menu-right" style="vertical-align: baseline" @click="onTriangleClick(key, $event)" />
           </template>
           <div class="topic-font-element inline-block" :style="`white-space: pre-wrap;width:calc(100% - ${data[key].children ? 22 : 10}px);overflow:hidden;text-overflow: ellipsis;`">{{key || '*Empty*'}}</div>
           <q-icon color="grey-9" v-if="getRetainFlag(key)" name="mdi-content-save-outline" style="vertical-align:top">
             <q-tooltip>Retain message</q-tooltip>
           </q-icon>
         </div>
-        <div v-if="data[key].value && data[key].value['']" class="absolute-right ellipsis text-grey vertical-middle q-px-md q-pt-xs text-right" style="font-size:10px;width:150px;" :title="JSON.stringify(data[key].value[''].payload)">{{ data[key].value && data[key].value[''] && data[key].value[''].payload }}</div>
+        <div
+          v-if="data[key].value && data[key].value['']"
+          class="absolute-right ellipsis text-grey vertical-middle q-px-md q-pt-xs text-right"
+          style="font-size:10px;width:150px;"
+          :title="JSON.stringify(data[key].value[''].payload)"
+          >
+          {{ data[key].value && data[key].value[''] && data[key].value[''].payload }}
+        </div>
       </div>
-      <tree-mode-view :nesting="nesting + 1" :expandByValue="expand" :topic="topic" v-if="showObj[key] && data[key].children" :data='data[key].children' @change="(value) => { $emit('change', value) }"/>
+      <tree-mode-view
+        v-if="showObj[key] && data[key].children"
+        :nesting="nesting + 1"
+        :expandByValue="expand"
+        :topic="topic"
+        :selectable="selectable"
+        :selectedTopics="selectedTopics"
+        :expandToTopic="expandToTopic"
+        :data='data[key].children'
+        @change="(value) => { $emit('change', value) }"
+        @select="(value, multi) => { $emit('select', value, multi) }"
+      />
     </template>
     <div
       @click="limit += 1000"
@@ -51,6 +74,7 @@
 
 <script>
 import { defineComponent } from 'vue'
+import { isExpandAncestor } from '../mixins/topicFilter.js'
 export default defineComponent({
   name: 'TreeModeView',
   props: {
@@ -63,9 +87,22 @@ export default defineComponent({
     expandByValue: {
       type: Boolean,
       default: false
+    },
+    selectable: {
+      type: Boolean,
+      default: false
+    },
+    selectedTopics: {
+      type: Array,
+      default: () => []
+    },
+    // tree in filter mode of list subscriner: topic prefix whose ancestor-or-self nodes should start expanded
+    expandToTopic: {
+      type: String,
+      default: ''
     }
   },
-  emits: ['change'],
+  emits: ['change', 'select'],
   data () {
     const showObj = {}
     const keys = Object.keys(this.data)
@@ -76,6 +113,14 @@ export default defineComponent({
         expand = false
       }
       showObj[keys[i]] = expand
+    }
+    if (this.expandToTopic) {
+      // the filter tree opens with the fixed segments of subscription expanded
+      for (let i = 0, l = len; i < l; i++) {
+        if (isExpandAncestor(this.data[keys[i]].topic, this.expandToTopic)) {
+          showObj[keys[i]] = true
+        }
+      }
     }
     return {
       showObj: showObj,
@@ -104,9 +149,27 @@ export default defineComponent({
     }
   },
   methods: {
-    toggle (key, index) {
+    toggle (key) {
       this.showObj[key] = !this.showObj[key]
       this.$emit('change', this.data[key].topic)
+    },
+    onRowClick (key, event) {
+      if (this.selectable) {
+        // selectable mode (Ctrl(Cmd)+click or mobile devices): clicking anywhere on the row (except the triangle) selects the node
+        const multi = event.ctrlKey || event.metaKey || !this.$q.platform.is.desktop
+        this.$emit('select', this.data[key].topic, multi)
+      } else {
+        // tree (non-selectable) mode: clicking anywhere on the row toggles expand/collapse
+        this.toggle(key)
+      }
+    },
+    onTriangleClick (key, event) {
+      if (this.selectable) {
+        // selectable mode: triangle only expands/collapses, doesn't select the node
+        event.stopPropagation()
+        this.showObj[key] = !this.showObj[key]
+      }
+      // tree mode: let the click event bubble to the row's click handler
     },
     getRetainFlag (key) {
       const value = this.data[key].value

@@ -1,4 +1,5 @@
-function jsonTreeByMessages (messages, treeField, dest) {
+// keepEmptyTopics: when true, an empty-payload message keeps its topic node instead of clearing it
+function jsonTreeByMessages (messages, treeField, dest, keepEmptyTopics) {
   function write (topic, payload, dest) {
     const path = topic.split('/')
     let currentNesting = dest
@@ -67,6 +68,7 @@ function jsonTreeByMessages (messages, treeField, dest) {
     })
   }
   function getAction (message) {
+    if (keepEmptyTopics) { return write }
     return typeof message.payload === 'string' && !message.payload.length ? clear : write
   }
   if (Array.isArray(messages)) {
