@@ -1,5 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [3.5.1] - 2026-06-10
+[fix] topics tree filter is rebuild when messages are rotated in the buffer in order to clean up stale nodes from the tree
 ### [3.5.0] - 2026-06-09
 [feature] topics tree filter for subscriber in list mode
 ### [3.4.5] - 2026-06-02

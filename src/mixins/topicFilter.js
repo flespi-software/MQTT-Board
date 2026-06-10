@@ -31,6 +31,11 @@ export function isExpandAncestor (nodeTopic, prefix) {
   return !!prefix && (prefix === nodeTopic || prefix.startsWith(`${nodeTopic}/`))
 }
 
+// Whether the topics tree in the messages filter must be rebuilt from scratch (messages buffer is full and messages are rotated).
+export function filterTreeNeedsRebuild (length, firstSeq, mergedLength, mergedFirstSeq) {
+  return length < mergedLength || firstSeq > mergedFirstSeq
+}
+
 // Coerce a persisted splitter ratio to a valid number, falling back when it is null/NaN
 // (JSON serializes NaN as null, so an old corrupt value can come back as null).
 export function sanitizeRatio (value, fallback) {

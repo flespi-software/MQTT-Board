@@ -218,14 +218,14 @@
           style="height: auto;"
         >
           <template #before>
-            <div class="fit" style="position: relative;">
-              <q-icon v-if="$q.platform.is.desktop" name="mdi-information-outline" size="20px" color="grey-7" class="absolute-top-right cursor-pointer" style="z-index: 1; right: 35px; top: 7px;">
-                <q-tooltip max-width="200px">Ctrl+click to select multiple nodes</q-tooltip>
-              </q-icon>
+            <div class="fit column" style="position: relative;">
               <q-btn dense flat round size="sm" icon="mdi-close" color="grey-7" class="absolute-top-right" style="z-index: 1; right: 10px; top: 5px;" @click="toggleFilterMode">
                 <q-tooltip>Close topics tree</q-tooltip>
               </q-btn>
-              <div class="scroll fit" style="padding-top: 20px;">
+              <div v-if="$q.platform.is.desktop" class="text-grey-7 text-italic text-right" style="padding: 7px 45px 4px 12px; font-size: 12px;">
+                Ctrl+click to select multiple nodes
+              </div>
+              <div class="scroll col" :style="$q.platform.is.desktop ? null : 'padding-top: 20px;'">
                 <tree selectable
                   v-if="Object.keys(filterTreeData).length"
                   :data="filterTreeData"
@@ -310,7 +310,7 @@ import Tree from './TreeModeView.vue'
 import Message from './Message.vue'
 import validateEntities from '../mixins/validateEntities.js'
 import jsonTreeByMessages from '../mixins/jsonTreeByMessages.js'
-import { fixedTopicPrefix, topicMatchesFilter, sanitizeRatio } from '../mixins/topicFilter.js'
+import { fixedTopicPrefix, topicMatchesFilter, sanitizeRatio, filterTreeNeedsRebuild } from '../mixins/topicFilter.js'
 import { subscriber as declarations } from '../mixins/declarations.js'
 import get from 'lodash/get'
 import isNil from 'lodash/isNil'
@@ -363,6 +363,7 @@ export default {
       selectedFilterTopics: [],
       filterTreeData: {}, // filter tree  for subscriber's list mode
       lastMergedSeq: -1,  // cursor of the last merged message in the filter tree
+      lastMergedFirstSeq: -1, // _seq of the oldest merged message; used to determine if the buffer was rotated
       lastMergedLength: 0,
       treeSelectedTopic: null,
       processingFlag: null,
@@ -548,11 +549,13 @@ export default {
       jsonTreeByMessages(this.messages, '', tree, true)
       this.filterTreeData = tree
       this.lastMergedSeq = this.messages.length ? this.messages[this.messages.length - 1]._seq : -1
+      this.lastMergedFirstSeq = this.messages.length ? this.messages[0]._seq : -1
       this.lastMergedLength = this.messages.length
     },
     updateFilterTree () {
       if (!this.filterMode || this.config.mode !== LIST_MODE) { return }
-      if (this.messages.length < this.lastMergedLength) {
+      const firstSeq = this.messages.length ? this.messages[0]._seq : -1
+      if (filterTreeNeedsRebuild(this.messages.length, firstSeq, this.lastMergedLength, this.lastMergedFirstSeq)) {
         this.buildFilterTree()
         return
       }
@@ -680,6 +683,7 @@ export default {
       } else {
         this.filterTreeData = {}
         this.lastMergedSeq = -1
+        this.lastMergedFirstSeq = -1
         this.lastMergedLength = 0
       }
     },

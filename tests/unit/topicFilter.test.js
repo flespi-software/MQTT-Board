@@ -4,7 +4,8 @@ import {
   isTopicOrDescendant,
   topicMatchesFilter,
   isExpandAncestor,
-  sanitizeRatio
+  sanitizeRatio,
+  filterTreeNeedsRebuild
 } from '../../src/mixins/topicFilter.js'
 
 describe('topicFilter', () => {
@@ -83,6 +84,28 @@ describe('topicFilter', () => {
 
     it('matches nothing when the prefix is empty', () => {
       expect(isExpandAncestor('flespi', '')).toBe(false)
+    })
+  })
+
+  describe('filterTreeNeedsRebuild', () => {
+    // (length, firstSeq, mergedLength, mergedFirstSeq)
+    it('does not rebuild when messages are only appended (length grows, oldest unchanged)', () => {
+      expect(filterTreeNeedsRebuild(3000, 1, 2999, 1)).toBe(false)
+    })
+
+    it('does not rebuild when nothing changed', () => {
+      expect(filterTreeNeedsRebuild(3000, 1, 3000, 1)).toBe(false)
+    })
+
+    it('rebuilds when the buffer was cleared or shrunk', () => {
+      expect(filterTreeNeedsRebuild(0, -1, 3000, 1)).toBe(true)
+      expect(filterTreeNeedsRebuild(10, 2991, 3000, 1)).toBe(true)
+    })
+
+    it('rebuilds on rotation: oldest messages dropped, length stays at the limit', () => {
+      // buffer was full at 3000 starting from _seq 1; a render tick rotated it so the oldest
+      // message is now _seq 51 while the length is still 3000
+      expect(filterTreeNeedsRebuild(3000, 51, 3000, 1)).toBe(true)
     })
   })
 
