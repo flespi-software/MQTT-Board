@@ -388,6 +388,159 @@ test.describe('Flespi Topic Constructor', () => {
     })
   })
 
+  test.describe('Multi-entity ID level', () => {
+    // Regression: building flespi/state/gw/devices,channels/+ creates a tabbed
+    // (multi-entity) ID level. Removing one keyword so only "channels" remains
+    // must make the "+" level fetch CHANNELS, not the stale "devices" it was
+    // first created with. See FlespiTopicConstructor.resetLevelItemsAfter.
+    test('should fetch the remaining entity after removing one keyword from a multi-entity level', async ({ page, request }) => {
+      test.setTimeout(120000)
+
+      // Need at least one channel and one device on the account for a real
+      // multi-entity level; fetch a representative channel id to assert against.
+      const headers = { Authorization: `FlespiToken ${BROKER_USERNAME}` }
+      const chResp = await request.get('https://flespi.io/gw/channels/all?fields=id,name', { headers })
+      const devResp = await request.get('https://flespi.io/gw/devices/all?fields=id,name', { headers })
+      const channels = chResp.ok() ? (await chResp.json()).result || [] : []
+      const devices = devResp.ok() ? (await devResp.json()).result || [] : []
+      test.skip(!channels.length || !devices.length, `needs >=1 channel and >=1 device (have ${channels.length} channels, ${devices.length} devices)`)
+      const channelId = String(channels[0].id)
+      const deviceId = String(devices[0].id)
+
+      const dialog = await openConstructor(page)
+      const menu = page.locator('.flespi-topic-selector__dropdown')
+
+      /** close the dropdown and wait for it to disappear */
+      async function closeMenu () {
+        await page.keyboard.press('Escape')
+        await expect(menu).not.toBeVisible()
+      }
+
+      // Track which entity gets fetched whenever the "+" level is (re)opened.
+      const fetched = []
+      page.on('request', req => {
+        const url = req.url()
+        if (url.includes('/gw/channels')) { fetched.push('channels') } else if (url.includes('/gw/devices')) { fetched.push('devices') }
+      })
+
+      // Build flespi/state/gw/
+      await openSegmentMenu(page, dialog, 0)
+      await menu.locator('.q-item').filter({ hasText: 'state' }).click()
+      await closeMenu()
+
+      await openSegmentMenu(page, dialog, 1)
+      await menu.locator('.q-item').filter({ hasText: 'gw' }).click()
+      await closeMenu()
+
+      const segment2 = dialog.locator('.flespi-topic-selector__segment-group').nth(2)
+
+      // Phase 1: select only "devices" → single-entity DEVICES list at "+"
+      await openSegmentMenu(page, dialog, 2)
+      await menu.locator('.q-item').filter({ hasText: 'devices' }).click()
+      await closeMenu()
+      await expect(segment2).toContainText('devices')
+
+      fetched.length = 0
+      await openSegmentMenu(page, dialog, 3)
+      await expect(menu.locator('.q-item').filter({ hasText: deviceId })).toBeVisible({ timeout: 10000 })
+      await expect(menu.locator('.q-tab')).toHaveCount(0)
+      expect(fetched).not.toContain('channels')
+      await closeMenu()
+
+      // Phase 2: also select "channels" → multi-entity tabbed list with both lists
+      await openSegmentMenu(page, dialog, 2)
+      await menu.locator('.q-item').filter({ hasText: 'channels' }).click()
+      await closeMenu()
+      await expect(segment2).toContainText('devices')
+      await expect(segment2).toContainText('channels')
+
+      await openSegmentMenu(page, dialog, 3)
+      await expect(menu.locator('.q-tab').filter({ hasText: 'devices' })).toBeVisible({ timeout: 10000 })
+      await expect(menu.locator('.q-tab').filter({ hasText: 'channels' })).toBeVisible()
+      // The "devices" tab is active by default and lists devices
+      await expect(menu.locator('.q-item').filter({ hasText: deviceId })).toBeVisible()
+      // Switching to the "channels" tab lists channels
+      await menu.locator('.q-tab').filter({ hasText: 'channels' }).click()
+      await expect(menu.locator('.q-item').filter({ hasText: channelId })).toBeVisible()
+      await closeMenu()
+
+      // Phase 3: remove "devices", leaving only "channels" → single-entity CHANNELS list.
+      // Regression: the "+" level must NOT keep fetching the stale "devices" entity.
+      await openSegmentMenu(page, dialog, 2)
+      await menu.locator('.q-item').filter({ hasText: 'devices' }).click()
+      await closeMenu()
+      await expect(segment2).toContainText('channels')
+      await expect(segment2).not.toContainText('devices')
+
+      fetched.length = 0
+      await openSegmentMenu(page, dialog, 3)
+      await expect(menu.locator('.q-item').filter({ hasText: channelId })).toBeVisible({ timeout: 10000 })
+      await expect(menu.locator('.q-tab')).toHaveCount(0)
+      expect(fetched).not.toContain('devices')
+    })
+  })
+
+  test.describe('Items Filter', () => {
+    test('should filter long item lists in the dropdown', async ({ page }) => {
+      test.setTimeout(120000)
+      const dialog = await openConstructor(page)
+      const menu = page.locator('.flespi-topic-selector__dropdown')
+
+      /** close the dropdown and wait for it to disappear */
+      async function closeMenu () {
+        await page.keyboard.press('Escape')
+        await expect(menu).not.toBeVisible()
+      }
+
+      // Navigate to the device ID level: flespi/state/gw/devices/...
+      await openSegmentMenu(page, dialog, 0)
+      await menu.locator('.q-item').filter({ hasText: 'state' }).click()
+      await closeMenu()
+
+      await openSegmentMenu(page, dialog, 1)
+      await menu.locator('.q-item').filter({ hasText: 'gw' }).click()
+      await closeMenu()
+
+      await openSegmentMenu(page, dialog, 2)
+      await menu.locator('.q-item').filter({ hasText: 'devices' }).click()
+      await closeMenu()
+
+      // Device ID level — items are fetched from the API
+      await openSegmentMenu(page, dialog, 3)
+      await expect(menu.locator('.q-item').filter({ hasText: '5486936' })).toBeVisible({ timeout: 10000 })
+
+      const filterInput = menu.locator('.flespi-topic-selector__filter-item input')
+      const itemsCount = await menu.locator('.q-item').count()
+      test.skip(!(await filterInput.count()), `filter input requires more than 10 items, account has ${itemsCount}`)
+
+      // Filter input is autofocused — typing filters immediately
+      await expect(filterInput).toBeFocused()
+      await filterInput.fill('5486936')
+      await expect(menu.locator('.q-item').filter({ hasText: '5486936' })).toBeVisible()
+      await expect(menu.locator('.q-item').filter({ hasText: '5193094' })).not.toBeVisible()
+
+      // Wildcards stay visible regardless of the filter
+      await expect(menu.locator('.q-item').filter({ hasText: /^#$/ })).toBeVisible()
+      await expect(menu.locator('.q-item').filter({ hasText: /^\+$/ })).toBeVisible()
+
+      // Selected items stay visible even when they don't match the query
+      await menu.locator('.q-item').filter({ hasText: '5486936' }).click()
+      await filterInput.fill('5193094')
+      await expect(menu.locator('.q-item').filter({ hasText: '5486936' })).toBeVisible()
+
+      // Empty state when nothing matches
+      await filterInput.fill('no-such-item-zzz')
+      await expect(menu.getByText('No matches')).toBeVisible()
+
+      // First Esc clears the filter, second one closes the menu
+      await page.keyboard.press('Escape')
+      await expect(menu).toBeVisible()
+      await expect(filterInput).toHaveValue('')
+      await expect(menu.locator('.q-item').filter({ hasText: '5193094' })).toBeVisible()
+      await closeMenu()
+    })
+  })
+
   test.describe('Topic Emission', () => {
     test('should save constructed topic back to subscriber', async ({ page }) => {
       const dialog = await openConstructor(page)

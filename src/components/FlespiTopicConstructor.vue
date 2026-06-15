@@ -41,9 +41,20 @@
                 <q-tab v-for="group in level.entityGroups" :key="group.entityName" :name="group.entityName" :label="group.entityName" />
               </q-tabs>
               <q-separator />
+              <q-input dense autofocus clearable borderless
+                v-if="showFilter(index) && level.activeTab !== '#' && level.activeTab !== '+'"
+                v-model="level.filterValue"
+                class="flespi-topic-selector__filter-input"
+                :placeholder="getFilterPlaceholder(level)"
+                @keydown.esc="onFilterEsc(index, $event)"
+              >
+                <template v-slot:prepend>
+                  <q-icon name="search" size="xs" />
+                </template>
+              </q-input>
               <q-list v-if="level.activeTab !== '#' && level.activeTab !== '+'" dense class="flespi-topic-selector__tab-list">
                 <q-item
-                  v-for="opt in (level.groupedMenuOptions[level.activeTab] || [])"
+                  v-for="opt in filteredLevelOptions(index)"
                   :key="opt.value"
                   clickable
                   v-close-popup="0"
@@ -57,12 +68,30 @@
                   </q-item-section>
                   <q-tooltip v-if="opt.value !== opt.label">{{ opt.label + ' (' + opt.value + ')' }}</q-tooltip>
                 </q-item>
+                <q-item v-if="!hasFilterMatches(index)" dense>
+                  <q-item-section>
+                    <q-item-label caption>No matches</q-item-label>
+                  </q-item-section>
+                </q-item>
               </q-list>
             </template>
             <!-- Single entity: flat list -->
             <q-list v-else dense>
+              <q-item v-if="showFilter(index)" dense class="flespi-topic-selector__filter-item">
+                <q-item-section>
+                  <q-input dense autofocus clearable borderless
+                    v-model="level.filterValue"
+                    :placeholder="getFilterPlaceholder(level)"
+                    @keydown.esc="onFilterEsc(index, $event)"
+                  >
+                    <template v-slot:prepend>
+                      <q-icon name="search" size="xs" />
+                    </template>
+                  </q-input>
+                </q-item-section>
+              </q-item>
               <q-item
-                v-for="opt in level.menuOptions"
+                v-for="opt in filteredLevelOptions(index)"
                 :key="opt.value"
                 clickable
                 v-close-popup="isExclusiveOption(opt.value) ? 1 : 0"
@@ -75,6 +104,11 @@
                   <q-item-label v-if="opt.value !== opt.label && opt.value !== '+' && opt.value !== '#'" caption class="flespi-topic-selector__option-label">{{ opt.value }}</q-item-label>
                 </q-item-section>
                 <q-tooltip v-if="opt.value !== opt.label || opt.selectablePropertyName">{{ opt.label + (opt.value !== opt.label ? ' (' + opt.value + ')' : '') + (opt.selectablePropertyName ? ' {' + opt.selectablePropertyName + '}' : '') }}</q-tooltip>
+              </q-item>
+              <q-item v-if="!hasFilterMatches(index)" dense>
+                <q-item-section>
+                  <q-item-label caption>No matches</q-item-label>
+                </q-item-section>
               </q-item>
               <template v-if="level.customInputLabels.length">
                 <q-separator />
@@ -205,6 +239,7 @@ const SEGMENT_COLORS = [
   'rgba(174, 213, 129, 0.25)'  // light-green
 ]
 const HASH_COLOR = 'rgba(158, 158, 158, 0.2)' // gray for # wildcard descendants
+const FILTER_THRESHOLD = 10 // show filter input when a dropdown list exceeds this many items
 
 export default defineComponent({
   name: 'FlespiTopicConstructor',
@@ -413,7 +448,8 @@ export default defineComponent({
         activeTab: '',
         customInputActive: false,
         customInputValue: '',
-        customInputLabels: []
+        customInputLabels: [],
+        filterValue: ''
       }
     },
     getTreeNodesAtLevel (levelIndex) {
@@ -600,6 +636,51 @@ export default defineComponent({
     isExclusiveOption (value) {
       return value === '+' || value === '#'
     },
+    showFilter (index) {
+      const level = this.levels[index]
+      if (level.entityGroups.length > 1) {
+        return Object.values(level.groupedMenuOptions).some(opts => opts.length > FILTER_THRESHOLD)
+      }
+      return level.menuOptions.filter(o => !this.isExclusiveOption(o.value)).length > FILTER_THRESHOLD
+    },
+    optionMatchesFilter (opt, query) {
+      return opt.label.toLowerCase().includes(query) || opt.value.toLowerCase().includes(query)
+    },
+    filteredLevelOptions (index) {
+      const level = this.levels[index]
+      const options = level.entityGroups.length > 1
+        ? (level.groupedMenuOptions[level.activeTab] || [])
+        : level.menuOptions
+      const query = (level.filterValue || '').trim().toLowerCase()
+      if (!query) { return options }
+      // Wildcards and already-selected values stay visible regardless of the filter
+      return options.filter(o =>
+        this.isExclusiveOption(o.value) ||
+        level.selected.includes(o.value) ||
+        this.optionMatchesFilter(o, query)
+      )
+    },
+    hasFilterMatches (index) {
+      const level = this.levels[index]
+      const query = (level.filterValue || '').trim().toLowerCase()
+      if (!query) { return true }
+      const options = level.entityGroups.length > 1
+        ? (level.groupedMenuOptions[level.activeTab] || [])
+        : level.menuOptions
+      return options.some(o => !this.isExclusiveOption(o.value) && this.optionMatchesFilter(o, query))
+    },
+    getFilterPlaceholder (level) {
+      const name = level.entityGroups.length > 1 ? level.activeTab : level.entityName
+      return 'Filter ' + (name || 'items') + '...'
+    },
+    onFilterEsc (index, evt) {
+      const level = this.levels[index]
+      if (level.filterValue) {
+        // First Esc clears the filter; menu closes only on the next one
+        evt.stopPropagation()
+        level.filterValue = ''
+      }
+    },
     onMenuItemClick (index, value) {
       const level = this.levels[index]
       const selected = [...level.selected]
@@ -695,12 +776,21 @@ export default defineComponent({
     resetLevelItemsAfter (index) {
       // Reset fetched items for ID levels after index, since the context may have changed
       for (let i = index + 1; i < this.levels.length; i++) {
-        if (this.levels[i].isIdLevel) {
-          this.levels[i].items = []
-          this.levels[i].itemsFetched = false
-          this.levels[i].entityGroups = []
-          this.levels[i].groupedMenuOptions = {}
-          this.levels[i].activeTab = ''
+        const level = this.levels[i]
+        if (level.isIdLevel) {
+          level.items = []
+          level.itemsFetched = false
+          level.entityGroups = []
+          level.groupedMenuOptions = {}
+          level.activeTab = ''
+          // re-resolve the entity from the preceeding keyword level
+          const entityInfo = this.resolveEntityName(i)
+          level.entityName = entityInfo.entityName
+          level.entityChain = entityInfo.entityChain
+          level.configKey = entityInfo.configKey
+          level.isSelectableProperty = entityInfo.isSelectableProperty
+          const isNonIdEntity = entityInfo.entityName && !entityInfo.entityName.endsWith('s')
+          level.allowCustomValues = isNonIdEntity || entityInfo.isSelectableProperty
         }
       }
     },
@@ -716,6 +806,7 @@ export default defineComponent({
       level.editing = false
       level.customInputActive = false
       level.customInputValue = ''
+      level.filterValue = ''
       const selected = level.selected
       // If selection is empty, remove this level and all after it
       if (!selected.length) {
@@ -1277,7 +1368,6 @@ export default defineComponent({
         const part = parts[partIndex]
         if (part === '#') { break }
         const values = part.split(',').filter(Boolean)
-        const level = this.levels[partIndex]
         const nextPaths = []
         for (const { tree, pathKeys } of activePaths) {
           const childKeys = Object.keys(tree).filter(k => !k.startsWith('_'))
@@ -1442,5 +1532,16 @@ export default defineComponent({
 .flespi-topic-selector__tab-list {
   max-height: 300px;
   overflow-y: auto;
+}
+.flespi-topic-selector__filter-item {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #fff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+.flespi-topic-selector__filter-input {
+  padding: 0 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 }
 </style>

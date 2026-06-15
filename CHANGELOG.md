@@ -1,5 +1,8 @@
 # Changelog
 All notable changes to this project will be documented in this file.
+### [3.5.2] - 2026-06-15
+[update] entities filter is added into flespi topics constructor
+[fix] resolving of selected entities after node's unselection at the previous level
 ### [3.5.1] - 2026-06-10
 [fix] topics tree filter is rebuild when messages are rotated in the buffer in order to clean up stale nodes from the tree
 ### [3.5.0] - 2026-06-09
